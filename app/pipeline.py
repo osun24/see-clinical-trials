@@ -1,0 +1,453 @@
+"""The request pipeline, in one readable place.
+
+    QueryRequest -> QueryPlan -> ResolvedPlan -> CtgovQuerySpec
+      -> FetchResult -> BucketSet -> VisualizationSpec -> AnswerResponse
+"""
+
+from __future__ import annotations
+
+import time
+import uuid
+from typing import Any
+
+from app.aggregate import bucketize
+from app.config import settings
+from app.ctgov.client import CtgovClient
+from app.ctgov.compare import fetch_comparison, should_compare
+from app.ctgov.fetch import FetchResult, fetch_flat
+from app.ctgov.params import build_query
+from app.ctgov.stratified import fetch_stratified, should_stratify, to_fetch_result
+from app.dimensions.registry import DIMENSIONS
+from app.interpret.merge import resolve
+from app.interpret.planner import interpret
+from app.models.buckets import BucketSet, Exclusions, Invariant
+from app.models.errors import ServiceError
+from app.models.plan import ResolvedPlan
+from app.models.request import QueryRequest
+from app.models.response import (
+    AnswerResponse,
+    Coverage,
+    Meta,
+    Notes,
+    QueryInterpretation,
+)
+from app.models.viz import Encoding, VisualizationSpec
+from app.viz import encoders, titles
+from app.viz.resolver import resolve as resolve_viz
+
+BROAD_QUERY_THRESHOLD = 50_000
+
+
+async def plan_only(request: QueryRequest) -> dict[str, Any]:
+    """Interpretation without a fetch — the /plan dry run."""
+    raw_plan = await interpret(request)
+    resolved = resolve(raw_plan, request)
+    spec = build_query(resolved)
+    return {
+        "plan": resolved.model_dump(),
+        "ctgov_params": spec.params,
+        "fields_mask": list(spec.fields_mask),
+        "would_use_exact_counts": bool(
+            resolved.group_by
+            and should_stratify(DIMENSIONS[resolved.group_by], resolved)
+        ),
+    }
+
+
+async def _gather_data(
+    client: CtgovClient, resolved: ResolvedPlan, cap: int
+) -> tuple[FetchResult, BucketSet | None, Any]:
+    spec = build_query(resolved)
+
+    dimension = DIMENSIONS.get(resolved.group_by) if resolved.group_by else None
+    series_dimension = DIMENSIONS.get(resolved.series_by) if resolved.series_by else None
+
+    # "Compare A against B" cannot be one query; each arm is its own.
+    if dimension is not None and should_compare(resolved):
+        comparison = await fetch_comparison(client, resolved, dimension, cap=cap)
+        return comparison.fetch, comparison.bucket_set, comparison
+
+    if dimension is not None and should_stratify(dimension, resolved):
+        # Establish the universe size first, then count each bucket exactly.
+        probe = await fetch_flat(client, spec, cap=1)
+        stratified = await fetch_stratified(
+            client, spec, dimension, resolved, total_matching=probe.total_matching
+        )
+        if stratified.strata:
+            fetch_result = to_fetch_result(stratified)
+            bucket_set = bucketize.from_strata(
+                stratified.strata,
+                dimension,
+                limit=resolved.limit,
+                citation_limit=settings.citation_limit,
+            )
+            return fetch_result, bucket_set, None
+
+    fetch_result = await fetch_flat(client, spec, cap=cap)
+
+    if dimension is None:
+        return fetch_result, None, None
+
+    bucket_set = bucketize.from_sample(
+        fetch_result.studies,
+        dimension,
+        series_dimension=series_dimension,
+        limit=resolved.limit,
+        citation_limit=settings.citation_limit,
+    )
+    return fetch_result, bucket_set, None
+
+
+def _coverage(
+    fetch_result: FetchResult, bucket_set: BucketSet | None, fetch_cap: int
+) -> Coverage:
+    analyzed = bucket_set.records_analyzed if bucket_set else len(fetch_result.studies)
+    total = max(fetch_result.total_matching, 1)
+    exact = bool(bucket_set and bucket_set.counts_are_exact)
+    is_sample = fetch_result.is_sample and not exact
+
+    return Coverage(
+        total_matching_studies=fetch_result.total_matching,
+        records_fetched=len(fetch_result.studies),
+        records_analyzed=analyzed,
+        is_sample=is_sample,
+        coverage_ratio=round(len(fetch_result.studies) / total, 4),
+        sampling_method=fetch_result.sampling_method,
+        sampling_bias_risk=(
+            "none"
+            if not fetch_result.is_sample
+            else ("low" if exact else "high")
+        ),
+        fetch_cap=fetch_cap,
+        pages_fetched=fetch_result.pages_fetched,
+        truncated_reason=fetch_result.truncated_reason,
+        counts_are_exact=exact,
+        excluded=bucket_set.exclusions if bucket_set else Exclusions(),
+    )
+
+
+def _build_visualization(
+    resolved: ResolvedPlan,
+    bucket_set: BucketSet | None,
+    fetch_result: FetchResult,
+    decision_type: str,
+    orientation: str | None,
+    subtitle: str,
+) -> VisualizationSpec:
+    title = titles.build_title(resolved, bucket_set)
+
+    if decision_type == "none":
+        return VisualizationSpec(type="none", title=title, subtitle=subtitle, data=[])
+
+    if decision_type == "stat":
+        encoding, data = encoders.encode_stat(
+            bucket_set,
+            total=fetch_result.total_matching,
+            exact=True,  # totalCount is the API's own count, always exact
+        )
+    elif decision_type == "time_series":
+        encoding, data = encoders.encode_time_series(bucket_set)  # type: ignore[arg-type]
+    elif decision_type == "pie_chart":
+        encoding, data = encoders.encode_pie(bucket_set)  # type: ignore[arg-type]
+    elif decision_type == "network_graph":
+        encoding, graph = encoders.encode_network(  # type: ignore[arg-type]
+            bucket_set,
+            root_label=resolved.network_root_label,
+        )
+        return VisualizationSpec(
+            type="network_graph",
+            title=title,
+            subtitle=subtitle,
+            encoding=encoding,
+            data=graph,
+        )
+    elif decision_type in ("grouped_bar", "stacked_bar"):
+        encoding, data = encoders.encode_bar(
+            bucket_set,  # type: ignore[arg-type]
+            orientation=orientation or "vertical",
+            stack="normalize" if decision_type == "stacked_bar" else False,
+        )
+    else:
+        encoding, data = encoders.encode_bar(
+            bucket_set,  # type: ignore[arg-type]
+            orientation=orientation or "vertical",
+            with_share=resolved.intent == "composition",
+        )
+
+    return VisualizationSpec(
+        type=decision_type,  # type: ignore[arg-type]
+        title=title,
+        subtitle=subtitle,
+        encoding=encoding,
+        data=data,
+    )
+
+
+async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
+    started = time.monotonic()
+    request_id = uuid.uuid4().hex[:12]
+
+    raw_plan = await interpret(request)
+    resolved = resolve(raw_plan, request)
+
+    if not resolved.is_clinical_trials_question:
+        raise ServiceError(
+            "out_of_scope",
+            "That question does not appear to be about clinical trials.",
+            detail={"interpretation": resolved.interpretation},
+        )
+
+    cap = min(
+        request.max_records or settings.record_cap, settings.max_records_hard_cap
+    )
+    fetch_result, bucket_set, comparison = await _gather_data(client, resolved, cap)
+
+    decision = resolve_viz(
+        resolved, bucket_set, records_fetched=len(fetch_result.studies)
+    )
+    if decision.drop_series and bucket_set is not None:
+        bucket_set = bucketize.from_sample(
+            fetch_result.studies,
+            DIMENSIONS[bucket_set.dimension],
+            limit=resolved.limit,
+            citation_limit=settings.citation_limit,
+        )
+
+    coverage = _coverage(fetch_result, bucket_set, cap)
+    subtitle = titles.build_subtitle(
+        total_matching=coverage.total_matching_studies,
+        records_analyzed=coverage.records_analyzed,
+        is_sample=coverage.is_sample,
+        counts_are_exact=coverage.counts_are_exact,
+        sampling_method=coverage.sampling_method,
+        excluded_missing=coverage.excluded.missing_dimension_value,
+    )
+
+    visualization = _build_visualization(
+        resolved, bucket_set, fetch_result, decision.type, decision.orientation, subtitle
+    )
+
+    invariant = (
+        bucket_set.invariant
+        if bucket_set
+        else Invariant(
+            kind="partition",
+            statement="A single total; nothing is bucketed.",
+        )
+    )
+    if decision.type == "network_graph":
+        invariant = _graph_invariant(invariant, visualization)
+
+    notes = Notes(
+        coverage_warning=subtitle if coverage.is_sample else None,
+        counting_rule=(
+            "Each trial is counted once."
+            if invariant.kind == "partition"
+            else "A trial can be counted in several categories, so the values sum to more than the number of trials."
+        ),
+        overrides=decision.overrides,
+        general=list(_general_notes(resolved, bucket_set, coverage)),
+    )
+
+    if comparison is not None:
+        arms = ", ".join(
+            f"{name} ({total:,})" for name, total in comparison.arm_totals.items()
+        )
+        notes.general.append(f"Comparison arms and their matching trials: {arms}.")
+        if comparison.overlapping_trials:
+            notes.general.append(
+                f"{comparison.overlapping_trials:,} trials match more than one arm, so "
+                "the series overlap and the bars sum to more than the trials analyzed."
+            )
+        if comparison.empty_arms:
+            notes.general.append(
+                f"No trials matched these arms: {', '.join(comparison.empty_arms)}. "
+                "They are absent from the chart."
+            )
+
+    omitted_record = _omitted_from_graph(visualization)
+    if omitted_record and omitted_record.get("trials"):
+        notes.general.append(
+            f"{omitted_record['trials']:,} trials are not drawn on the graph. "
+            f"{omitted_record['reason']} They are reported in data.omitted."
+        )
+
+    warnings: list[str] = []
+    if coverage.total_matching_studies > BROAD_QUERY_THRESHOLD:
+        warnings.append(
+            f"This query matches {coverage.total_matching_studies:,} trials. "
+            "Consider narrowing it with a condition, drug, or date range."
+        )
+
+    answer_text = None
+    suggestions: list[str] = []
+    if decision.type == "none":
+        if resolved.intent == "lookup" and coverage.total_matching_studies > 0:
+            answer_text = (
+                "Trial-level lists are not a supported visualization. "
+                f"{coverage.total_matching_studies:,} trials match; ask to group or count them instead."
+            )
+            suggestions = [
+                "Ask for a total count.",
+                "Group the trials by phase, status, sponsor, or country.",
+            ]
+        else:
+            answer_text = "No trials match those filters."
+            suggestions = _relaxation_suggestions(resolved)
+    elif decision.type == "stat":
+        interpretation = resolved.interpretation.rstrip(".")
+        answer_text = (
+            f"{coverage.total_matching_studies:,} trials match this query "
+            f"({interpretation})."
+        )
+
+    meta = Meta(
+        query_interpretation=QueryInterpretation(
+            model_interpretation=resolved.interpretation,
+            filters_applied=_filters_applied(resolved, comparison),
+            overridden_fields=resolved.overridden_fields,
+            assumptions=resolved.assumptions,
+            plan_adjustments=resolved.adjustments,
+        ),
+        intent=resolved.intent,
+        group_by=bucket_set.dimension if bucket_set else None,
+        series_by=bucket_set.series_dimension if bucket_set else None,
+        sort=(
+            {"by": DIMENSIONS[bucket_set.dimension].sort_mode, "direction": "desc"}
+            if bucket_set
+            else None
+        ),
+        invariant=invariant,
+        coverage=coverage,
+        truncation=bucket_set.truncation if bucket_set else None,
+        visualization_needed=decision.needed,
+        visualization_rationale=decision.rationale,
+        answer_text=answer_text,
+        suggestions=suggestions,
+        warnings=warnings,
+        notes=notes,
+        data_timestamp=await client.data_timestamp(),
+        request_id=request_id,
+        elapsed_ms=int((time.monotonic() - started) * 1000),
+    )
+
+    return AnswerResponse(visualization=visualization, meta=meta)
+
+
+def _filters_applied(resolved: ResolvedPlan, comparison: Any) -> dict[str, str]:
+    """The parameters actually sent, including one entry per comparison arm.
+
+    A comparison issues a separate query per arm, so reporting the base plan's
+    parameters would show a full-text fallback that was never used for any of
+    them.
+    """
+    if comparison is None:
+        return build_query(resolved).params
+
+    from app.ctgov.compare import COMPARE_FIELD
+
+    field = COMPARE_FIELD[str(resolved.compare_by)]
+    applied: dict[str, str] = {}
+    for value in resolved.compare_values:
+        arm = resolved.model_copy(update={field: value, "compare_values": []})
+        for key, param in build_query(arm).params.items():
+            applied[f"{value} / {key}"] = param
+    return applied
+
+
+def _omitted_from_graph(visualization: VisualizationSpec) -> dict[str, Any] | None:
+    """Read the graph's omission record, whether data is still a dict or a model.
+
+    ``VisualizationSpec`` validates ``data`` into ``NetworkData``, so attribute
+    access is needed once it has been through the model; the dict branch covers
+    the spec as first assembled.
+    """
+    data = visualization.data
+    if isinstance(data, dict):
+        record = data.get("omitted")
+    else:
+        record = getattr(data, "omitted", None)
+    if record is None:
+        return None
+    return record if isinstance(record, dict) else record.model_dump()
+
+
+def _graph_invariant(invariant: Invariant, visualization: VisualizationSpec) -> Invariant:
+    """Restate the invariant in terms of edge weights.
+
+    A graph has no ``data[].value``, so the flat-array statement would send a
+    client looking for a field that does not exist. Edge weights are the
+    graph's equivalent, and any trial that could not be placed on an edge is
+    named explicitly rather than left as an unexplained shortfall.
+    """
+    omitted_record = _omitted_from_graph(visualization)
+    omitted = omitted_record.get("trials", 0) if omitted_record else 0
+
+    statement = "sum(data.edges[].weight)"
+    if omitted:
+        statement += f" + data.omitted.trials ({omitted:,})"
+    statement += (
+        " == meta.coverage.records_analyzed"
+        if invariant.kind == "partition"
+        else " >= meta.coverage.records_analyzed (a trial can span several edges)"
+    )
+
+    return Invariant(
+        kind=invariant.kind,
+        statement=statement,
+        assignments_total=invariant.assignments_total,
+        records_analyzed=invariant.records_analyzed,
+    )
+
+
+def _general_notes(
+    resolved: ResolvedPlan,
+    bucket_set: BucketSet | None,
+    coverage: Coverage,
+) -> list[str]:
+    notes: list[str] = []
+    if bucket_set is None:
+        return notes
+
+    dimension = DIMENSIONS[bucket_set.dimension]
+    notes.extend(dimension.notes)
+
+    if resolved.country and dimension.id == "country":
+        notes.append(
+            f"Grouping by country while filtered to {resolved.country}: trials are "
+            "counted for every country they run in, not only that one."
+        )
+    if resolved.sponsor:
+        notes.append(
+            "Sponsor search matches text rather than an exact organisation, so "
+            "related subsidiaries can appear."
+        )
+    if bucket_set.truncation:
+        t = bucket_set.truncation
+        notes.append(
+            f"Showing the top {t.shown} of {t.total_distinct} values; the remaining "
+            f"{t.total_distinct - t.shown} are grouped into 'Other'."
+        )
+    if coverage.excluded.missing_dimension_value:
+        notes.append(
+            f"{coverage.excluded.missing_dimension_value} trials had no "
+            f"{dimension.id} value and were excluded from the chart."
+        )
+    return notes
+
+
+def _relaxation_suggestions(resolved: ResolvedPlan) -> list[str]:
+    suggestions = []
+    if resolved.start_year or resolved.end_year:
+        suggestions.append("Widen or remove the year range.")
+    if resolved.trial_phase:
+        suggestions.append("Allow any trial phase.")
+    if resolved.overall_status:
+        suggestions.append("Allow any recruitment status.")
+    if resolved.country:
+        suggestions.append(f"Remove the {resolved.country} location filter.")
+    if resolved.sponsor:
+        suggestions.append("Remove the sponsor filter.")
+    if not suggestions:
+        suggestions.append("Try a broader condition or drug name.")
+    return suggestions

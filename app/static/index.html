@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinical Trials Visualization Demo</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #fff; --ink: #1a1a18; --muted: #6b6b66;
+    --line: #e2e2dd; --accent: #2b5f8e; --accent-soft: #dce8f2;
+    --warn-bg: #fdf4e3; --warn-line: #e8c98a; --warn-ink: #7a5a16;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0 0 24px; }
+  form { display: flex; gap: 8px; margin-bottom: 12px; }
+  input[type=text] {
+    flex: 1; padding: 11px 13px; border: 1px solid var(--line);
+    border-radius: 7px; font-size: 15px; background: var(--panel); color: inherit;
+  }
+  input[type=text]:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  button {
+    padding: 11px 18px; border: 0; border-radius: 7px; background: var(--accent);
+    color: #fff; font-size: 15px; font-weight: 500; cursor: pointer;
+  }
+  button:disabled { opacity: .55; cursor: default; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+  .examples button {
+    background: var(--panel); color: var(--accent); border: 1px solid var(--line);
+    font-size: 13px; padding: 5px 10px; font-weight: 400;
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px; margin-bottom: 16px;
+  }
+  .chart-title { font-size: 17px; font-weight: 600; margin: 0 0 2px; }
+  .chart-subtitle { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+  .banner {
+    background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink);
+    border-radius: 7px; padding: 10px 13px; font-size: 13px; margin-bottom: 16px;
+  }
+  .bars { display: flex; flex-direction: column; gap: 7px; }
+  .bar-row { display: grid; grid-template-columns: 190px 1fr 74px; align-items: center; gap: 10px; }
+  .bar-label { font-size: 13px; text-align: right; color: var(--muted); overflow-wrap: anywhere; }
+  .bar-track { background: #efefea; border-radius: 4px; height: 22px; overflow: hidden; }
+  .bar-fill { background: var(--accent); height: 100%; border-radius: 4px; min-width: 2px; }
+  .bar-fill.other, .bar-fill.missing { background: #b4b4ac; }
+  .bar-value { font-variant-numeric: tabular-nums; font-size: 13px; }
+  .bar-row.clickable { cursor: pointer; }
+  .stack { display: flex; height: 22px; border-radius: 4px; overflow: hidden; }
+  .seg { display: flex; align-items: center; justify-content: center; cursor: pointer;
+         font-size: 11px; color: #fff; min-width: 2px; }
+  .seg:hover { filter: brightness(1.15); }
+  .bar-row.clickable:hover .bar-fill { filter: brightness(1.12); }
+  .cols { display: flex; align-items: flex-end; gap: 4px; height: 220px; margin-bottom: 8px; }
+  .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: pointer; }
+  .col-fill { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
+  .col:hover .col-fill { filter: brightness(1.12); }
+  .col-label { font-size: 11px; color: var(--muted); margin-top: 6px; white-space: nowrap;
+               transform: rotate(-45deg); transform-origin: top left; height: 40px; }
+  .stat-value { font-size: 46px; font-weight: 650; letter-spacing: -0.02em; }
+  .stat-label { color: var(--muted); }
+  .pie-wrap { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+  .legend { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 7px; }
+  .meta { font-size: 13px; }
+  .meta h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em;
+             color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+  .meta dl { display: grid; grid-template-columns: max-content 1fr; gap: 5px 14px; margin: 0; }
+  .meta dt { color: var(--muted); }
+  .meta dd { margin: 0; }
+  .note { color: var(--muted); margin: 4px 0; }
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 99px; font-size: 11.5px;
+          background: var(--accent-soft); color: var(--accent); margin-right: 5px; }
+  .pill.exact { background: #e0f0e4; color: #2f6d44; }
+  .pill.approx { background: #f3eddc; color: #7a5a16; }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+  pre { background: #1e1e1c; color: #e8e8e2; padding: 14px; border-radius: 7px;
+        overflow: auto; font-size: 12px; max-height: 440px; }
+  .cites { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .cite { font-size: 12.5px; padding: 7px 0; border-bottom: 1px dotted var(--line); }
+  .cite a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .cite code { background: #f0f0ea; padding: 1px 4px; border-radius: 3px; font-size: 11.5px; }
+  .error { background: #fdeceb; border: 1px solid #e9a9a4; color: #8d2a22;
+           padding: 13px; border-radius: 7px; }
+  .spinner { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Clinical Trials Visualization API</h1>
+  <p class="lede">Ask a question. The renderer below is driven entirely by the returned
+  specification &mdash; it switches on <code>visualization.type</code> and reads
+  <code>encoding</code> to find its fields.</p>
+
+  <form id="f">
+    <input type="text" id="q" placeholder="How many pembrolizumab trials are there by phase?" autocomplete="off">
+    <button type="submit" id="go">Ask</button>
+  </form>
+
+  <div class="examples" id="examples"></div>
+  <div id="out"></div>
+</div>
+
+<script>
+const EXAMPLES = [
+  "How many pembrolizumab trials are there by phase?",
+  "What is the recruitment status of pembrolizumab trials?",
+  "How has the number of melanoma trials changed over time?",
+  "Which countries run the most CAR-T trials?",
+  "Who are the top sponsors of Alzheimer's trials?",
+  "How many trials are recruiting for lung cancer?",
+  "Show me recruiting glioblastoma trials",
+  "Industry versus academic sponsorship of diabetes trials",
+];
+
+const PALETTE = ["#2b5f8e","#c77c3c","#4f8a6b","#8d5b9c","#b4544a","#4a7fa8","#7a8b3c","#9c6b4f"];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = n => Number(n).toLocaleString();
+
+const SAMPLING_LABEL = {
+  census: "the complete result set",
+  first_n_by_api_relevance_order: "taken in the API's relevance order, which is not random",
+  stratified_by_bucket: "sampled evenly from every category",
+};
+const samplingLabel = m => SAMPLING_LABEL[m] || m.replace(/_/g, " ");
+const truncate = (s, n) => (String(s ?? "").length > n ? String(s).slice(0, n - 1) + "\u2026" : String(s ?? ""));
+
+const examplesEl = document.getElementById("examples");
+EXAMPLES.forEach(text => {
+  const b = document.createElement("button");
+  b.type = "button"; b.textContent = text;
+  b.onclick = () => { document.getElementById("q").value = text; document.getElementById("f").requestSubmit(); };
+  examplesEl.appendChild(b);
+});
+
+document.getElementById("f").onsubmit = async e => {
+  e.preventDefault();
+  const query = document.getElementById("q").value.trim()
+    || document.getElementById("q").placeholder;
+  const out = document.getElementById("out");
+  const go = document.getElementById("go");
+  go.disabled = true;
+  out.innerHTML = '<div class="panel spinner">Interpreting the question and fetching trials&hellip;</div>';
+  try {
+    const res = await fetch("/query", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({query}),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      out.innerHTML = `<div class="error"><strong>${esc(body.error?.code || res.status)}</strong><br>${
+        esc(body.error?.message || "Request failed.")}</div>`;
+      return;
+    }
+    render(out, body);
+  } catch (err) {
+    out.innerHTML = `<div class="error">${esc(err.message)}</div>`;
+  } finally {
+    go.disabled = false;
+  }
+};
+
+function render(root, body) {
+  const {visualization: v, meta: m} = body;
+  root.innerHTML = "";
+
+  const panel = document.createElement("div");
+  panel.className = "panel";
+
+  // The subtitle is part of the contract: always present, always displayed.
+  panel.innerHTML =
+    `<p class="chart-title">${esc(v.title)}</p>` +
+    `<p class="chart-subtitle">${esc(v.subtitle)}</p>`;
+
+  if (m.coverage?.is_sample) {
+    panel.insertAdjacentHTML("beforeend",
+      `<div class="banner"><strong>Sampled.</strong> ${num(m.coverage.records_analyzed)} of
+       ${num(m.coverage.total_matching_studies)} matching trials were analyzed,
+       ${esc(samplingLabel(m.coverage.sampling_method))}. Proportions are more
+       reliable than absolute counts.</div>`);
+  }
+  if (m.coverage?.counts_are_exact) {
+    panel.insertAdjacentHTML("beforeend",
+      `<div class="banner" style="background:#e9f3ec;border-color:#a9cdb5;color:#2f6d44">
+       <strong>Exact counts.</strong> Every value is a server-side count across all
+       ${num(m.coverage.total_matching_studies)} matching trials. Citations come from a
+       sample of each category.</div>`);
+  }
+  if (m.warnings?.length) {
+    panel.insertAdjacentHTML("beforeend",
+      `<div class="banner">${m.warnings.map(esc).join("<br>")}</div>`);
+  }
+
+  const body_el = document.createElement("div");
+  if (DRAW[v.type]) {
+    DRAW[v.type](body_el, v, m);
+  } else {
+    body_el.innerHTML = `<div class="banner">No renderer for
+      <code>${esc(v.type)}</code>.</div>`;
+  }
+  panel.appendChild(body_el);
+
+  const drill = document.createElement("div");
+  drill.id = "drill";
+  panel.appendChild(drill);
+
+  root.appendChild(panel);
+  root.appendChild(metaPanel(m));
+  root.appendChild(rawPanel(body));
+}
+
+function showCitations(row, meta) {
+  const el = document.getElementById("drill");
+  if (!el) return;
+  const cites = row.citations || [];
+  if (!cites.length) {
+    el.innerHTML = `<div class="cites"><em>No citations for &ldquo;${esc(row.label)}&rdquo;.</em></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="cites">
+    <strong>${esc(row.label)} &mdash; ${num(row.value)} ${esc(meta.unit || "trials")}</strong>
+    ${row.citations_truncated
+      ? `<span class="note">showing ${cites.length} of ${num(row.citation_total)} contributing trials</span>` : ""}
+    ${row.citation_basis ? `<div class="note">${esc(row.citation_basis)}</div>` : ""}
+    ${cites.map(c => `<div class="cite">
+        <a href="${esc(c.source_url)}" target="_blank" rel="noopener">${esc(c.nct_id)}</a>
+        ${c.brief_title ? " &middot; " + esc(c.brief_title) : ""}
+        <div class="note"><code>${esc(c.field_path)}</code> = <code>${esc(c.field_value)}</code></div>
+        ${c.excerpt ? `<div class="note">&ldquo;${esc(c.excerpt)}&rdquo;</div>` : ""}
+      </div>`).join("")}
+  </div>`;
+  el.scrollIntoView({behavior: "smooth", block: "nearest"});
+}
+
+const DRAW = {
+  bar_chart(el, v, m) { bars(el, v, m); },
+  grouped_bar(el, v, m) { groupedBars(el, v, m); },
+  stacked_bar(el, v, m) { stackedBars(el, v, m); },
+
+  time_series(el, v, m) {
+    const xf = v.encoding.x.field, yf = v.encoding.y.field;
+    const sf = v.encoding.series?.field;
+    const rows = v.data;
+    if (!rows.length) { el.innerHTML = `<p class="note">No data points.</p>`; return; }
+
+    // Buckets are ordinal (already zero-filled server-side), so position is by
+    // index rather than by parsed date.
+    const buckets = [...new Set(rows.map(r => r[xf]))];
+    const seriesNames = sf ? [...new Set(rows.map(r => r[sf]))] : [null];
+    const colour = Object.fromEntries(
+      seriesNames.map((s, i) => [String(s), PALETTE[i % PALETTE.length]]));
+
+    const W = 760, H = 300, padL = 56, padR = 14, padT = 14, padB = 38;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const rawMax = Math.max(...rows.map(r => r[yf]), 1);
+    const step = Math.pow(10, Math.floor(Math.log10(rawMax))) / 2 || 1;
+    const maxY = Math.ceil(rawMax / step) * step;
+
+    const xAt = i => padL + (buckets.length === 1
+      ? plotW / 2
+      : (i / (buckets.length - 1)) * plotW);
+    const yAt = val => padT + plotH - (val / maxY) * plotH;
+
+    // Horizontal gridlines with value labels.
+    const ticks = [0, 0.25, 0.5, 0.75, 1].map(f => Math.round(maxY * f));
+    const grid = [...new Set(ticks)].map(t => `
+      <line x1="${padL}" x2="${W - padR}" y1="${yAt(t)}" y2="${yAt(t)}"
+            stroke="currentColor" stroke-opacity="0.12"/>
+      <text x="${padL - 8}" y="${yAt(t) + 4}" text-anchor="end" font-size="11"
+            fill="currentColor" opacity="0.6">${num(t)}</text>`).join("");
+
+    // Thin out x labels so they never collide.
+    const everyNth = Math.ceil(buckets.length / 14);
+    const xLabels = buckets.map((b, i) => i % everyNth ? "" : `
+      <text x="${xAt(i)}" y="${H - padB + 20}" text-anchor="middle" font-size="11"
+            fill="currentColor" opacity="0.6">${esc(b)}</text>`).join("");
+
+    const lines = seriesNames.map(name => {
+      const pts = buckets.map((b, i) => {
+        const row = rows.find(r => r[xf] === b && (!sf || r[sf] === name));
+        return row ? {i, x: xAt(i), y: yAt(row[yf]), row} : null;
+      }).filter(Boolean);
+      if (!pts.length) return "";
+      const d = pts.map((p, k) => `${k ? "L" : "M"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+      const c = colour[String(name)];
+      const dots = (v.encoding.point_markers !== false ? pts : []).map(p =>
+        `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${c}"
+           data-row="${rows.indexOf(p.row)}" style="cursor:pointer">
+           <title>${esc(p.row[xf])}${name ? " \u00b7 " + esc(name) : ""}: ${
+             num(p.row[yf])}</title></circle>`).join("");
+      return `<path d="${d}" fill="none" stroke="${c}" stroke-width="2"
+                stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+    }).join("");
+
+    const legend = sf ? `<div class="legend" style="flex-direction:row;gap:14px;margin-bottom:10px">
+      ${seriesNames.map(n => `<span><i style="background:${colour[String(n)]}"></i>${
+        esc(n)}</span>`).join("")}</div>` : "";
+
+    el.innerHTML = legend + `
+      <div style="overflow-x:auto">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px"
+             role="img" aria-label="${esc(v.encoding.y.axis_title || "Trend")}">
+          ${grid}
+          <line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT + plotH}"
+                stroke="currentColor" stroke-opacity="0.25"/>
+          ${lines}${xLabels}
+        </svg>
+      </div>
+      <p class="note">${esc(v.encoding.y.axis_title || "")} by ${
+        esc(v.encoding.x.axis_title || "")} &mdash; click any point for the trials behind it.</p>`;
+
+    el.querySelectorAll("[data-row]").forEach(c =>
+      c.addEventListener("click", () => showCitations(rows[+c.dataset.row], m)));
+  },
+
+  pie_chart(el, v, m) {
+    const rows = v.data, total = v.encoding.total || 1;
+    let a0 = -Math.PI / 2;
+    const seg = rows.map((r, i) => {
+      const a1 = a0 + (r[v.encoding.theta.field] / total) * 2 * Math.PI;
+      const big = a1 - a0 > Math.PI ? 1 : 0;
+      const d = `M 100 100 L ${100 + 95 * Math.cos(a0)} ${100 + 95 * Math.sin(a0)} ` +
+                `A 95 95 0 ${big} 1 ${100 + 95 * Math.cos(a1)} ${100 + 95 * Math.sin(a1)} Z`;
+      a0 = a1;
+      return `<path d="${d}" fill="${PALETTE[i % PALETTE.length]}" data-i="${i}" style="cursor:pointer"/>`;
+    }).join("");
+    el.innerHTML = `<div class="pie-wrap">
+      <svg viewBox="0 0 200 200" width="200" height="200">${seg}</svg>
+      <div class="legend">${rows.map((r, i) =>
+        `<div data-i="${i}" style="cursor:pointer"><i style="background:${PALETTE[i % PALETTE.length]}"></i>${
+          esc(r.label)} &mdash; ${num(r.value)} (${(r.share * 100).toFixed(1)}%)</div>`).join("")}</div>
+    </div>`;
+    el.querySelectorAll("[data-i]").forEach(n =>
+      n.onclick = () => showCitations(rows[+n.dataset.i], m));
+  },
+
+  stat(el, v, m) {
+    const r = v.data[0] || {};
+    el.innerHTML = `<div class="stat-value">${num(r[v.encoding.value.field])}</div>
+      <div class="stat-label">${esc(r[v.encoding.label?.field] || v.encoding.value.unit || "")}</div>
+      ${m.answer_text ? `<p class="note">${esc(m.answer_text)}</p>` : ""}`;
+    if ((r.citations || []).length) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = "Show supporting trials";
+      b.style.cssText = "margin-top:12px;background:var(--panel);color:var(--accent);border:1px solid var(--line)";
+      b.onclick = () => showCitations(r, m);
+      el.appendChild(b);
+    }
+  },
+
+  scatter_plot(el, v, m) {
+    const xf = v.encoding.x.field, yf = v.encoding.y.field;
+    const rows = v.data;
+    if (!rows.length) { el.innerHTML = `<p class="note">No points to plot.</p>`; return; }
+
+    const W = 760, H = 340, padL = 62, padR = 16, padT = 16, padB = 44;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const logX = v.encoding.x.scale === "log", logY = v.encoding.y.scale === "log";
+    const tx = n => logX ? Math.log10(Math.max(n, 1)) : n;
+    const ty = n => logY ? Math.log10(Math.max(n, 1)) : n;
+
+    const xs = rows.map(r => tx(r[xf])), ys = rows.map(r => ty(r[yf]));
+    const x0 = Math.min(...xs), x1 = Math.max(...xs) || 1;
+    const y0 = logY ? Math.min(...ys) : 0, y1 = Math.max(...ys) || 1;
+    const sx = n => padL + ((tx(n) - x0) / ((x1 - x0) || 1)) * plotW;
+    const sy = n => padT + plotH - ((ty(n) - y0) / ((y1 - y0) || 1)) * plotH;
+
+    const axisTicks = (lo, hi, isLog, toLabel) =>
+      [0, 0.5, 1].map(f => {
+        const t = lo + (hi - lo) * f;
+        return {t, label: num(Math.round(isLog ? Math.pow(10, t) : t))};
+      });
+
+    const grid = axisTicks(y0, y1, logY).map(({t, label}) => {
+      const y = padT + plotH - ((t - y0) / ((y1 - y0) || 1)) * plotH;
+      return `<line x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"
+                stroke="currentColor" stroke-opacity="0.12"/>
+        <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="11"
+              fill="currentColor" opacity="0.6">${label}</text>`;
+    }).join("");
+
+    const xTicks = axisTicks(x0, x1, logX).map(({t, label}) => {
+      const x = padL + ((t - x0) / ((x1 - x0) || 1)) * plotW;
+      return `<text x="${x}" y="${H - padB + 20}" text-anchor="middle" font-size="11"
+                fill="currentColor" opacity="0.6">${label}</text>`;
+    }).join("");
+
+    const dots = rows.map((r, i) => `
+      <circle cx="${sx(r[xf]).toFixed(1)}" cy="${sy(r[yf]).toFixed(1)}" r="5"
+        fill="${PALETTE[0]}" fill-opacity="0.65" stroke="${PALETTE[0]}"
+        data-i="${i}" style="cursor:pointer">
+        <title>${(v.encoding.tooltip || []).map(f => esc(r[f])).join(" \u00b7 ")}
+${esc(v.encoding.x.axis_title)}: ${num(r[xf])}
+${esc(v.encoding.y.axis_title)}: ${num(r[yf])}</title></circle>`).join("");
+
+    el.innerHTML = `
+      <div style="overflow-x:auto">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px"
+             role="img" aria-label="Scatter plot">
+          ${grid}
+          <line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT + plotH}"
+                stroke="currentColor" stroke-opacity="0.25"/>
+          ${dots}${xTicks}
+          <text x="${padL + plotW / 2}" y="${H - 6}" text-anchor="middle" font-size="12"
+                fill="currentColor" opacity="0.75">${esc(v.encoding.x.axis_title || "")}${
+                  logX ? " (log scale)" : ""}</text>
+        </svg>
+      </div>
+      <p class="note">${esc(v.encoding.y.axis_title || "")} against ${
+        esc(v.encoding.x.axis_title || "")}${logY ? " (log scale)" : ""} &mdash;
+        one point per trial; click a point for its record.</p>`;
+
+    el.querySelectorAll("[data-i]").forEach(c =>
+      c.addEventListener("click", () => {
+        const r = rows[+c.dataset.i];
+        showCitations({...r, label: r.nct_id || "trial", value: r[yf]}, m);
+      }));
+  },
+
+  network_graph(el, v, m) {
+    const {node: nodeEnc, edge: edgeEnc} = v.encoding;
+    const nodes = v.data.nodes || [];
+    const edges = v.data.edges || [];
+    const omitted = v.data.omitted;
+
+    if (!nodes.length || !edges.length) {
+      el.innerHTML = `<p class="note">No connections to draw.</p>`;
+      return;
+    }
+
+    const groups = [...new Set(nodes.map(n => n[nodeEnc.group_field]))];
+    const levelField = nodeEnc.level_field;
+    const levels = [...new Set(nodes.map(n =>
+      levelField ? n[levelField] : groups.indexOf(n[nodeEnc.group_field])))].sort((a, b) => a - b);
+    const byLevel = levels.map(level =>
+      nodes.filter(n => (levelField ? n[levelField] : groups.indexOf(n[nodeEnc.group_field])) === level)
+           .sort((a, b) => b[nodeEnc.size_field] - a[nodeEnc.size_field]));
+
+    // One column per level: subject root, branch categories, then leaf nodes.
+    const rowH = 34, padY = 24;
+    const LABEL_CHARS = 30, CHAR_W = 6.2;
+    const gutter = LABEL_CHARS * CHAR_W + 20;
+    const linkW = 260;
+    const height = Math.max(...byLevel.map(c => c.length)) * rowH + padY * 2;
+    const width = gutter * 2 + linkW * Math.max(levels.length - 1, 1);
+    const maxW = Math.max(...edges.map(e => e[edgeEnc.weight_field]), 1);
+
+    // Pre-compute a position for every node id.
+    const pos = {};
+    byLevel.forEach((col, ci) => {
+      const x = levels.length > 1 ? gutter + ci * linkW : width / 2;
+      const offset = (height - col.length * rowH) / 2;
+      col.forEach((n, ri) => {
+        pos[n[nodeEnc.id_field]] = {
+          x,
+          y: offset + ri * rowH + rowH / 2,
+          node: n,
+          level: ci,
+          group: groups.indexOf(n[nodeEnc.group_field]),
+        };
+      });
+    });
+
+    const edgePaths = edges.map((e, i) => {
+      const a = pos[e[edgeEnc.source_field]], b = pos[e[edgeEnc.target_field]];
+      if (!a || !b) return "";
+      const w = 1 + (e[edgeEnc.weight_field] / maxW) * 13;
+      const mx = (a.x + b.x) / 2;
+      return `<path d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"
+        fill="none" stroke="${PALETTE[0]}" stroke-opacity="0.3" stroke-width="${w.toFixed(1)}"
+        data-edge="${i}" style="cursor:pointer"><title>${esc(a.node[nodeEnc.label_field])} to ${
+        esc(b.node[nodeEnc.label_field])}: ${num(e[edgeEnc.weight_field])}</title></path>`;
+    }).join("");
+
+    const nodeMarks = Object.values(pos).map(p => {
+      const first = p.level === 0;
+      const last = p.level === levels.length - 1;
+      const radius = first ? 9 : (last ? 5 : 7);
+      const tx = first ? p.x - 13 : (last ? p.x + 11 : p.x);
+      const ty = first || last ? p.y + 4 : p.y - 11;
+      const anchor = first ? "end" : (last ? "start" : "middle");
+      return `<g data-node="${esc(p.node[nodeEnc.id_field])}">
+        <circle cx="${p.x}" cy="${p.y}" r="${radius}" fill="${PALETTE[p.group % PALETTE.length]}"/>
+        <text x="${tx}" y="${ty}" text-anchor="${anchor}" font-size="12"
+          font-weight="${first ? "650" : "500"}" fill="currentColor"
+        >${esc(truncate(p.node[nodeEnc.label_field], LABEL_CHARS))}</text>
+        <title>${esc(p.node[nodeEnc.label_field])}: ${num(p.node[nodeEnc.size_field])}</title>
+      </g>`;
+    }).join("");
+
+    el.innerHTML = `
+      <div style="overflow-x:auto">
+        <svg viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px"
+             role="img" aria-label="Hierarchical network graph">${edgePaths}${nodeMarks}</svg>
+      </div>
+      <p class="note">${nodes.length} nodes, ${edges.length} connections &mdash;
+        arranged from root to branches to leaves. Line thickness is the trial count;
+        click a connection for the trials behind it.</p>
+      ${omitted ? `<div class="banner"><strong>${num(omitted.trials)} trials are not on this
+        graph.</strong> ${esc(omitted.reason)}</div>` : ""}`;
+
+    el.querySelectorAll("[data-edge]").forEach(pathEl => {
+      pathEl.addEventListener("click", () => {
+        const e = edges[+pathEl.dataset.edge];
+        const a = pos[e[edgeEnc.source_field]], b = pos[e[edgeEnc.target_field]];
+        showCitations({
+          ...e,
+          label: `${a?.node[nodeEnc.label_field]} to ${b?.node[nodeEnc.label_field]}`,
+          value: e[edgeEnc.weight_field],
+        }, m);
+      });
+    });
+  },
+
+  none(el, v, m) {
+    el.innerHTML = `<p>${esc(m.answer_text || "Nothing to show.")}</p>` +
+      (m.suggestions?.length
+        ? `<p class="note">Try: ${m.suggestions.map(esc).join(" &middot; ")}</p>` : "");
+  },
+};
+
+// One track per category, segments laid end to end. `stack: "normalize"`
+// makes every track full width so the reader compares share rather than
+// volume -- which is the whole point of a composition question.
+function stackedBars(el, v, m) {
+  const xf = v.encoding.x.field, yf = v.encoding.y.field;
+  const sf = v.encoding.series?.field || "series";
+  const rows = v.data;
+  const normalize = v.encoding.stack === "normalize";
+  const seriesNames = [...new Set(rows.map(r => r[sf]))];
+  const colour = Object.fromEntries(
+    seriesNames.map((s, i) => [s, PALETTE[i % PALETTE.length]]));
+  const categories = [...new Set(rows.map(r => r[xf]))];
+
+  const totals = Object.fromEntries(categories.map(c =>
+    [c, rows.filter(r => r[xf] === c).reduce((t, r) => t + r[yf], 0)]));
+  const grandMax = Math.max(...Object.values(totals), 1);
+
+  const legend = `<div class="legend" style="flex-direction:row;gap:14px;margin-bottom:14px">
+    ${seriesNames.map(s =>
+      `<span><i style="background:${colour[s]}"></i>${esc(s)}</span>`).join("")}</div>`;
+
+  const tracks = categories.map(cat => {
+    const group = rows.filter(r => r[xf] === cat);
+    const total = totals[cat] || 1;
+    // Normalized tracks fill the width; absolute tracks scale to the largest.
+    const trackPct = normalize ? 100 : (total / grandMax) * 100;
+    const segs = group.map(r => {
+      const share = r[yf] / total;
+      return `<div class="seg" data-i="${rows.indexOf(r)}"
+        style="width:${(share * 100).toFixed(2)}%;background:${colour[r[sf]]}"
+        title="${esc(cat)} \u00b7 ${esc(r[sf])}: ${num(r[yf])} (${(share * 100).toFixed(1)}%)"
+      >${share > 0.08 ? (normalize ? (share * 100).toFixed(0) + "%" : num(r[yf])) : ""}</div>`;
+    }).join("");
+    return `<div class="bar-row" style="grid-template-columns:190px 1fr 74px">
+      <div class="bar-label">${esc(cat)}</div>
+      <div class="bar-track" style="background:transparent">
+        <div class="stack" style="width:${trackPct.toFixed(2)}%">${segs}</div></div>
+      <div class="bar-value">${num(total)}</div>
+    </div>`;
+  }).join("");
+
+  el.innerHTML = legend + `<div class="bars">${tracks}</div>
+    <p class="note">${normalize ? "Share" : esc(v.encoding.y.axis_title || "")} of
+      ${esc(v.encoding.series?.legend_title || "series")} within each
+      ${esc(v.encoding.x.axis_title || "category")} &mdash;
+      click a segment for the trials behind it.</p>`;
+
+  el.querySelectorAll(".seg").forEach(n =>
+    n.onclick = () => showCitations(rows[+n.dataset.i], m));
+}
+
+// One block per category, with a coloured bar per series inside it. A flat
+// list of "Phase 1 - Pfizer" rows makes the reader do the grouping by eye,
+// which defeats the point of a comparison.
+function groupedBars(el, v, m, stacked) {
+  const xf = v.encoding.x.field, yf = v.encoding.y.field;
+  const sf = v.encoding.series?.field || "series";
+  const rows = v.data;
+  const seriesNames = [...new Set(rows.map(r => r[sf]))];
+  const colour = Object.fromEntries(
+    seriesNames.map((s, i) => [s, PALETTE[i % PALETTE.length]]));
+
+  // Preserve the server's category order rather than re-sorting.
+  const categories = [...new Set(rows.map(r => r[xf]))];
+  const max = stacked
+    ? Math.max(...categories.map(c =>
+        rows.filter(r => r[xf] === c).reduce((t, r) => t + r[yf], 0)), 1)
+    : Math.max(...rows.map(r => r[yf]), 1);
+
+  const legend = `<div class="legend" style="flex-direction:row;gap:14px;margin-bottom:14px">
+    ${seriesNames.map(s =>
+      `<span><i style="background:${colour[s]}"></i>${esc(s)}</span>`).join("")}</div>`;
+
+  const blocks = categories.map(cat => {
+    const group = rows.filter(r => r[xf] === cat);
+    const inner = group.map(r => {
+      const idx = rows.indexOf(r);
+      const pct = (r[yf] / max * 100).toFixed(1);
+      return `<div class="bar-row clickable" data-i="${idx}" style="grid-template-columns:120px 1fr 64px">
+        <div class="bar-label" style="font-size:12px">${esc(r[sf])}</div>
+        <div class="bar-track" style="height:16px">
+          <div class="bar-fill" style="width:${pct}%;background:${colour[r[sf]]}"></div></div>
+        <div class="bar-value">${num(r[yf])}</div>
+      </div>`;
+    }).join("");
+    return `<div style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${esc(cat)}</div>
+      <div class="bars">${inner}</div></div>`;
+  }).join("");
+
+  el.innerHTML = legend + blocks +
+    `<p class="note">${esc(v.encoding.y.axis_title || "")} by ${
+      esc(v.encoding.series?.legend_title || "series")} &mdash;
+      click any bar for the trials behind it.</p>`;
+
+  el.querySelectorAll(".bar-row").forEach(n =>
+    n.onclick = () => showCitations(rows[+n.dataset.i], m));
+}
+
+function bars(el, v, m, nested) {
+  const xf = v.encoding.x.field, yf = v.encoding.y.field;
+  const rows = v.data, max = Math.max(...rows.map(r => r[yf]), 1);
+  const html = `<div class="bars">${rows.map((r, i) => `
+    <div class="bar-row clickable" data-i="${i}">
+      <div class="bar-label">${esc(r[xf])}${r.series ? " &middot; " + esc(r.series) : ""}</div>
+      <div class="bar-track"><div class="bar-fill ${r.is_other ? "other" : ""} ${
+        r.is_missing ? "missing" : ""}" style="width:${(r[yf] / max * 100).toFixed(1)}%"></div></div>
+      <div class="bar-value">${num(r[yf])}${r.value_is_exact === false ? "" : ""}</div>
+    </div>`).join("")}</div>
+    <p class="note" style="margin-top:12px">${esc(v.encoding.y.axis_title || "")} &mdash;
+      click any bar for the trials behind it.</p>`;
+  if (nested) el.insertAdjacentHTML("beforeend", html); else el.innerHTML = html;
+  el.querySelectorAll(".bar-row").forEach(n =>
+    n.onclick = () => showCitations(rows[+n.dataset.i], m));
+}
+
+function metaPanel(m) {
+  const d = document.createElement("div");
+  d.className = "panel meta";
+  const c = m.coverage;
+  const pill = c.counts_are_exact
+    ? '<span class="pill exact">exact counts</span>'
+    : '<span class="pill approx">sampled counts</span>';
+  d.innerHTML = `<h3>How this was built</h3>
+    <dl>
+      <dt>Interpreted as</dt><dd>${esc(m.query_interpretation.model_interpretation)}</dd>
+      <dt>Filters sent</dt><dd><code>${esc(JSON.stringify(m.query_interpretation.filters_applied))}</code></dd>
+      <dt>Grouped by</dt><dd>${esc(m.group_by || "nothing")} ${pill}
+        <span class="pill">${esc(m.invariant.kind)}</span></dd>
+      <dt>Counting rule</dt><dd>${esc(m.notes.counting_rule || "")}</dd>
+      <dt>Why this chart</dt><dd>${esc(m.visualization_rationale)}</dd>
+      <dt>Coverage</dt><dd>${num(c.records_analyzed)} analyzed of ${num(c.total_matching_studies)}
+        matching &middot; ${c.pages_fetched} request(s) &middot; ${m.elapsed_ms} ms</dd>
+    </dl>
+    ${m.notes.overrides?.length ? `<h3 style="margin-top:16px">Chart overrides</h3>` +
+      m.notes.overrides.map(o => `<p class="note"><strong>${esc(o.requested)} &rarr; ${
+        esc(o.applied)}</strong>: ${esc(o.reason)}</p>`).join("") : ""}
+    ${m.query_interpretation.overridden_fields?.length ?
+      `<h3 style="margin-top:16px">Your fields overrode the model</h3>` +
+      m.query_interpretation.overridden_fields.map(o => `<p class="note">
+        <code>${esc(o.field)}</code>: model said ${esc(JSON.stringify(o.model_value))},
+        you specified ${esc(JSON.stringify(o.request_value))}</p>`).join("") : ""}
+    ${m.query_interpretation.assumptions?.length ? `<h3 style="margin-top:16px">Assumptions</h3>` +
+      m.query_interpretation.assumptions.map(a => `<p class="note">${esc(a)}</p>`).join("") : ""}
+    ${m.query_interpretation.plan_adjustments?.length ? `<h3 style="margin-top:16px">Plan adjustments</h3>` +
+      m.query_interpretation.plan_adjustments.map(a => `<p class="note">${esc(a)}</p>`).join("") : ""}
+    ${m.notes.general?.length ? `<h3 style="margin-top:16px">Notes</h3>` +
+      m.notes.general.map(n => `<p class="note">${esc(n)}</p>`).join("") : ""}
+    <p class="note" style="margin-top:16px">${esc(m.citation_policy)}</p>`;
+  return d;
+}
+
+function rawPanel(body) {
+  const d = document.createElement("div");
+  d.className = "panel";
+  d.innerHTML = `<details><summary>Raw response JSON</summary>
+    <pre>${esc(JSON.stringify(body, null, 2))}</pre></details>`;
+  return d;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+[project]
+name = "clinical-trials-viz"
+version = "0.1.0"
+description = "AI-enabled backend that answers natural-language questions about clinical trials with visualization specifications."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "openai>=3.42.1",
+    "pydantic>=2.14.2",
+    "pydantic-settings>=2.16.2",
+    "uvicorn>=0.54.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "live: hits the real ClinicalTrials.gov API; excluded from the default run",
+]
+addopts = "-m 'not live'"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.4.1.post1",
+    "respx>=0.23.1",
+]
