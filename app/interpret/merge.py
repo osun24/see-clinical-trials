@@ -139,8 +139,24 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
     inconsistencies are corrected and recorded in the returned plan.
     """
     adjustments: list[str] = []
+    if re.search(r"\b(?:which|what)\s+(?:(?:u\.s\.|us|united states|american)\s+)?cities\b|\bby\s+city\b", request.query, re.IGNORECASE):
+        from app.models.errors import ServiceError
+        raise ServiceError("query_not_interpretable", "City-level grouping is not supported yet. This service cannot substitute country counts for requested cities.")
 
     data = plan.model_dump()
+    if plan.search is not None:
+        search = plan.search
+        if search.start_date and search.end_date and search.start_date > search.end_date:
+            from app.models.errors import ServiceError
+            raise ServiceError("query_not_interpretable", "Search date bounds are reversed.")
+        # Keep descriptive fields synchronized with the request actually executed.
+        for target, source in (("drug_name", "intervention"), ("condition", "condition"),
+                               ("sponsor", "sponsor"), ("country", "location"),
+                               ("search_terms", "term")):
+            data[target] = getattr(search, source)
+        data["start_year"] = None
+        data["end_year"] = None
+
     data["trial_phase"] = data.get("trial_phase") or []
     data["overall_status"] = data.get("overall_status") or []
 
@@ -339,5 +355,30 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
             "the result below covers all sponsors."
         ]
 
+    if data.get("category_selection") and data.get("group_by") not in {"condition", "condition_mesh"}:
+        # Keep the selected medical entities on the primary axis so filtering,
+        # citations, and top-N all operate on those entities before any split.
+        primary = data.get("group_by")
+        secondary = data.get("series_by")
+        if secondary in {"condition", "condition_mesh"} or (primary and secondary is None):
+            data["group_by"] = secondary or "condition_mesh"
+            data["series_by"] = primary
+            adjustments.append("Made conditions the primary grouping and retained the requested breakdown as the series for category selection.")
+    if data.get("category_selection") and (
+        data.get("group_by") not in {"condition", "condition_mesh"}
+        or data.get("graph") or data.get("compare_values")
+        or data.get("intent") in {"count_total", "lookup"}
+    ):
+        from app.models.errors import ServiceError
+        raise ServiceError("query_not_interpretable", "Category selection currently requires a condition distribution without comparisons or graphs.")
+    if plan.search is not None:
+        # Apply defensive corrections to the executed search as well as its description.
+        search = plan.search.model_copy(update={
+            "intervention": data.get("drug_name"), "condition": data.get("condition"),
+            "sponsor": data.get("sponsor"), "location": data.get("country"),
+            "term": data.get("search_terms"),
+        })
+        data["search"] = search
+        adjustments.append("Direct searches use record-based aggregation; exact per-bucket fetching is disabled.")
     data["adjustments"] = adjustments
     return ResolvedPlan(**data)

@@ -184,7 +184,7 @@ def test_semantic_drug_graph_has_root_entity_and_trial_evidence_levels():
     branches = {node["id"] for node in graph["nodes"] if node["level"] == 1}
     leaves = {node["id"] for node in graph["nodes"] if node["level"] == 2}
     assert root["label"] == "Sharon Sha"
-    assert root["verification_basis"] == "overall_official_name_exact_match"
+    assert root["verification_basis"] == "full_text_query_person_association"
     assert {node["label"] for node in graph["nodes"] if node["level"] == 1} == {
         "Pembrolizumab",
         "Nivolumab",
@@ -203,3 +203,24 @@ def test_semantic_drug_graph_has_root_entity_and_trial_evidence_levels():
         and "intervention_name=" in edge["citations"][0]["field_value"]
         for edge in graph["edges"]
     )
+
+
+def test_person_associations_retain_missing_different_and_variant_officials():
+    studies = [make_study(f"NCT{i}", contactsLocationsModule=contacts,
+                          sponsorCollaboratorsModule={"leadSponsor": {"name": f"Sponsor {i}"}})
+               for i, contacts in enumerate([
+                   {"overallOfficials": [{"name": "Sharon Sha"}]},
+                   {},
+                   {"overallOfficials": [{"name": "Another Person"}]},
+                   {"overallOfficials": [{"name": "Sharon J. Sha"}]},
+               ])]
+    plan = GraphPlan(root_entity="person", root_value="Sharon Sha",
+                     levels=[GraphLevel(entity="lead_sponsor")])
+    _, graph = encode_semantic_graph(studies, plan, citation_limit=5)
+    root = next(n for n in graph["nodes"] if n["level"] == 0)
+    assert root["size"] == 4
+    assert root["verification_basis"] == "full_text_query_person_association"
+    assert len(graph["edges"]) == 4
+    assert {n["label"] for n in graph["nodes"] if n["level"] == 1} == {f"Sponsor {i}" for i in range(4)}
+    exact = next(e for e in graph["edges"] if e["citations"][0]["nct_id"] == "NCT0")
+    assert "overallOfficialName=Sharon Sha" in exact["citations"][0]["field_value"]

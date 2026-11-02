@@ -47,6 +47,7 @@ def _collect(
     studies: list[NormalizedStudy],
     dimension: DimensionDef,
     series_dimension: DimensionDef | None,
+    approved_keys: set[str] | None = None,
 ) -> tuple[dict[tuple[str, str | None], list[tuple[NormalizedStudy, Any]]], Exclusions]:
     grouped: dict[tuple[str, str | None], list[tuple[NormalizedStudy, Any]]] = {}
     exclusions = Exclusions()
@@ -59,6 +60,17 @@ def _collect(
         ):
             exclusions.missing_dimension_value += 1
             continue
+
+        if approved_keys is not None:
+            selected = [(key, raw) for key, raw in pairs if key in approved_keys]
+            exclusions.memberships_removed += sum(key != MISSING_KEY and key not in approved_keys for key, _ in pairs)
+            if not selected:
+                if any(key == MISSING_KEY for key, _ in pairs):
+                    exclusions.missing_dimension_value += 1
+                else:
+                    exclusions.no_selected_category += 1
+                continue
+            pairs = selected
 
         series_pairs: list[tuple[str | None, Any]] = [(None, None)]
         if series_dimension is not None:
@@ -111,6 +123,7 @@ def from_sample(
     series_dimension: DimensionDef | None = None,
     limit: int = 10,
     citation_limit: int = 5,
+    approved_keys: set[str] | None = None,
 ) -> BucketSet:
     """Count fetched studies locally and return ordered, cited buckets.
 
@@ -118,8 +131,8 @@ def from_sample(
     top-N collapsing all come from the primary ``DimensionDef``. When
     ``series_dimension`` is supplied, each bucket is a primary/series cell.
     """
-    grouped, exclusions = _collect(studies, dimension, series_dimension)
-    records_analyzed = len(studies) - exclusions.missing_dimension_value
+    grouped, exclusions = _collect(studies, dimension, series_dimension, approved_keys)
+    records_analyzed = len(studies) - exclusions.missing_dimension_value - exclusions.no_selected_category
 
     buckets = [
         _bucket_from_members(

@@ -69,6 +69,8 @@ def bucket_universe(dimension: DimensionDef, plan: ResolvedPlan) -> list[str]:
 
 def should_stratify(dimension: DimensionDef, plan: ResolvedPlan) -> bool:
     """Return whether exact per-bucket requests are safe and bounded."""
+    if plan.category_selection or plan.search is not None:
+        return False
     if not settings.exact_counts or not dimension.is_exact_capable:
         return False
     if plan.series_by:

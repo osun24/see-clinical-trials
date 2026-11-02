@@ -72,6 +72,9 @@ async def fetch_comparison(
 
     async def one(value: str):
         arm_plan = plan.model_copy(update={field: value, "compare_values": []})
+        if plan.search is not None:
+            slot = {"sponsor": "sponsor", "condition": "condition", "drug_name": "intervention", "country": "location"}[field]
+            arm_plan = arm_plan.model_copy(update={"search": plan.search.model_copy(update={slot: value})})
         return value, await fetch_flat(client, build_query(arm_plan), cap=per_arm_cap)
 
     results = await asyncio.gather(*(one(v) for v in arms))

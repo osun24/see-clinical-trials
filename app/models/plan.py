@@ -15,8 +15,9 @@ type. It produces intent.
 from __future__ import annotations
 
 from typing import Literal
+from datetime import date
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 #: Filter slots that can be split into side-by-side comparison arms.
 CompareBy = Literal["sponsor", "condition", "drug_name", "country"]
@@ -97,10 +98,38 @@ PlanDimension = Literal[
 ]
 
 
+class SearchRequest(BaseModel):
+    """Supported upstream search parameters; transport policy remains server-owned."""
+
+    model_config = {"extra": "forbid", "populate_by_name": True}
+    intervention: str | None = Field(default=None, alias="query.intr")
+    condition: str | None = Field(default=None, alias="query.cond")
+    sponsor: str | None = Field(default=None, alias="query.spons")
+    location: str | None = Field(default=None, alias="query.locn")
+    term: str | None = Field(default=None, alias="query.term")
+    advanced: str | None = Field(default=None, alias="filter.advanced")
+    status: str | None = Field(default=None, alias="filter.overallStatus")
+    start_date: date | None = None
+    end_date: date | None = None
+
+    @model_validator(mode="after")
+    def validate_search(self):
+        for name in ("intervention", "condition", "sponsor", "location", "term", "advanced", "status"):
+            value = getattr(self, name)
+            if value is not None and (not value.strip() or len(value) > 2000 or any(ord(c) < 32 for c in value)):
+                raise ValueError(f"Invalid search parameter: {name}")
+        if self.start_date and self.end_date and self.start_date > self.end_date:
+            raise ValueError("Search date bounds are reversed")
+        return self
+
+
 class QueryPlan(BaseModel):
     """The model's interpretation of the question. Structured Outputs schema."""
 
     model_config = {"extra": "forbid"}
+
+    search: SearchRequest | None = None
+    category_selection: str | None = None
 
     is_clinical_trials_question: bool = Field(
         description="False if the question is not about clinical trials at all."
@@ -174,6 +203,9 @@ class ResolvedPlan(BaseModel):
     """A ``QueryPlan`` after clamping and cross-field validation."""
 
     model_config = {"extra": "forbid"}
+
+    search: SearchRequest | None = None
+    category_selection: str | None = None
 
     is_clinical_trials_question: bool
     intent: Intent

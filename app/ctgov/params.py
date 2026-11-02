@@ -23,7 +23,7 @@ class CtgovQuerySpec(BaseModel):
         merged = dict(self.params)
         for key, value in extra.items():
             if key == "filter.advanced" and merged.get("filter.advanced"):
-                merged[key] = f"{merged['filter.advanced']} AND {value}"
+                merged[key] = f"({merged['filter.advanced']}) AND ({value})"
             else:
                 merged[key] = value
         return CtgovQuerySpec(params=merged, fields_mask=self.fields_mask)
@@ -44,6 +44,24 @@ def build_query(plan: ResolvedPlan) -> CtgovQuerySpec:
     together rather than competing. The free-text terms are sent as
     ``query.term`` to keep relevance ranking meaningful.
     """
+    if plan.search is not None:
+        search = plan.search
+        params = search.model_dump(by_alias=True, exclude_none=True, exclude={"start_date", "end_date"})
+        spec = CtgovQuerySpec(params=params)
+        if plan.trial_phase:
+            phases = " OR ".join(f"AREA[Phase]({p})" for p in plan.trial_phase)
+            spec = spec.with_overrides({"filter.advanced": f"({phases})"})
+        if plan.overall_status:
+            statuses = " OR ".join(f"AREA[OverallStatus]({status})" for status in plan.overall_status)
+            spec = spec.with_overrides({"filter.advanced": f"({statuses})"})
+        if search.start_date or search.end_date:
+            expression = f"AREA[StartDate]RANGE[{search.start_date or 'MIN'},{search.end_date or 'MAX'}]"
+            spec = spec.with_overrides({"filter.advanced": expression})
+        if not spec.params:
+            from app.models.errors import ServiceError
+            raise ServiceError("query_not_interpretable", "The generated search has no constraints.")
+        return spec
+
     params: dict[str, str] = {}
     advanced: list[str] = []
 

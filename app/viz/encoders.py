@@ -424,29 +424,9 @@ def _studies_for_root(
 ) -> tuple[list[NormalizedStudy], str]:
     if plan.root_entity != "person":
         return studies, "full_text_query"
-    with_officials = [
-        study
-        for study in studies
-        if extract_raw(
-            study.raw,
-            "protocolSection.contactsLocationsModule.overallOfficials[].name",
-        )
-    ]
-    if not with_officials:
-        return studies, "full_text_query_official_field_unavailable"
-    wanted = _normalise_person(plan.root_value)
-    verified = [
-        study
-        for study in with_officials
-        if any(
-            _normalise_person(str(name)) == wanted
-            for name in extract_raw(
-                study.raw,
-                "protocolSection.contactsLocationsModule.overallOfficials[].name",
-            )
-        )
-    ]
-    return verified, "overall_official_name_exact_match"
+    # Full-text retrieval defines association membership. Official-name fields
+    # are incomplete and may use variants; retain them as extra citation evidence.
+    return studies, "full_text_query_person_association"
 
 
 def _normalise_person(value: str) -> str:

@@ -189,12 +189,11 @@ every node, edge weight, label, and citation from fetched records. The model can
 invent graph contents. Supported first-level relationships are drugs, lead sponsors,
 conditions, and countries; an optional trial level supplies the evidence leaves.
 
-For a person root, records are restricted to an exact normalized
-`OverallOfficialName` match when that field is available. The required subtitle states
-the number verified and whether the upstream result was a census or relevance-ordered
-sample. If official names are unavailable, the graph explicitly identifies its weaker
-full-text-association basis. Semantic graph edge weights are per layer and therefore are
-not additive across the whole graph.
+For a person root, all fetched full-text search matches contribute to the graph.
+The subtitle states whether retrieval was complete or a relevance-ordered sample.
+Exact normalized OverallOfficialName matches supply additional citation evidence
+where available, but missing or different official names do not exclude records.
+These are full-text associations, not independently confirmed person-level links.
 
 ### Row fields
 
@@ -583,3 +582,25 @@ changes, those claims should fail loudly rather than quietly produce wrong count
 - **Durations use estimated completion dates** for trials still running, and are
   month-precision because the API mixes date precisions in the same field.
 - **No persistent cache.** The 15-minute cache is per-process.
+
+### Direct search planning and category selection
+
+The planner can now supply a typed `search` object using supported API parameter
+names (`query.intr`, `query.cond`, `query.spons`, `query.locn`, `query.term`,
+`filter.advanced`, `filter.overallStatus`) plus inclusive `start_date` and
+`end_date` bounds on study start. Transport settings remain server-controlled.
+Legacy filter plans remain supported. Direct searches currently use record-based
+aggregation rather than per-bucket exact counts. `/plan` exposes this choice.
+
+For condition distributions requesting a subset (for example, cancer types),
+`category_selection` specifies the restriction. After retrieval, a second model
+call classifies every distinct condition key before counting and top-N. It does
+not rename terms, write citations, or compute counts. Unknown, duplicate, missing,
+or uncertain decisions fail explicitly. Classification runs in batches of 100
+terms; decisions apply to fetched records, not the unfetched population.
+Comparisons and semantic graphs do not yet support category selection.
+
+Response `meta.category_selection` records the instruction and per-key decisions.
+Coverage exclusions distinguish missing values, trials with no selected category,
+and removed memberships. Classification is model-dependent; numeric aggregation
+and evidence remain deterministic. No additional validator model is used.

@@ -262,7 +262,7 @@ def test_named_person_drug_graph_uses_drug_names_and_trial_evidence(client):
     visualization = body["visualization"]
     assert visualization["type"] == "network_graph"
     assert visualization["title"] == "Sharon Sha — Associated Drugs"
-    assert "2 records whose overall-official name matches Sharon Sha" in visualization[
+    assert "all 2 trials returned by a full-text search for Sharon Sha" in visualization[
         "subtitle"
     ]
 

@@ -91,7 +91,9 @@ def build_title(plan: ResolvedPlan, bucket_set: BucketSet | None) -> str:
         qualifiers.append(" or ".join(labels))
     if plan.country:
         qualifiers.append(f"in {plan.country}")
-    if plan.start_year and plan.end_year:
+    if plan.search and (plan.search.start_date or plan.search.end_date):
+        qualifiers.append(f"{plan.search.start_date or 'earliest'} to {plan.search.end_date or 'latest'}")
+    elif plan.start_year and plan.end_year:
         qualifiers.append(f"{plan.start_year}-{plan.end_year}")
     elif plan.start_year:
         qualifiers.append(f"from {plan.start_year}")

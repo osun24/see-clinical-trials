@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from app.models.buckets import Exclusions, Invariant, Truncation
 from app.models.viz import VisualizationSpec
+from app.interpret.categories import CategorySelection
 
 
 class Coverage(BaseModel):
@@ -62,6 +63,7 @@ class Meta(BaseModel):
 
     model_config = {"extra": "forbid"}
 
+    category_selection: CategorySelection | None = None
     query_interpretation: QueryInterpretation
     intent: str
     group_by: str | None = None

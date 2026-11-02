@@ -11,6 +11,8 @@ import uuid
 from typing import Any
 
 from app.aggregate import bucketize
+from app.aggregate.keys import bucket_keys, display_label, MISSING_KEY
+from app.interpret.categories import select_categories, validate_decisions
 from app.config import settings
 from app.ctgov.client import CtgovClient
 from app.ctgov.compare import fetch_comparison, should_compare
@@ -205,13 +207,34 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
     cap = settings.record_cap
     fetch_result, bucket_set, comparison = await _gather_data(client, resolved, cap)
 
+    category_selection = None
+    approved_keys = None
+    if resolved.category_selection:
+        dimension = DIMENSIONS[resolved.group_by]
+        terms = {key: display_label(key, dimension)
+                 for study in fetch_result.studies
+                 for key, _ in bucket_keys(study.raw, dimension) if key != MISSING_KEY}
+        category_selection = await select_categories(request.query, resolved.category_selection, terms)
+        approved_keys = validate_decisions(set(terms), category_selection.decisions)
+        bucket_set = bucketize.from_sample(
+            fetch_result.studies, dimension,
+            series_dimension=DIMENSIONS.get(resolved.series_by),
+            limit=resolved.limit, citation_limit=settings.citation_limit,
+            approved_keys=approved_keys,
+        )
+
     decision = resolve_viz(
-        resolved, bucket_set, records_fetched=len(fetch_result.studies)
+        resolved, bucket_set, records_fetched=(bucket_set.records_analyzed if category_selection and bucket_set else len(fetch_result.studies))
     )
+    if category_selection and bucket_set and not bucket_set.buckets:
+        decision.type = "none"
+        decision.needed = False
+        decision.rationale = "No fetched condition terms satisfy the requested category restriction."
     if decision.drop_series and bucket_set is not None:
         bucket_set = bucketize.from_sample(
             fetch_result.studies,
             DIMENSIONS[bucket_set.dimension],
+            approved_keys=approved_keys,
             limit=resolved.limit,
             citation_limit=settings.citation_limit,
         )
@@ -229,6 +252,12 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
     visualization = _build_visualization(
         resolved, bucket_set, fetch_result, decision.type, decision.orientation, subtitle
     )
+
+    if category_selection and bucket_set:
+        visualization.subtitle += (
+            f" Category selection retained {bucket_set.records_analyzed:,} fetched trials; "
+            f"{bucket_set.exclusions.no_selected_category:,} had no qualifying term."
+        )
 
     graph_provenance_note: str | None = None
     if resolved.graph is not None and decision.type == "network_graph":
@@ -308,7 +337,7 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
                 "Group the trials by phase, status, sponsor, or country.",
             ]
         else:
-            answer_text = "No trials match those filters."
+            answer_text = ("No qualifying condition categories were found in the fetched records." if category_selection else "No trials match those filters.")
             suggestions = _relaxation_suggestions(resolved)
     elif decision.type == "stat":
         interpretation = resolved.interpretation.rstrip(".")
@@ -318,6 +347,7 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         )
 
     meta = Meta(
+        category_selection=category_selection,
         query_interpretation=QueryInterpretation(
             model_interpretation=resolved.interpretation,
             filters_applied=_filters_applied(resolved, comparison),
@@ -365,6 +395,9 @@ def _filters_applied(resolved: ResolvedPlan, comparison: Any) -> dict[str, str]:
     applied: dict[str, str] = {}
     for value in resolved.compare_values:
         arm = resolved.model_copy(update={field: value, "compare_values": []})
+        if resolved.search is not None:
+            slot = {"sponsor": "sponsor", "condition": "condition", "drug_name": "intervention", "country": "location"}[field]
+            arm = arm.model_copy(update={"search": resolved.search.model_copy(update={slot: value})})
         for key, param in build_query(arm).params.items():
             applied[f"{value} / {key}"] = param
     return applied
@@ -400,39 +433,26 @@ def _semantic_graph_provenance(
 ) -> tuple[str, str]:
     """Put person-resolution evidence next to the graph, not in hidden metadata."""
     root = _graph_root(visualization) or {}
-    verified = int(root.get("size") or 0)
     basis = root.get("verification_basis")
     subject = resolved.graph.root_value if resolved.graph is not None else "the subject"
 
-    if basis == "overall_official_name_exact_match":
+    if basis == "full_text_query_person_association":
         if coverage.is_sample:
             subtitle = (
-                f"Found {verified:,} exact overall-official name matches within a "
-                f"relevance-ordered sample of {coverage.records_fetched:,} of "
-                f"{coverage.total_matching_studies:,} full-text matches."
+                f"Based on {coverage.records_fetched:,} of {coverage.total_matching_studies:,} "
+                f"trials returned by a full-text search for {subject} "
+                "(relevance-ordered sample)."
             )
         else:
             subtitle = (
-                f"Found {verified:,} records whose overall-official name matches "
-                f"{subject}, from all {coverage.total_matching_studies:,} full-text matches."
+                f"Based on all {coverage.total_matching_studies:,} trials returned "
+                f"by a full-text search for {subject}."
             )
-        note = (
-            "The person root was verified against OverallOfficialName after normalizing "
-            "case and common credentials; all relationship nodes and edges were then "
-            "derived from those verified trial records."
+        return subtitle, (
+            "These are full-text associations, not independently confirmed person-level links. "
+            "Exact OverallOfficialName matches provide additional citation evidence where "
+            "available; missing or different official names do not exclude search results."
         )
-        return subtitle, note
-
-    if basis == "full_text_query_official_field_unavailable":
-        subtitle = (
-            f"Based on {verified:,} full-text matches for {subject}; the fetched records "
-            "did not include overall-official names for independent identity verification."
-        )
-        note = (
-            "Person identity could not be verified from OverallOfficialName. Treat these "
-            "relationships as full-text associations, not confirmed person-level links."
-        )
-        return subtitle, note
 
     return visualization.subtitle, (
         "The graph root comes from the question; nodes and edges are deterministically "

@@ -70,6 +70,8 @@ class Exclusions(BaseModel):
 
     missing_dimension_value: int = 0
     imprecise_for_granularity: int = 0
+    no_selected_category: int = 0
+    memberships_removed: int = 0
 
 
 class Truncation(BaseModel):
