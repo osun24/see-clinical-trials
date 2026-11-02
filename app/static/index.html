@@ -665,11 +665,6 @@ function metaPanel(m) {
     ${m.notes.overrides?.length ? `<h3 style="margin-top:16px">Chart overrides</h3>` +
       m.notes.overrides.map(o => `<p class="note"><strong>${esc(o.requested)} &rarr; ${
         esc(o.applied)}</strong>: ${esc(o.reason)}</p>`).join("") : ""}
-    ${m.query_interpretation.overridden_fields?.length ?
-      `<h3 style="margin-top:16px">Your fields overrode the model</h3>` +
-      m.query_interpretation.overridden_fields.map(o => `<p class="note">
-        <code>${esc(o.field)}</code>: model said ${esc(JSON.stringify(o.model_value))},
-        you specified ${esc(JSON.stringify(o.request_value))}</p>`).join("") : ""}
     ${m.query_interpretation.assumptions?.length ? `<h3 style="margin-top:16px">Assumptions</h3>` +
       m.query_interpretation.assumptions.map(a => `<p class="note">${esc(a)}</p>`).join("") : ""}
     ${m.query_interpretation.plan_adjustments?.length ? `<h3 style="margin-top:16px">Plan adjustments</h3>` +

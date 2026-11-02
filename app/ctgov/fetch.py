@@ -14,6 +14,8 @@ from app.models.study import NormalizedStudy
 
 
 class FetchResult(BaseModel):
+    """Normalized studies plus their relationship to the matching universe."""
+
     model_config = {"extra": "forbid"}
 
     studies: list[NormalizedStudy] = Field(default_factory=list)
@@ -28,6 +30,7 @@ class FetchResult(BaseModel):
 
     @property
     def is_sample(self) -> bool:
+        """Whether fewer records were returned than the upstream total."""
         return len(self.studies) < self.total_matching
 
 
@@ -40,6 +43,7 @@ def _request_params(spec: CtgovQuerySpec, page_size: int) -> dict[str, Any]:
 
 
 def parse_studies(payload: dict[str, Any]) -> list[NormalizedStudy]:
+    """Normalize valid studies from one API page, skipping records without IDs."""
     parsed = (NormalizedStudy.from_api(r) for r in payload.get("studies", []))
     return [s for s in parsed if s is not None]
 

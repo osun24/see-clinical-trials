@@ -76,6 +76,7 @@ def bucket_keys(study_raw: dict[str, Any], dimension: DimensionDef) -> list[tupl
 
 
 def display_label(key: str, dimension: DimensionDef) -> str:
+    """Convert a canonical bucket key into its reader-facing label."""
     if key == MISSING_KEY:
         return dimension.missing_label
     if dimension.id == "phase":

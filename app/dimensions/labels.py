@@ -116,6 +116,7 @@ _TRUTHY = {"true", "1", "yes", "t"}
 
 
 def label_bool(raw: object) -> str:
+    """Label a real boolean or its canonical string representation."""
     if isinstance(raw, bool):
         truthy = raw
     else:

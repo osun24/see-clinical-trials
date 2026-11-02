@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -36,16 +36,19 @@ class Coverage(BaseModel):
 
 
 class QueryInterpretation(BaseModel):
+    """Effective filters and defensive adjustments to the model plan."""
+
     model_config = {"extra": "forbid"}
 
     model_interpretation: str
     filters_applied: dict[str, str] = Field(default_factory=dict)
-    overridden_fields: list[dict[str, Any]] = Field(default_factory=list)
     assumptions: list[str] = Field(default_factory=list)
     plan_adjustments: list[str] = Field(default_factory=list)
 
 
 class Notes(BaseModel):
+    """Human-readable caveats that a client should display with the result."""
+
     model_config = {"extra": "forbid"}
 
     coverage_warning: str | None = None
@@ -55,6 +58,8 @@ class Notes(BaseModel):
 
 
 class Meta(BaseModel):
+    """Provenance, coverage, invariants, and decision details for an answer."""
+
     model_config = {"extra": "forbid"}
 
     query_interpretation: QueryInterpretation
@@ -88,6 +93,8 @@ class Meta(BaseModel):
 
 
 class AnswerResponse(BaseModel):
+    """Top-level successful response returned by ``POST /query``."""
+
     model_config = {"extra": "forbid"}
 
     visualization: VisualizationSpec

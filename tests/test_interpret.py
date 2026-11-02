@@ -1,4 +1,4 @@
-"""Plan resolution: request fields win, and clamping lives in Python."""
+"""Plan resolution: clamp and validate model output deterministically."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from openai import APITimeoutError
 from app.interpret.merge import resolve
 from app.interpret.planner import interpret
 from app.models.errors import ServiceError
-from app.models.plan import QueryPlan
+from app.models.plan import GraphLevel, GraphPlan, QueryPlan
 from app.models.request import QueryRequest
 
 
@@ -17,44 +17,6 @@ def make_plan(**kwargs) -> QueryPlan:
         is_clinical_trials_question=True, intent="distribution", interpretation="test"
     )
     return QueryPlan(**{**base, **kwargs})
-
-
-# --- precedence -----------------------------------------------------------
-
-def test_structured_fields_override_model_inference():
-    """A field the caller stated is a fact; the model's is an inference."""
-    resolved = resolve(
-        make_plan(drug_name="keytruda", start_year=2015, group_by="phase"),
-        QueryRequest(query="q", drug_name="pembrolizumab", start_year=2020),
-    )
-    assert resolved.drug_name == "pembrolizumab"
-    assert resolved.start_year == 2020
-
-    overridden = {o["field"]: o for o in resolved.overridden_fields}
-    assert overridden["drug_name"]["model_value"] == "keytruda"
-    assert overridden["start_year"]["request_value"] == 2020
-
-
-def test_explicit_group_by_overrides_the_model():
-    resolved = resolve(
-        make_plan(group_by="phase"), QueryRequest(query="q", group_by="overall_status")
-    )
-    assert resolved.group_by == "overall_status"
-    assert any(o["field"] == "group_by" for o in resolved.overridden_fields)
-
-
-def test_agreement_is_not_recorded_as_an_override():
-    resolved = resolve(
-        make_plan(drug_name="pembrolizumab"),
-        QueryRequest(query="q", drug_name="pembrolizumab"),
-    )
-    assert resolved.overridden_fields == []
-
-
-def test_request_fields_apply_when_the_model_inferred_nothing():
-    resolved = resolve(make_plan(), QueryRequest(query="q", condition="melanoma"))
-    assert resolved.condition == "melanoma"
-    assert resolved.overridden_fields == []
 
 
 # --- clamping (strict mode does not enforce numeric bounds) ----------------
@@ -118,12 +80,83 @@ def test_named_subject_sponsor_association_becomes_a_network_relationship():
 
     assert resolved.intent == "relationship"
     assert resolved.group_by == "lead_sponsor"
-    assert resolved.series_by == "sponsor_type"
+    assert resolved.series_by is None
     assert resolved.chart_hint == "network_graph"
-    assert resolved.network_root_label == "Sharon Sha"
+    assert resolved.graph is not None
+    assert resolved.graph.root_entity == "person"
+    assert resolved.graph.root_value == "Sharon Sha"
+    assert [level.entity for level in resolved.graph.levels] == ["lead_sponsor", "trial"]
     assert resolved.search_terms == "Sharon Sha"
     assert resolved.sponsor is None
-    assert any("sponsor association" in a for a in resolved.adjustments)
+    assert any("evidence-backed" in a for a in resolved.adjustments)
+
+
+def test_named_subject_drug_association_uses_actual_intervention_names():
+    resolved = resolve(
+        make_plan(intent="lookup"),
+        QueryRequest(query="What drugs are Sharon Sha associated with?"),
+    )
+
+    assert resolved.group_by == "intervention_name"
+    assert resolved.graph is not None
+    assert [level.entity for level in resolved.graph.levels] == [
+        "intervention_name",
+        "trial",
+    ]
+
+
+def test_valid_model_proposed_graph_is_constrained_and_accepted():
+    resolved = resolve(
+        make_plan(
+            graph=GraphPlan(
+                root_entity="person",
+                root_value="Sharon Sha",
+                levels=[
+                    GraphLevel(entity="intervention_name"),
+                    GraphLevel(entity="trial"),
+                ],
+                node_limit=999,
+            )
+        ),
+        QueryRequest(query="Show relationships between Sharon Sha and trial drugs"),
+    )
+
+    assert resolved.graph is not None
+    assert resolved.group_by == "intervention_name"
+    assert resolved.graph.node_limit == 60
+    assert resolved.intent == "relationship"
+
+
+def test_model_cannot_invent_a_graph_root_absent_from_the_question():
+    resolved = resolve(
+        make_plan(
+            graph=GraphPlan(
+                root_entity="person",
+                root_value="Someone Else",
+                levels=[GraphLevel(entity="lead_sponsor")],
+            )
+        ),
+        QueryRequest(query="Show relationships for Sharon Sha"),
+    )
+
+    assert resolved.graph is None
+    assert any("root was not present" in item for item in resolved.adjustments)
+
+
+def test_unsupported_model_graph_path_is_dropped():
+    resolved = resolve(
+        make_plan(
+            graph=GraphPlan(
+                root_entity="person",
+                root_value="Sharon Sha",
+                levels=[GraphLevel(entity="trial")],
+            )
+        ),
+        QueryRequest(query="Show Sharon Sha trial relationships"),
+    )
+
+    assert resolved.graph is None
+    assert any("unsupported graph path" in item for item in resolved.adjustments)
 
 
 def test_a_filterless_plan_searches_only_the_meaningful_words():
@@ -156,14 +189,6 @@ def test_first_person_questions_do_not_get_an_invented_sponsor():
     assert resolved.sponsor is None
     assert any("cannot identify" in a for a in resolved.adjustments)
     assert any("your own organisation" in a for a in resolved.assumptions)
-
-
-def test_an_explicit_sponsor_survives_first_person_phrasing():
-    resolved = resolve(
-        make_plan(group_by="phase", sponsor="our organisation"),
-        QueryRequest(query="How does our pipeline look?", sponsor="Pfizer"),
-    )
-    assert resolved.sponsor == "Pfizer"
 
 
 # --- planner failure modes -------------------------------------------------

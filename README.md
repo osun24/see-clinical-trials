@@ -7,6 +7,12 @@ whether a visualization is warranted and which type fits the data, and returns a
 renderable **visualization specification** in which every plotted value carries
 citations back to the trial records that produced it.
 
+If you are reading or changing the implementation, start with
+[`docs/CODEBASE.md`](docs/CODEBASE.md). It follows a request through the code,
+explains the important data contracts, and gives change recipes for the most
+common extensions. The companion [`docs/UML.md`](docs/UML.md) shows the core
+types and request sequence. This README is the API and behavior reference.
+
 ```
 POST /query  {"query": "How many pembrolizumab trials are there by phase?"}
    -> {"visualization": {type, title, subtitle, encoding, data}, "meta": {...}}
@@ -26,7 +32,7 @@ Open <http://localhost:8000> for the demo renderer, or <http://localhost:8000/do
 for the generated OpenAPI documentation.
 
 ```bash
-uv run pytest        # 166 tests, fully offline
+uv run pytest        # fully offline
 uv run pytest -m live   # 10 additional tests that hit the real API
 ```
 
@@ -56,22 +62,13 @@ every datum.
 
 ## Request schema
 
-`POST /query` and `POST /plan` take the same body. Only `query` is required.
+`POST /query` and `POST /plan` take the same body. The natural-language question
+is the complete request; the planner derives filters, grouping, and presentation
+intent from it.
 
 | Field | Type | Required | Validation | Notes |
 |---|---|---|---|---|
 | `query` | string | **yes** | 1–500 chars, not blank | The natural-language question. |
-| `drug_name` | string | no | ≤ 200 chars | Maps to `query.intr`. |
-| `condition` | string | no | ≤ 200 chars | Maps to `query.cond`. |
-| `sponsor` | string | no | ≤ 200 chars | Maps to `query.spons`. Fuzzy text match, not an exact organisation. |
-| `country` | string | no | ≤ 100 chars | Maps to `query.locn`. |
-| `trial_phase` | string[] | no | each in `EARLY_PHASE1 PHASE1 PHASE2 PHASE3 PHASE4 NA` | Case-insensitive on input. |
-| `overall_status` | string[] | no | each a valid `OverallStatus` | e.g. `["RECRUITING"]`. |
-| `start_year` | integer | no | 1990 ≤ y ≤ current+10 | Earliest trial start. |
-| `end_year` | integer | no | ≥ `start_year` | Latest trial start. |
-| `group_by` | string | no | a dimension id from `GET /dimensions` | Forces the grouping. |
-| `limit` | integer | no | 1–50 | Categories before `Other` collapsing. |
-| `max_records` | integer | no | 1–10000 | Overrides the fetch cap (default 5000). |
 
 ### Comparisons
 
@@ -93,16 +90,6 @@ reported too. A comparison always renders grouped, never stacked — stacking wo
 the difference the question asked about.
 
 Unknown fields are rejected. Validation failures return **422** `invalid_request`.
-
-**Precedence.** A structured field you supply always wins over what the model inferred,
-because you asserted it and the model guessed it. The model still *sees* your fields, so
-follow-on phrasing is interpreted relative to them. Every override is reported in
-`meta.query_interpretation.overridden_fields`.
-
-```json
-{"query": "How has this drug's trial count changed over time?",
- "drug_name": "Pembrolizumab", "start_year": 2015}
-```
 
 ---
 
@@ -182,8 +169,8 @@ The bundled demo implements all nine types: `bar_chart` and `grouped_bar` as bar
 SVG pie with a legend, `network_graph` as a labeled hierarchical SVG graph, plus `stat`
 and `none`. A test asserts every member of the type enum has a renderer branch.
 
-`network_graph` is the one non-flat shape, and it carries its own invariant because it
-has no `data[].value`:
+`network_graph` is the one non-flat shape. Ordinary two-dimension relationship graphs
+carry an edge-weight reconciliation invariant because they have no `data[].value`:
 
 ```json
 "invariant": {"kind": "multi_label",
@@ -194,6 +181,20 @@ A collapsed `Other` bucket has no second-dimension value, so there is no edge to
 on. Rather than drop those trials, the graph reports them in `data.omitted`
 (`{trials, distinct_values_collapsed, reason}`) and in `meta.notes.general`, so edge
 weights always reconcile against `records_analyzed`.
+
+Named-subject questions use a more meaningful semantic graph. The LLM proposes only the
+shape — a constrained `GraphPlan` such as person → drug → trial — while deterministic
+code validates the root against the question, queries ClinicalTrials.gov, and derives
+every node, edge weight, label, and citation from fetched records. The model cannot
+invent graph contents. Supported first-level relationships are drugs, lead sponsors,
+conditions, and countries; an optional trial level supplies the evidence leaves.
+
+For a person root, records are restricted to an exact normalized
+`OverallOfficialName` match when that field is available. The required subtitle states
+the number verified and whether the upstream result was a census or relevance-ordered
+sample. If official names are unavailable, the graph explicitly identifies its weaker
+full-text-association basis. Semantic graph edge weights are per layer and therefore are
+not additive across the whole graph.
 
 ### Row fields
 
@@ -220,7 +221,6 @@ weights always reconcile against `records_analyzed`.
 |---|---|
 | `query_interpretation.model_interpretation` | One sentence restating the question as read. |
 | `query_interpretation.filters_applied` | The exact ClinicalTrials.gov parameters sent. |
-| `query_interpretation.overridden_fields` | Where your structured fields beat the model. |
 | `query_interpretation.assumptions` | Guesses the model had to make ("recent" → 2020+). |
 | `query_interpretation.plan_adjustments` | Clamps and drops applied to the plan. |
 | `intent` | `count_total`, `distribution`, `trend`, `comparison`, `ranking`, `composition`, `relationship`, `lookup`. |
@@ -328,8 +328,8 @@ trials, melanoma 3,781, glioblastoma 2,281 — and those become **complete censu
 marginal one: a census has no sampling bias at all, whereas a 53 % relevance-ordered
 sample has bias of unknown direction. A ceiling is still necessary, because breadth is
 genuinely unbounded (`cancer` is ~124,000 trials, roughly 106 s), so broad queries
-sample and say so. Raise `max_records` up to 10,000 per request to convert a larger
-universe into a census.
+sample and say so. Operators can raise the `MAX_RECORDS` setting, up to the configured
+safety ceiling, to convert a larger universe into a census.
 
 The cap barely affects the exact-capable dimensions below, where counts come from
 `countTotal` and fetched records only supply citations. Its real effect falls on the
@@ -407,6 +407,7 @@ Ordered rules, first match wins:
 | `intent = lookup` | `none` with a suggestion to ask for a count or grouping |
 | temporal dimension, ≥ 3 buckets | `time_series` |
 | temporal dimension, exactly 2 buckets | `bar_chart` — two points cannot support a trend line |
+| validated semantic `GraphPlan` | hierarchical `network_graph`, capped at 60 evidence-backed nodes |
 | `intent = relationship`, two categorical dimensions | `network_graph` (> 60 nodes → primary-dimension `bar_chart`) |
 | `pie_chart` hint + partition + 2–6 buckets + < 40% missing | `pie_chart` |
 | two dimensions, ≤ 60 cells | `stacked_bar` if `composition`, else `grouped_bar` |
@@ -505,7 +506,9 @@ and quoting it alone would be unverifiable.
    **ignores numeric bounds** (`minimum`, `maximum`) and cannot express a constraint
    spanning two fields, so all clamping and combination validation lives here —
    including dropping a second `multi_label` axis, which would otherwise put one trial
-   in dozens of cells at once. Every change is recorded in `plan_adjustments`.
+   in dozens of cells at once. It also constrains semantic graph paths, requires the
+   proposed root to appear in the question, and clamps the graph to 60 nodes. Every
+   change is recorded in `plan_adjustments`.
 3. **`viz/resolver.py`** — the chart type, validated against the realised data.
 
 ---
@@ -513,7 +516,7 @@ and quoting it alone would be unverifiable.
 ## Testing
 
 ```bash
-uv run pytest           # 166 tests, no network, no API key
+uv run pytest           # no network, no API key
 uv run pytest -m live   # 10 tests against the real API
 ```
 
@@ -538,6 +541,7 @@ The load-bearing tests:
 | `test_top_n_keeps_n_distinct_keys_not_n_cells` | "Top 5 countries" means 5 countries. |
 | `test_collapsed_other_is_reported_not_dropped` | Graph edge weights reconcile with the trial count. |
 | `test_network_graph_invariant_describes_the_shape_it_returns` | The invariant names fields that exist. |
+| `test_named_person_drug_graph_uses_drug_names_and_trial_evidence` | A person graph uses actual drug names, verified officials, and cited trial leaves. |
 | `test_every_type_has_a_renderer` | No type silently degrades to a different chart. |
 | `test_time_series_draws_a_line_not_percentage_height_bars` | The trend chart actually renders. |
 
@@ -557,20 +561,23 @@ changes, those claims should fail loudly rather than quietly produce wrong count
   5,000-record cap avoids this entirely; a broad one (`cancer`, `diabetes`) does not.
 - **`condition` is sponsor free text**, so spelling and specificity vary.
   `condition_mesh` groups by normalised vocabulary and is usually the better choice.
-- **`intervention_name` is disabled by default** — names embed arm-specific dosing
-  ("Pembrolizumab 200mg Q3W"), making grouping unreliable.
+- **`intervention_name` is disabled for ordinary grouping** — names embed arm-specific
+  dosing ("Pembrolizumab 200mg Q3W"), making broad distributions unreliable. It is
+  allowed as a graph-only relationship entity where each value stays attached to its
+  source trial.
 - **Enrollment counts mix planned and actual figures**; the API's `EnrollmentType` is
   not yet used to separate them.
 - **`scatter_plot` is renderable but not yet produced** by the resolver: no current
   intent maps to two numeric per-trial measures, so the type exists in the schema and the
   demo renders it, but nothing emits it today.
-- **The graph layout is hierarchical, not force-directed.** Named-subject sponsor queries
-  render three labeled levels: subject root → sponsor-type branches → lead-sponsor leaves.
+- **Semantic graph paths are deliberately narrow.** They currently support subject →
+  drug/lead sponsor/condition/country → trial, rendered as labeled hierarchical levels.
+  Arbitrary LLM-proposed entity types and edges are rejected.
 - **Co-sponsorship is not available.** The sponsor leaves are lead sponsors because
   collaborator records are not currently fetched.
 - **"Our pipeline" cannot be resolved.** The service has no notion of who is asking, so a
   first-person question is answered across all sponsors with that stated in
-  `assumptions`. Pass `sponsor` explicitly to scope it.
+  `assumptions`. Name the organisation in the question to scope it.
 - **Growth rates are not a measure.** "Which countries are growing fastest?" returns
   current volume by country, not a rate of change; `measure` only supports `trial_count`.
 - **Durations use estimated completion dates** for trials still running, and are

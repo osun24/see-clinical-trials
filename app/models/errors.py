@@ -31,6 +31,8 @@ ERROR_STATUS: dict[str, tuple[int, bool]] = {
 
 
 class ErrorBody(BaseModel):
+    """Stable JSON body nested under the public ``error`` key."""
+
     model_config = {"extra": "forbid"}
 
     code: str
@@ -40,6 +42,8 @@ class ErrorBody(BaseModel):
 
 
 class ErrorResponse(BaseModel):
+    """Public error envelope shared by all endpoints."""
+
     model_config = {"extra": "forbid"}
 
     error: ErrorBody
@@ -56,13 +60,16 @@ class ServiceError(Exception):
 
     @property
     def status_code(self) -> int:
+        """HTTP status associated with this service error code."""
         return ERROR_STATUS.get(self.code, (500, False))[0]
 
     @property
     def retryable(self) -> bool:
+        """Whether retrying later may succeed without changing the request."""
         return ERROR_STATUS.get(self.code, (500, False))[1]
 
     def to_response(self) -> ErrorResponse:
+        """Convert the exception to the stable public error envelope."""
         return ErrorResponse(
             error=ErrorBody(
                 code=self.code,

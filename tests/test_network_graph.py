@@ -10,7 +10,8 @@ from __future__ import annotations
 
 from app.aggregate.bucketize import from_sample
 from app.dimensions.registry import get
-from app.viz.encoders import encode_network
+from app.models.plan import GraphLevel, GraphPlan
+from app.viz.encoders import encode_network, encode_semantic_graph
 from tests.conftest import make_study
 
 
@@ -142,32 +143,63 @@ def test_graph_edges_carry_citations(studies):
         assert all(c["nct_id"].startswith("NCT") for c in edge["citations"])
 
 
-def test_rooted_network_has_three_labeled_levels():
+def test_semantic_drug_graph_has_root_entity_and_trial_evidence_levels():
     studies = [
-        _sponsor_study("NCT1", "BigCo", "INDUSTRY"),
-        _sponsor_study("NCT2", "BigCo", "INDUSTRY"),
-        _sponsor_study("NCT3", "University", "OTHER"),
+        make_study(
+            "NCT1",
+            title="Trial One",
+            contactsLocationsModule={
+                "overallOfficials": [{"name": "Sharon Sha", "role": "PRINCIPAL_INVESTIGATOR"}]
+            },
+            armsInterventionsModule={
+                "interventions": [
+                    {"type": "DRUG", "name": "Pembrolizumab"},
+                    {"type": "BIOLOGICAL", "name": "Vaccine"},
+                ]
+            },
+        ),
+        make_study(
+            "NCT2",
+            title="Trial Two",
+            contactsLocationsModule={
+                "overallOfficials": [{"name": "Sharon Sha, MD", "role": "STUDY_CHAIR"}]
+            },
+            armsInterventionsModule={
+                "interventions": [{"type": "DRUG", "name": "Nivolumab"}]
+            },
+        ),
     ]
-    result = from_sample(
-        studies, get("lead_sponsor"), series_dimension=get("sponsor_type"), limit=10
+    plan = GraphPlan(
+        root_entity="person",
+        root_value="Sharon Sha",
+        levels=[
+            GraphLevel(entity="intervention_name"),
+            GraphLevel(entity="trial"),
+        ],
     )
-    encoding, graph = encode_network(result, root_label="Sharon Sha")
+    encoding, graph = encode_semantic_graph(studies, plan, citation_limit=5)
 
     assert encoding.node["level_field"] == "level"
     root = next(node for node in graph["nodes"] if node["level"] == 0)
     branches = {node["id"] for node in graph["nodes"] if node["level"] == 1}
     leaves = {node["id"] for node in graph["nodes"] if node["level"] == 2}
     assert root["label"] == "Sharon Sha"
+    assert root["verification_basis"] == "overall_official_name_exact_match"
     assert {node["label"] for node in graph["nodes"] if node["level"] == 1} == {
-        "Industry",
-        "Other (academic / hospital)",
+        "Pembrolizumab",
+        "Nivolumab",
     }
     assert {node["label"] for node in graph["nodes"] if node["level"] == 2} == {
-        "BigCo",
-        "University",
+        "Trial One",
+        "Trial Two",
     }
     assert all(
         (edge["source"] == root["id"] and edge["target"] in branches)
         or (edge["source"] in branches and edge["target"] in leaves)
+        for edge in graph["edges"]
+    )
+    assert all(
+        "overallOfficials[].name" in edge["citations"][0]["field_path"]
+        and "intervention_name=" in edge["citations"][0]["field_value"]
         for edge in graph["edges"]
     )

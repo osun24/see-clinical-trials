@@ -54,6 +54,8 @@ Semantics = Literal["partition", "multi_label"]
 
 @dataclass(frozen=True)
 class DimensionDef:
+    """Extraction, counting, labeling, ordering, and exact-filter policy for an axis."""
+
     id: str
     api_fields: tuple[str, ...]
     path: str
@@ -399,18 +401,26 @@ ENABLED_DIMENSIONS: tuple[str, ...] = tuple(
     d.id for d in DIMENSIONS.values() if d.enabled
 )
 
-#: Every field the client requests. One mask covering all dimensions is
-#: verified to work in a single request, so the fetch never depends on which
-#: dimension was chosen and a regroup needs no refetch.
+#: Fields used to verify named-person roots in semantic relationship graphs.
+GRAPH_API_FIELDS: tuple[str, ...] = (
+    "OverallOfficialName",
+    "OverallOfficialAffiliation",
+    "OverallOfficialRole",
+)
+
+#: Every field the client requests. One mask covers dimensions and graph
+#: evidence, so the fetch never depends on which view was chosen.
 ALL_API_FIELDS: tuple[str, ...] = tuple(
     dict.fromkeys(
         ("NCTId", "BriefTitle")
         + tuple(f for d in DIMENSIONS.values() for f in d.api_fields)
+        + GRAPH_API_FIELDS
     )
 )
 
 
 def get(dimension_id: str) -> DimensionDef:
+    """Return a dimension definition or raise a descriptive ``KeyError``."""
     try:
         return DIMENSIONS[dimension_id]
     except KeyError:

@@ -34,16 +34,20 @@ def _bin(value: object, bins: list[tuple[int, int | None, str]]) -> str | None:
 
 
 def bin_enrollment(value: object) -> str | None:
+    """Map a non-negative enrollment count to a configured display range."""
     return _bin(value, ENROLLMENT_BINS)
 
 
 def bin_duration_months(value: object) -> str | None:
+    """Map a non-negative duration in months to a display range."""
     return _bin(value, DURATION_BINS)
 
 
 def enrollment_bin_order() -> list[str]:
+    """Return enrollment labels in ascending numeric order."""
     return [label for _, _, label in ENROLLMENT_BINS]
 
 
 def duration_bin_order() -> list[str]:
+    """Return duration labels in ascending numeric order."""
     return [label for _, _, label in DURATION_BINS]

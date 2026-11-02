@@ -107,6 +107,7 @@ async def _unhandled_handler(request: Request, exc: Exception) -> JSONResponse:
     summary="Answer a question with a visualization specification",
 )
 async def query(request: QueryRequest, http_request: Request) -> AnswerResponse:
+    """Interpret, execute, aggregate, and visualize a clinical-trials question."""
     async with CtgovClient(http_request.app.state.http) as client:
         return await answer(request, client)
 
@@ -120,6 +121,7 @@ async def query(request: QueryRequest, http_request: Request) -> AnswerResponse:
     ),
 )
 async def plan(request: QueryRequest) -> dict[str, Any]:
+    """Return the resolved plan and upstream parameters without fetching studies."""
     return await plan_only(request)
 
 
@@ -132,6 +134,7 @@ async def plan(request: QueryRequest) -> dict[str, Any]:
     ),
 )
 async def dimensions() -> dict[str, Any]:
+    """Describe every caller-selectable grouping dimension and counting rule."""
     return {
         "dimensions": describe_registry(),
         "counting_rules": {
@@ -143,6 +146,7 @@ async def dimensions() -> dict[str, Any]:
 
 @app.get("/healthz", summary="Liveness and configuration check")
 async def healthz() -> dict[str, Any]:
+    """Report process liveness and non-secret configuration state."""
     return {
         "status": "ok",
         "openai_configured": bool(settings.openai_api_key),
@@ -154,4 +158,5 @@ async def healthz() -> dict[str, Any]:
 
 @app.get("/", include_in_schema=False)
 async def demo() -> FileResponse:
+    """Serve the no-build reference renderer."""
     return FileResponse(STATIC_DIR / "index.html")

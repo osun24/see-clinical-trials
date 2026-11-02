@@ -27,6 +27,8 @@ class Citation(BaseModel):
 
 
 class Bucket(BaseModel):
+    """One counted category or primary/series cell with supporting evidence."""
+
     model_config = {"extra": "forbid"}
 
     key: str
@@ -62,6 +64,8 @@ class Invariant(BaseModel):
 
 
 class Exclusions(BaseModel):
+    """Records that could not be placed honestly on the selected axis."""
+
     model_config = {"extra": "forbid"}
 
     missing_dimension_value: int = 0
@@ -69,6 +73,8 @@ class Exclusions(BaseModel):
 
 
 class Truncation(BaseModel):
+    """Description of high-cardinality values collapsed into ``Other``."""
+
     model_config = {"extra": "forbid"}
 
     dimension: str
@@ -79,6 +85,8 @@ class Truncation(BaseModel):
 
 
 class BucketSet(BaseModel):
+    """Chart-independent aggregation result and its counting guarantees."""
+
     model_config = {"extra": "forbid"}
 
     dimension: str

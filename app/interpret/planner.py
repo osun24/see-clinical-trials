@@ -37,6 +37,7 @@ def _client() -> AsyncOpenAI:
 
 
 async def interpret(request: QueryRequest) -> QueryPlan:
+    """Ask the model for a strict intent plan and map provider failures to API errors."""
     client = _client()
 
     try:

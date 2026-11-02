@@ -38,6 +38,8 @@ MAX_ARMS = 5
 
 
 class ComparisonResult(BaseModel):
+    """Combined buckets, fetch metadata, and overlap facts for comparison arms."""
+
     model_config = {"extra": "forbid"}
 
     bucket_set: BucketSet
@@ -48,6 +50,7 @@ class ComparisonResult(BaseModel):
 
 
 def should_compare(plan: ResolvedPlan) -> bool:
+    """Return whether the plan contains a supported multi-arm comparison."""
     return bool(
         plan.compare_by
         and plan.compare_by in COMPARE_FIELD

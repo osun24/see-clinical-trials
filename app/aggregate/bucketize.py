@@ -112,6 +112,12 @@ def from_sample(
     limit: int = 10,
     citation_limit: int = 5,
 ) -> BucketSet:
+    """Count fetched studies locally and return ordered, cited buckets.
+
+    Missing-value policy, per-trial de-duplication, multi-label semantics, and
+    top-N collapsing all come from the primary ``DimensionDef``. When
+    ``series_dimension`` is supplied, each bucket is a primary/series cell.
+    """
     grouped, exclusions = _collect(studies, dimension, series_dimension)
     records_analyzed = len(studies) - exclusions.missing_dimension_value
 

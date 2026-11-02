@@ -43,6 +43,36 @@ ChartHint = Literal[
     "network_graph",
 ]
 
+GraphEntity = Literal[
+    "intervention_name",
+    "lead_sponsor",
+    "condition_mesh",
+    "country",
+    "trial",
+]
+
+
+class GraphLevel(BaseModel):
+    """One evidence-backed entity level below a graph's root."""
+
+    model_config = {"extra": "forbid"}
+
+    entity: GraphEntity
+    relationship: Literal["co_occurs_in_trial"] = "co_occurs_in_trial"
+
+
+class GraphPlan(BaseModel):
+    """A constrained semantic graph proposal; never contains generated data."""
+
+    model_config = {"extra": "forbid"}
+
+    root_entity: Literal["person", "search_subject"]
+    root_value: str
+    levels: list[GraphLevel]
+    layout: Literal["hierarchical", "force"] = "hierarchical"
+    edge_measure: Literal["trial_count"] = "trial_count"
+    node_limit: int = 30
+
 # Mirrors registry.ENABLED_DIMENSIONS. Kept as an explicit Literal because the
 # strict schema needs a closed enum at class-definition time; a registry drift
 # test keeps the two in sync.
@@ -89,6 +119,13 @@ class QueryPlan(BaseModel):
     chart_hint: ChartHint | None = Field(
         default=None,
         description="Suggested chart type. Advisory only; the server overrides it if the data shape cannot support it.",
+    )
+    graph: GraphPlan | None = Field(
+        default=None,
+        description=(
+            "Constrained entity path for relationship questions. Contains semantics only; "
+            "the server derives all nodes and edges from trial records."
+        ),
     )
     limit: int | None = Field(
         default=None, description="Requested number of categories before collapsing to 'Other'."
@@ -144,7 +181,7 @@ class ResolvedPlan(BaseModel):
     group_by: str | None = None
     series_by: str | None = None
     chart_hint: str | None = None
-    network_root_label: str | None = None
+    graph: GraphPlan | None = None
     limit: int
     search_terms: str | None = None
     drug_name: str | None = None
@@ -159,7 +196,5 @@ class ResolvedPlan(BaseModel):
     compare_values: list[str] = Field(default_factory=list)
     assumptions: list[str] = Field(default_factory=list)
 
-    #: Every clamp, drop, or override applied to the model's plan.
+    #: Every clamp or defensive correction applied to the model's plan.
     adjustments: list[str] = Field(default_factory=list)
-    #: Structured request fields that overrode a model inference.
-    overridden_fields: list[dict[str, object]] = Field(default_factory=list)

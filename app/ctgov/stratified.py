@@ -34,6 +34,8 @@ from app.models.study import NormalizedStudy
 
 
 class Stratum(BaseModel):
+    """One exact bucket count and a bounded sample of supporting studies."""
+
     model_config = {"extra": "forbid"}
 
     key: str
@@ -42,6 +44,8 @@ class Stratum(BaseModel):
 
 
 class StratifiedResult(BaseModel):
+    """Results of the independent exact-count requests for one dimension."""
+
     model_config = {"extra": "forbid"}
 
     strata: list[Stratum] = Field(default_factory=list)
@@ -50,6 +54,7 @@ class StratifiedResult(BaseModel):
 
     @property
     def counted_total(self) -> int:
+        """Sum the exact counts returned for non-empty strata."""
         return sum(s.exact_count for s in self.strata)
 
 
@@ -63,6 +68,7 @@ def bucket_universe(dimension: DimensionDef, plan: ResolvedPlan) -> list[str]:
 
 
 def should_stratify(dimension: DimensionDef, plan: ResolvedPlan) -> bool:
+    """Return whether exact per-bucket requests are safe and bounded."""
     if not settings.exact_counts or not dimension.is_exact_capable:
         return False
     if plan.series_by:

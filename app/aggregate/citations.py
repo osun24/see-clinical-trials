@@ -78,6 +78,12 @@ def build_citation(
     dimension: DimensionDef,
     raw_value: Any,
 ) -> Citation:
+    """Build evidence for one bucket membership from a study's raw payload.
+
+    Derived dimensions cite every source path. Ordinary dimensions cite their
+    configured path and include an excerpt only when it is a verbatim substring
+    of fetched text.
+    """
     if dimension.derive is not None and raw_value is not None:
         return _derived_citation(study, dimension, raw_value)
 

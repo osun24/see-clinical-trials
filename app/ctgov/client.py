@@ -50,6 +50,7 @@ _cache = _TTLCache(settings.cache_ttl_s, settings.cache_max_entries)
 
 
 def clear_cache() -> None:
+    """Clear the process-local response cache, primarily for tests."""
     _cache.clear()
 
 
@@ -138,6 +139,7 @@ class CtgovClient:
         )
 
     async def data_timestamp(self) -> str | None:
+        """Return the upstream dataset timestamp, or ``None`` if unavailable."""
         try:
             payload = await self.get_json("/version", {})
         except ServiceError:

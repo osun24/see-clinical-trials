@@ -25,6 +25,7 @@ class NormalizedStudy(BaseModel):
 
     @classmethod
     def from_api(cls, record: dict[str, Any]) -> NormalizedStudy | None:
+        """Normalize one API record, returning ``None`` when it lacks an NCT ID."""
         nct_id = extract_one(record, "protocolSection.identificationModule.nctId")
         if not nct_id:
             return None
@@ -38,4 +39,5 @@ class NormalizedStudy(BaseModel):
 
     @property
     def url(self) -> str:
+        """Canonical public ClinicalTrials.gov page for this study."""
         return f"https://clinicaltrials.gov/study/{self.nct_id}"

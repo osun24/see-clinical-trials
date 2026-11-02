@@ -1,4 +1,4 @@
-"""Clamp the model's plan and let explicit request fields win.
+"""Clamp and defensively validate the model's plan.
 
 Strict Structured Outputs guarantees enum membership and shape, but it ignores
 numeric bounds and cannot express a constraint spanning two fields. Everything
@@ -18,18 +18,6 @@ from app.models.request import QueryRequest
 
 _MIN_YEAR = 1990
 
-#: Request field -> plan field, where the request's value is authoritative.
-_OVERRIDE_MAP: dict[str, str] = {
-    "drug_name": "drug_name",
-    "condition": "condition",
-    "sponsor": "sponsor",
-    "country": "country",
-    "trial_phase": "trial_phase",
-    "overall_status": "overall_status",
-    "start_year": "start_year",
-    "end_year": "end_year",
-}
-
 
 #: Words that carry no retrieval signal. Sending them to a full-text search
 #: matches nothing, because the API matches the phrase rather than the ideas.
@@ -45,10 +33,26 @@ share size status study studies trial trials data chart graph plot
 
 _POSSESSIVE = ("our ", "my ", "we ", "us ", "ours ")
 
-_SPONSOR_ASSOCIATION = re.compile(
-    r"\b(?:what|which)\s+sponsors?\s+(?:is|are|was|were)\s+(.+?)\s+associated\s+with\b",
+_ENTITY_ASSOCIATION = re.compile(
+    r"\b(?:what|which)\s+(drugs?|medications?|interventions?|sponsors?|conditions?|countries?)"
+    r"\s+(?:is|are|was|were)\s+(.+?)\s+associated\s+with\b",
     re.IGNORECASE,
 )
+
+_ASSOCIATION_TARGETS = {
+    "drug": "intervention_name",
+    "drugs": "intervention_name",
+    "medication": "intervention_name",
+    "medications": "intervention_name",
+    "intervention": "intervention_name",
+    "interventions": "intervention_name",
+    "sponsor": "lead_sponsor",
+    "sponsors": "lead_sponsor",
+    "condition": "condition_mesh",
+    "conditions": "condition_mesh",
+    "country": "country",
+    "countries": "country",
+}
 
 
 def mentions_first_person(text: str) -> bool:
@@ -57,10 +61,65 @@ def mentions_first_person(text: str) -> bool:
     return any(f" {p}" in lowered for p in _POSSESSIVE)
 
 
-def sponsor_association_subject(text: str) -> str | None:
-    """Return the named subject in “which sponsors is X associated with?”"""
-    match = _SPONSOR_ASSOCIATION.search(text)
-    return match.group(1).strip(" .,?!;:'\"") if match else None
+def entity_association(text: str) -> tuple[str, str] | None:
+    """Return (target dimension, subject) for named association questions."""
+    match = _ENTITY_ASSOCIATION.search(text)
+    if not match:
+        return None
+    target = _ASSOCIATION_TARGETS[match.group(1).lower()]
+    subject = match.group(2).strip(" .,?!;:'\"")
+    return target, subject
+
+
+def _looks_like_person(value: str) -> bool:
+    words = [word for word in value.replace("-", " ").split() if word]
+    return 2 <= len(words) <= 5 and all(word[:1].isupper() for word in words)
+
+
+def _normalise_graph_plan(
+    data: dict, query: str, adjustments: list[str]
+) -> str | None:
+    """Validate graph semantics and return its first entity dimension."""
+    graph = data.get("graph")
+    if not isinstance(graph, dict):
+        data["graph"] = None
+        return None
+
+    root_value = str(graph.get("root_value") or "").strip()
+    levels = graph.get("levels") or []
+    entities = [level.get("entity") for level in levels if isinstance(level, dict)]
+    allowed_targets = {"intervention_name", "lead_sponsor", "condition_mesh", "country"}
+    valid_path = (
+        bool(root_value)
+        and len(entities) in (1, 2)
+        and entities[0] in allowed_targets
+        and (len(entities) == 1 or entities[1] == "trial")
+    )
+    if not valid_path:
+        adjustments.append("Dropped an unsupported graph path.")
+        data["graph"] = None
+        return None
+
+    # A graph root is a retrieval subject, not generated display copy. Requiring
+    # it to occur in the user's question prevents a plausible-looking but
+    # fabricated person or organisation from entering the upstream query.
+    if root_value.casefold() not in query.casefold():
+        adjustments.append("Dropped a graph whose root was not present in the question.")
+        data["graph"] = None
+        return None
+
+    requested_limit = int(graph.get("node_limit") or 30)
+    graph["node_limit"] = max(5, min(requested_limit, 60))
+    graph["root_value"] = root_value
+    graph["layout"] = "hierarchical" if len(entities) > 1 else graph.get("layout", "hierarchical")
+    data.update(
+        intent="relationship",
+        group_by=entities[0],
+        series_by=None,
+        chart_hint="network_graph",
+        search_terms=data.get("search_terms") or root_value,
+    )
+    return str(entities[0])
 
 
 def _salvage_search_terms(query: str) -> str | None:
@@ -74,67 +133,53 @@ def _salvage_search_terms(query: str) -> str | None:
 
 
 def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
+    """Turn model output into the validated plan that downstream code executes.
+
+    Unsupported combinations, out-of-range values, and graph/comparison
+    inconsistencies are corrected and recorded in the returned plan.
+    """
     adjustments: list[str] = []
-    overridden: list[dict[str, object]] = []
 
     data = plan.model_dump()
     data["trial_phase"] = data.get("trial_phase") or []
     data["overall_status"] = data.get("overall_status") or []
 
-    # --- explicit request fields are facts, the model's are inferences ------
-    for request_field, plan_field in _OVERRIDE_MAP.items():
-        supplied = getattr(request, request_field)
-        if supplied is None:
-            continue
-        inferred = data.get(plan_field)
-        if inferred not in (None, [], "") and inferred != supplied:
-            overridden.append(
-                {
-                    "field": plan_field,
-                    "model_value": inferred,
-                    "request_value": supplied,
-                }
-            )
-        data[plan_field] = supplied
-
-    if request.group_by:
-        if data.get("group_by") and data["group_by"] != request.group_by:
-            overridden.append(
-                {
-                    "field": "group_by",
-                    "model_value": data["group_by"],
-                    "request_value": request.group_by,
-                }
-            )
-        data["group_by"] = request.group_by
-
-    # A named-subject sponsor association is a relationship question, not a
-    # request to list trials. ClinicalTrials.gov can search the subject as free
-    # text; the graph then connects matching lead sponsors to their sponsor
-    # types. Keep explicit structured filters, but discard model-inferred slots
-    # that commonly mistake a person's name for an organisation or condition.
-    association_subject = sponsor_association_subject(request.query)
-    if association_subject and request.group_by is None:
+    # A named-subject association is a semantic graph, not a two-axis chart.
+    # The regex is a defensive correction when the model mistakes it for a
+    # lookup; the model can propose the same constrained GraphPlan directly.
+    association = entity_association(request.query)
+    if association:
+        association_target, association_subject = association
         for field in ("drug_name", "condition", "sponsor", "country"):
-            if getattr(request, field) is None:
-                data[field] = None
+            data[field] = None
         data.update(
-            intent="relationship",
-            group_by="lead_sponsor",
-            series_by="sponsor_type",
-            chart_hint="network_graph",
-            network_root_label=association_subject,
+            graph={
+                "root_entity": (
+                    "person" if _looks_like_person(association_subject) else "search_subject"
+                ),
+                "root_value": association_subject,
+                "levels": [
+                    {"entity": association_target, "relationship": "co_occurs_in_trial"},
+                    {"entity": "trial", "relationship": "co_occurs_in_trial"},
+                ],
+                "layout": "hierarchical",
+                "edge_measure": "trial_count",
+                "node_limit": 30,
+            },
             search_terms=association_subject,
         )
         adjustments.append(
-            f"Interpreted sponsor association for {association_subject!r} as a "
-            "lead-sponsor network split by sponsor type."
+            f"Interpreted association for {association_subject!r} as an evidence-backed "
+            f"{association_target} relationship graph."
         )
+
+    graph_target = _normalise_graph_plan(data, request.query, adjustments)
 
     # --- dimension sanity ---------------------------------------------------
     for field in ("group_by", "series_by"):
         value = data.get(field)
-        if value and value not in ENABLED_DIMENSIONS:
+        graph_only_dimension = field == "group_by" and value == graph_target and value in DIMENSIONS
+        if value and value not in ENABLED_DIMENSIONS and not graph_only_dimension:
             adjustments.append(f"Dropped unsupported {field} {value!r}.")
             data[field] = None
 
@@ -216,7 +261,7 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
         data["series_by"] = None
 
     # --- numeric clamping (strict mode does not enforce bounds) -------------
-    limit = request.limit or data.get("limit") or settings.top_n
+    limit = data.get("limit") or settings.top_n
     clamped_limit = max(3, min(int(limit), 25))
     if clamped_limit != limit:
         adjustments.append(f"Clamped limit from {limit} to {clamped_limit}.")
@@ -279,21 +324,20 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
     # "Our pipeline" cannot be resolved: the service has no notion of who is
     # asking. Say so rather than letting an invented sponsor string look like
     # a real filter.
-    if mentions_first_person(request.query) and not request.sponsor:
-        invented = (data.get("sponsor") or "").lower()
-        if invented and not any(ch.isupper() for ch in (data.get("sponsor") or "")[1:]):
+    if mentions_first_person(request.query):
+        inferred_sponsor = str(data.get("sponsor") or "").strip()
+        if inferred_sponsor and inferred_sponsor.casefold() not in request.query.casefold():
             adjustments.append(
-                f"Ignored the inferred sponsor {data['sponsor']!r}: the question refers to "
+                f"Ignored the inferred sponsor {inferred_sponsor!r}: the question refers to "
                 "'our'/'my' organisation, which this service cannot identify."
             )
             data["sponsor"] = None
         data.setdefault("assumptions", [])
         data["assumptions"] = list(data["assumptions"]) + [
             "This question refers to your own organisation, which the service cannot "
-            "identify. Pass `sponsor` explicitly to scope the answer to it; the result "
-            "below covers all sponsors."
+            "identify. Name the organisation in the question to scope the answer; "
+            "the result below covers all sponsors."
         ]
 
     data["adjustments"] = adjustments
-    data["overridden_fields"] = overridden
     return ResolvedPlan(**data)

@@ -6,6 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Environment-backed policy for model calls, fetching, and presentation."""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # --- OpenAI -------------------------------------------------------------
@@ -46,6 +48,7 @@ class Settings(BaseSettings):
 
     @property
     def record_cap(self) -> int:
+        """Return the configured default without exceeding the safety ceiling."""
         return min(self.max_records, self.max_records_hard_cap)
 
 

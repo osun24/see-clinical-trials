@@ -30,6 +30,8 @@ WIDE_LABEL_DIMENSIONS = {"lead_sponsor", "condition", "condition_mesh", "country
 
 @dataclass
 class VizDecision:
+    """Final chart policy decision plus any user-visible overrides."""
+
     type: str
     rationale: str
     needed: bool = True
@@ -38,6 +40,7 @@ class VizDecision:
     drop_series: bool = False
 
     def override(self, requested: str, applied: str, reason: str) -> None:
+        """Record why an advisory chart hint could not be used."""
         self.overrides.append(
             {"requested": requested, "applied": applied, "reason": reason}
         )
@@ -55,6 +58,7 @@ def resolve(
     *,
     records_fetched: int,
 ) -> VizDecision:
+    """Choose a truthful visualization from intent and realized bucket shape."""
     hint = plan.chart_hint
     dimension = DIMENSIONS.get(bucket_set.dimension) if bucket_set else None
     series_dimension = (
@@ -165,6 +169,12 @@ def resolve(
         )
 
     # 6/7. Relationship between two dimensions.
+    if plan.intent == "relationship" and plan.graph is not None:
+        return VizDecision(
+            type="network_graph",
+            rationale="The validated graph plan asks how evidence-backed entities relate through trials.",
+        )
+
     if plan.intent == "relationship" and series_dimension is not None:
         nodes = distinct_groups + distinct_series
         if nodes > MAX_GRAPH_NODES:

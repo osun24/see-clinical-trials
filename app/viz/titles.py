@@ -56,8 +56,18 @@ def _subject(plan: ResolvedPlan) -> str:
 
 
 def build_title(plan: ResolvedPlan, bucket_set: BucketSet | None) -> str:
-    if plan.network_root_label and bucket_set is not None:
-        return f"{plan.network_root_label} — Sponsor Relationships"
+    """Build a deterministic title from effective filters and dimensions."""
+    if plan.graph is not None and bucket_set is not None:
+        target = {
+            "intervention_name": "Drugs",
+            "lead_sponsor": "Sponsors",
+            "condition_mesh": "Conditions",
+            "country": "Countries",
+        }.get(
+            plan.graph.levels[0].entity,
+            plan.graph.levels[0].entity.replace("_", " ").title(),
+        )
+        return f"{plan.graph.root_value} — Associated {target}"
 
     title = _subject(plan)
 

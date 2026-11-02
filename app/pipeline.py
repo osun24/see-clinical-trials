@@ -150,10 +150,14 @@ def _build_visualization(
     elif decision_type == "pie_chart":
         encoding, data = encoders.encode_pie(bucket_set)  # type: ignore[arg-type]
     elif decision_type == "network_graph":
-        encoding, graph = encoders.encode_network(  # type: ignore[arg-type]
-            bucket_set,
-            root_label=resolved.network_root_label,
-        )
+        if resolved.graph is not None:
+            encoding, graph = encoders.encode_semantic_graph(
+                fetch_result.studies,
+                resolved.graph,
+                citation_limit=settings.citation_limit,
+            )
+        else:
+            encoding, graph = encoders.encode_network(bucket_set)  # type: ignore[arg-type]
         return VisualizationSpec(
             type="network_graph",
             title=title,
@@ -184,6 +188,7 @@ def _build_visualization(
 
 
 async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
+    """Execute the full question-to-cited-visualization pipeline."""
     started = time.monotonic()
     request_id = uuid.uuid4().hex[:12]
 
@@ -197,9 +202,7 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
             detail={"interpretation": resolved.interpretation},
         )
 
-    cap = min(
-        request.max_records or settings.record_cap, settings.max_records_hard_cap
-    )
+    cap = settings.record_cap
     fetch_result, bucket_set, comparison = await _gather_data(client, resolved, cap)
 
     decision = resolve_viz(
@@ -227,6 +230,13 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         resolved, bucket_set, fetch_result, decision.type, decision.orientation, subtitle
     )
 
+    graph_provenance_note: str | None = None
+    if resolved.graph is not None and decision.type == "network_graph":
+        subtitle, graph_provenance_note = _semantic_graph_provenance(
+            resolved, visualization, coverage
+        )
+        visualization.subtitle = subtitle
+
     invariant = (
         bucket_set.invariant
         if bucket_set
@@ -236,7 +246,11 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         )
     )
     if decision.type == "network_graph":
-        invariant = _graph_invariant(invariant, visualization)
+        invariant = (
+            _semantic_graph_invariant(visualization)
+            if resolved.graph is not None
+            else _graph_invariant(invariant, visualization)
+        )
 
     notes = Notes(
         coverage_warning=subtitle if coverage.is_sample else None,
@@ -248,6 +262,8 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         overrides=decision.overrides,
         general=list(_general_notes(resolved, bucket_set, coverage)),
     )
+    if graph_provenance_note:
+        notes.general.append(graph_provenance_note)
 
     if comparison is not None:
         arms = ", ".join(
@@ -305,7 +321,6 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         query_interpretation=QueryInterpretation(
             model_interpretation=resolved.interpretation,
             filters_applied=_filters_applied(resolved, comparison),
-            overridden_fields=resolved.overridden_fields,
             assumptions=resolved.assumptions,
             plan_adjustments=resolved.adjustments,
         ),
@@ -370,6 +385,72 @@ def _omitted_from_graph(visualization: VisualizationSpec) -> dict[str, Any] | No
     if record is None:
         return None
     return record if isinstance(record, dict) else record.model_dump()
+
+
+def _graph_root(visualization: VisualizationSpec) -> dict[str, Any] | None:
+    data = visualization.data
+    nodes = data.get("nodes", []) if isinstance(data, dict) else getattr(data, "nodes", [])
+    return next((node for node in nodes if node.get("level") == 0), None)
+
+
+def _semantic_graph_provenance(
+    resolved: ResolvedPlan,
+    visualization: VisualizationSpec,
+    coverage: Coverage,
+) -> tuple[str, str]:
+    """Put person-resolution evidence next to the graph, not in hidden metadata."""
+    root = _graph_root(visualization) or {}
+    verified = int(root.get("size") or 0)
+    basis = root.get("verification_basis")
+    subject = resolved.graph.root_value if resolved.graph is not None else "the subject"
+
+    if basis == "overall_official_name_exact_match":
+        if coverage.is_sample:
+            subtitle = (
+                f"Found {verified:,} exact overall-official name matches within a "
+                f"relevance-ordered sample of {coverage.records_fetched:,} of "
+                f"{coverage.total_matching_studies:,} full-text matches."
+            )
+        else:
+            subtitle = (
+                f"Found {verified:,} records whose overall-official name matches "
+                f"{subject}, from all {coverage.total_matching_studies:,} full-text matches."
+            )
+        note = (
+            "The person root was verified against OverallOfficialName after normalizing "
+            "case and common credentials; all relationship nodes and edges were then "
+            "derived from those verified trial records."
+        )
+        return subtitle, note
+
+    if basis == "full_text_query_official_field_unavailable":
+        subtitle = (
+            f"Based on {verified:,} full-text matches for {subject}; the fetched records "
+            "did not include overall-official names for independent identity verification."
+        )
+        note = (
+            "Person identity could not be verified from OverallOfficialName. Treat these "
+            "relationships as full-text associations, not confirmed person-level links."
+        )
+        return subtitle, note
+
+    return visualization.subtitle, (
+        "The graph root comes from the question; nodes and edges are deterministically "
+        "derived from matching trial records, not generated by the language model."
+    )
+
+
+def _semantic_graph_invariant(visualization: VisualizationSpec) -> Invariant:
+    root = _graph_root(visualization) or {}
+    verified = int(root.get("size") or 0)
+    return Invariant(
+        kind="multi_label",
+        statement=(
+            "Each edge is backed by cited trial records. Edge weights are per relationship "
+            "layer and must not be summed across levels."
+        ),
+        records_analyzed=verified,
+    )
 
 
 def _graph_invariant(invariant: Invariant, visualization: VisualizationSpec) -> Invariant:

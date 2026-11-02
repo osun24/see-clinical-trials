@@ -90,12 +90,11 @@ def test_subtitle_states_the_sampling_basis(client, payload):
     """The subtitle is the one honesty signal a frontend cannot forget."""
     sampled = {**payload, "totalCount": 3139}
     mock_ctgov(sampled)
-    # max_records is set explicitly so the assertion tests sampling disclosure
-    # rather than whichever default cap happens to be configured.
-    with patch("app.pipeline.interpret", return_value=make_plan(group_by="phase")):
-        body = client.post(
-            "/query", json={"query": "q", "max_records": 600}
-        ).json()
+    with (
+        patch("app.pipeline.settings.max_records", 600),
+        patch("app.pipeline.interpret", return_value=make_plan(group_by="phase")),
+    ):
+        body = client.post("/query", json={"query": "q"}).json()
 
     coverage = body["meta"]["coverage"]
     assert coverage["is_sample"] is True
@@ -196,10 +195,10 @@ def test_named_subject_sponsor_association_returns_network_graph(client, payload
     assert response.status_code == 200
     body = response.json()
     assert body["visualization"]["type"] == "network_graph"
-    assert body["visualization"]["title"] == "Sharon Sha — Sponsor Relationships"
+    assert body["visualization"]["title"] == "Sharon Sha — Associated Sponsors"
     assert body["meta"]["intent"] == "relationship"
     assert body["meta"]["group_by"] == "lead_sponsor"
-    assert body["meta"]["series_by"] == "sponsor_type"
+    assert body["meta"].get("series_by") is None
     assert body["meta"]["query_interpretation"]["filters_applied"] == {
         "query.term": "Sharon Sha"
     }
@@ -214,6 +213,71 @@ def test_named_subject_sponsor_association_returns_network_graph(client, payload
         (edge["source"] == root["id"] and edge["target"] in branches)
         or (edge["source"] in branches and edge["target"] in leaves)
         for edge in edges
+    )
+
+
+@respx.mock
+def test_named_person_drug_graph_uses_drug_names_and_trial_evidence(client):
+    studies = []
+    for nct_id, title, official, interventions in (
+        (
+            "NCT00000001",
+            "Trial One",
+            "Sharon Sha",
+            [
+                {"type": "DRUG", "name": "Pembrolizumab"},
+                {"type": "BIOLOGICAL", "name": "Cancer vaccine"},
+            ],
+        ),
+        (
+            "NCT00000002",
+            "Trial Two",
+            "Sharon Sha, MD",
+            [{"type": "DRUG", "name": "Nivolumab"}],
+        ),
+    ):
+        studies.append(
+            {
+                "protocolSection": {
+                    "identificationModule": {"nctId": nct_id, "briefTitle": title},
+                    "contactsLocationsModule": {
+                        "overallOfficials": [{"name": official}]
+                    },
+                    "armsInterventionsModule": {"interventions": interventions},
+                }
+            }
+        )
+    mock_ctgov({"totalCount": 2, "studies": studies})
+    misclassified = make_plan(
+        intent="lookup", group_by=None, drug_name=None, chart_hint=None
+    )
+
+    with patch("app.pipeline.interpret", return_value=misclassified):
+        response = client.post(
+            "/query", json={"query": "What drugs are Sharon Sha associated with?"}
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    visualization = body["visualization"]
+    assert visualization["type"] == "network_graph"
+    assert visualization["title"] == "Sharon Sha — Associated Drugs"
+    assert "2 records whose overall-official name matches Sharon Sha" in visualization[
+        "subtitle"
+    ]
+
+    nodes = visualization["data"]["nodes"]
+    branches = {node["label"] for node in nodes if node["level"] == 1}
+    leaves = {node["label"] for node in nodes if node["level"] == 2}
+    assert branches == {"Pembrolizumab", "Nivolumab"}
+    assert "Cancer vaccine" not in branches
+    assert leaves == {"Trial One", "Trial Two"}
+    assert all(edge["citations"] for edge in visualization["data"]["edges"])
+    assert "must not be summed across levels" in body["meta"]["invariant"][
+        "statement"
+    ]
+    assert any(
+        "OverallOfficialName" in note for note in body["meta"]["notes"]["general"]
     )
 
 
@@ -243,15 +307,26 @@ def test_unknown_field_is_rejected(client):
     assert response.status_code == 422
 
 
-def test_invalid_enum_is_rejected_with_the_allowed_values(client):
-    response = client.post("/query", json={"query": "q", "trial_phase": ["PHASE9"]})
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("drug_name", "pembrolizumab"),
+        ("condition", "melanoma"),
+        ("sponsor", "Pfizer"),
+        ("country", "Canada"),
+        ("trial_phase", ["PHASE2"]),
+        ("overall_status", ["RECRUITING"]),
+        ("start_year", 2020),
+        ("end_year", 2024),
+        ("group_by", "phase"),
+        ("limit", 5),
+        ("max_records", 900),
+    ],
+)
+def test_removed_structured_request_fields_are_rejected(client, field, value):
+    response = client.post("/query", json={"query": "q", field: value})
     assert response.status_code == 422
-    assert "PHASE1" in json.dumps(response.json())
-
-
-def test_reversed_years_are_rejected(client):
-    response = client.post("/query", json={"query": "q", "start_year": 2024, "end_year": 2020})
-    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "invalid_request"
 
 
 @respx.mock
@@ -314,6 +389,9 @@ def test_openapi_documents_the_response_schema(client):
     assert "/query" in schema["paths"]
     assert "AnswerResponse" in schema["components"]["schemas"]
     assert "Citation" in schema["components"]["schemas"]
+    request_schema = schema["components"]["schemas"]["QueryRequest"]
+    assert set(request_schema["properties"]) == {"query"}
+    assert request_schema["required"] == ["query"]
 
 
 def test_demo_page_is_served(client):
@@ -342,22 +420,6 @@ def test_a_universe_within_the_cap_is_reported_as_a_census(client, payload):
     assert coverage["coverage_ratio"] == 1.0
     assert "all" in body["visualization"]["subtitle"]
     assert body["meta"]["notes"].get("coverage_warning") is None
-
-
-@respx.mock
-def test_max_records_override_is_honoured(client, payload):
-    mock_ctgov({**payload, "totalCount": 3139})
-    with patch("app.pipeline.interpret", return_value=make_plan(group_by="phase")):
-        body = client.post("/query", json={"query": "q", "max_records": 900}).json()
-
-    coverage = body["meta"]["coverage"]
-    assert coverage["fetch_cap"] == 900
-    assert coverage["records_fetched"] <= 900
-    assert coverage["is_sample"] is True
-
-
-def test_max_records_above_the_hard_cap_is_rejected(client):
-    assert client.post("/query", json={"query": "q", "max_records": 99999}).status_code == 422
 
 
 @respx.mock

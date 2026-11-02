@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 
 from app.dimensions.registry import DIMENSIONS, ENABLED_DIMENSIONS
@@ -26,9 +25,13 @@ correctness of `intent` over the hint.
 - Put a drug or biologic in `drug_name`, a disease in `condition`, an \
 organisation in `sponsor`, a place in `country`. Use `search_terms` only for \
 concepts that fit none of those fields.
-- Treat “what/which sponsors is [named person or subject] associated with?” as \
-a relationship, not a trial lookup: put the name in `search_terms`, use \
-`group_by=lead_sponsor`, `series_by=sponsor_type`, and suggest `network_graph`.
+- For “what/which [entities] is [named person or subject] associated with?”, use \
+`intent=relationship`, put the name in `search_terms`, and supply `graph`. The \
+graph root is the named person/subject; its first level is the requested entity \
+(`intervention_name` for drugs, `lead_sponsor` for sponsors, `condition_mesh` \
+for conditions, or `country` for countries); add a final `trial` level when \
+individual trial evidence would be useful. Use `relationship=co_occurs_in_trial`, \
+`layout=hierarchical`, and `edge_measure=trial_count`. Never invent node values.
 - Set `is_clinical_trials_question` to false when the question is not about \
 clinical trials at all. Do not invent filters in that case.
 - Record anything you had to guess in `assumptions` — especially vague time \
@@ -47,6 +50,7 @@ exceed the number of trials.
 
 
 def dimension_catalog() -> str:
+    """Describe enabled dimensions for inclusion in the planner prompt."""
     lines = []
     for dim_id in ENABLED_DIMENSIONS:
         d = DIMENSIONS[dim_id]
@@ -55,19 +59,7 @@ def dimension_catalog() -> str:
 
 
 def build_messages(request: QueryRequest) -> list[dict[str, str]]:
-    supplied = request.supplied_filter_fields()
-
-    user_parts = [f"Question: {request.query}"]
-    if supplied:
-        # Given as context so follow-on phrasing ("narrow that to recruiting")
-        # is interpreted relative to them. They are re-applied authoritatively
-        # after the call regardless of what the model returns.
-        user_parts.append(
-            "Structured fields the user already supplied (these are facts, not "
-            "guesses; they will be enforced):\n" + json.dumps(supplied, indent=2)
-        )
-    if request.group_by:
-        user_parts.append(f"The user explicitly asked to group by: {request.group_by}")
+    """Build planner messages from the question and live dimension catalog."""
 
     return [
         {
@@ -79,5 +71,5 @@ def build_messages(request: QueryRequest) -> list[dict[str, str]]:
                 + f"\n\nToday's date is {datetime.now(timezone.utc).date().isoformat()}."
             ),
         },
-        {"role": "user", "content": "\n\n".join(user_parts)},
+        {"role": "user", "content": f"Question: {request.query}"},
     ]

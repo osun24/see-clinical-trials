@@ -124,6 +124,8 @@ class NetworkData(BaseModel):
 
 
 class VisualizationSpec(BaseModel):
+    """Strict renderer contract for one selected visualization type."""
+
     model_config = {"extra": "forbid"}
 
     type: VizType
