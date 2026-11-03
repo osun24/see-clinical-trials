@@ -1,7 +1,4 @@
 # Clinical Trials Visualization API
-
-## Run the application
-
 ### Requirements
 
 - Python 3.12 or newer
@@ -34,23 +31,24 @@ uv run uvicorn app.main:app --reload
 
 The service is then available at:<http://localhost:8000>
 
-##  Implementation reflection
-## Tools used
+##  Reflection
+### Tools used
 - Codex
 - Claude Code
 
-## Validating correctness
+### Validating correctness
 - Adversarial review by other models from a different provider
 - Implemented a suite of tests to ensure correctness
 - Manual review of the generated responses for critical aspects of the implementation
 
-## Design vs. adaptation
-- Started with initial high-level planning by sketching a flowchart
- - Aimed to balance flexibility for query input and need for determinism and reliability in creating the visualization
- - To prevent hallucination and excess cost, I decided to have the API request and visualization run locally with Python. 
- - To ensure flexibility of visualization and usefulness, I decided to use a LLM to interpret the query and generate a plan for the visualization, including providing fields for the API request
- - Used structured model outputs to ensure that the output remained constrained and to reduce hallucination
-![plan]("Initial high level planning.png")
+### Design vs. adaptation
+- Design: started with initial high-level planning by sketching a flowchart
+  - Aimed to balance flexibility for query input and need for determinism and reliability in creating the visualization
+  - To prevent hallucination and excess cost, I decided to have the API request and visualization run locally with Python. 
+  - To ensure flexibility of visualization and usefulness, I decided to use a LLM to interpret the query and generate a plan for the visualization, including providing fields for the API request
+  - Used structured model outputs to ensure that the output remained constrained and to reduce hallucination
+
+<img src="Initial high level planning.png" width="350" alt="Description of image">
 
 - Adapted: 
   - Code was generated according to specifications in prompt and were continually iterated and adapted upon based on testing and review
@@ -58,13 +56,13 @@ The service is then available at:<http://localhost:8000>
   - Prototyped with allowing the LLM to enrich the output based on its knowledge (e.g., classify drugs into mechanistic classes or combine synonyms) but found that this disrupted downstream visualization, so I removed it.
   - Adapted with number of trials to fetch, achieving exact counts when possible, and sampling when it would take too much time to fetch all trials.
 
-## Key design decisions and tradeoffs
+### Key design decisions and tradeoffs
 1. Used only an unstructured input query as input, reducing friction for the user. However, this relies on the LLM to flexibly interpret the query, determining the intent of the user, and generate a plan for visualization. 
 2. Used an LLM to generate fields for API request and visualization plan, but not to fetch trials or generate the visualization itself. This allows for flexibility in query input while ensuring that the output is deterministic and reliable. However, this sometimes can result in invalid fields for the API request or visualization plan, which is mitigated by validation and retry.
-3. Used deterministic Python to select the visualization type and generate the visualization itself. Certain questions cannot be best visualized as there is no downstream enrichment or interpretation of the API output.  
- - One such question is "How have the drug classes for new NSCLC trials changed over time?" requires consolidating individual drugs into mechanistic classes, which is not possible with the current API output as it is not included in clinicaltrials.gov. 
+3. Used deterministic Python to select the visualization type and generate the visualization itself. Certain questions cannot be best visualized as there is no downstream enrichment or interpretation of the API output.
+   - One such question is "How have the drug classes for new NSCLC trials changed over time?" requires consolidating individual drugs into mechanistic classes, which is not possible with the current API output as it is not included in clinicaltrials.gov. 
 
-## Future work 
+### Future work 
 1. Implement enrichment downstream to allow for richer visualization and expansion in the space of questions answerable by the visualizer.
 2. Implement more complex visualizations, such as a Sankey diagram.
 
