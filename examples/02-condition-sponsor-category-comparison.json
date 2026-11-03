@@ -1,0 +1,952 @@
+{
+  "visualization": {
+    "type": "grouped_bar",
+    "title": "Trials by Sponsor Type: neuroblastoma vs major depressive disorder vs sickle cell anemia",
+    "encoding": {
+      "x": {
+        "field": "label",
+        "type": "nominal",
+        "axis_title": "Sponsor Type",
+        "sort": "none"
+      },
+      "y": {
+        "field": "value",
+        "type": "quantitative",
+        "axis_title": "Number of Trials",
+        "unit": "trials"
+      },
+      "series": {
+        "field": "series",
+        "type": "nominal",
+        "legend_title": "Condition"
+      },
+      "orientation": "vertical",
+      "stack": false,
+      "tooltip": [
+        "label",
+        "series",
+        "value"
+      ]
+    },
+    "data": [
+      {
+        "label": "Other (academic / hospital)",
+        "value": 2687,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 200,
+        "citations": [
+          {
+            "nct_id": "NCT00151372",
+            "brief_title": "Treatment of Depressed Chronic Obstructive Pulmonary Disease Patients",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00151372"
+          },
+          {
+            "nct_id": "NCT05108701",
+            "brief_title": "Individual MBCT vs. CBT in Major Depression: A Pilot Study.",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05108701"
+          },
+          {
+            "nct_id": "NCT02998762",
+            "brief_title": "Long-Term Follow Up Study",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02998762"
+          },
+          {
+            "nct_id": "NCT06178731",
+            "brief_title": "Virtual Reality Reward Training and Transcranial Magnetic Stimulation for Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06178731"
+          },
+          {
+            "nct_id": "NCT07369557",
+            "brief_title": "Mindfulness Training During Accelerated TMS for Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT07369557"
+          }
+        ],
+        "citation_total": 2687,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 200 of 2687 trials in this bucket."
+      },
+      {
+        "label": "Industry",
+        "value": 918,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 200,
+        "citations": [
+          {
+            "nct_id": "NCT00095745",
+            "brief_title": "A Long-Term Study of Aripiprazole in Patients With Major Depressive Disorder",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00095745"
+          },
+          {
+            "nct_id": "NCT01531309",
+            "brief_title": "Pharmacokinetics of AGO178 in Participants With Liver Impairment",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01531309"
+          },
+          {
+            "nct_id": "NCT00467402",
+            "brief_title": "Efficacy, Safety and Tolerability of Agomelatine in the Prevention of Relapse of Major Depressive Disorder",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00467402"
+          },
+          {
+            "nct_id": "NCT06057012",
+            "brief_title": "A Study of BRII-296 in Adults With Severe Postpartum Depression (PPD)",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06057012"
+          },
+          {
+            "nct_id": "NCT02372799",
+            "brief_title": "Safety and Efficacy of Vilazodone in Pediatric Patients With Major Depressive Disorder (VLZ-MD-22)",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02372799"
+          }
+        ],
+        "citation_total": 918,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 200 of 918 trials in this bucket."
+      },
+      {
+        "label": "Other (academic / hospital)",
+        "value": 858,
+        "series": "sickle cell anemia",
+        "value_is_exact": true,
+        "sample_value": 200,
+        "citations": [
+          {
+            "nct_id": "NCT04817345",
+            "brief_title": "Peripheral Blood Stem Cell Collection From Patients With Sickle Cell Disease (SCD) Using Plerixafor",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04817345"
+          },
+          {
+            "nct_id": "NCT06887907",
+            "brief_title": "Phenotypic and Transcriptomic Description of Megakaryocytes in Sickle Cell Patient",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06887907"
+          },
+          {
+            "nct_id": "NCT00122980",
+            "brief_title": "Stroke With Transfusions Changing to Hydroxyurea",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00122980"
+          },
+          {
+            "nct_id": "NCT03367546",
+            "brief_title": "Haploidentical Allogeneic Hematopoietic Stem Cell Transplantation (HaploHCT) Following Reduced Intensity Conditioning (RIC) for Selected High Risk Non-Malignant Diseases",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03367546"
+          },
+          {
+            "nct_id": "NCT03240731",
+            "brief_title": "HLA Haploidentical Bone Marrow Transplant in Patients With Severe Sickle Cell Disease",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03240731"
+          }
+        ],
+        "citation_total": 858,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 200 of 858 trials in this bucket."
+      },
+      {
+        "label": "Other (academic / hospital)",
+        "value": 526,
+        "series": "neuroblastoma",
+        "value_is_exact": true,
+        "sample_value": 200,
+        "citations": [
+          {
+            "nct_id": "NCT02043899",
+            "brief_title": "A Phase I/II Study of [124I]mIBG PET/CT in Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02043899"
+          },
+          {
+            "nct_id": "NCT00790413",
+            "brief_title": "Haploidentical Stem Cell Transplantation in Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00790413"
+          },
+          {
+            "nct_id": "NCT03242603",
+            "brief_title": "Immunotherapy of Neuroblastoma Patients Using a Combination of Anti-GD2 and NK Cells",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "text_excerpt",
+            "excerpt": "Immunotherapy of Neuroblastoma Patients Using a Co…",
+            "source_url": "https://clinicaltrials.gov/study/NCT03242603"
+          },
+          {
+            "nct_id": "NCT02743429",
+            "brief_title": "Phase II Study of Monoclonal Antibody ch14.18/CHO Continuous Infusion in Patients With Primary Refractory or Relapsed Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02743429"
+          },
+          {
+            "nct_id": "NCT05302921",
+            "brief_title": "Neoadjuvant Dual Checkpoint Inhibition and Cryoablation in Relapsed/Refractory Pediatric Solid Tumors",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05302921"
+          }
+        ],
+        "citation_total": 526,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 200 of 526 trials in this bucket."
+      },
+      {
+        "label": "Industry",
+        "value": 237,
+        "series": "sickle cell anemia",
+        "value_is_exact": true,
+        "sample_value": 200,
+        "citations": [
+          {
+            "nct_id": "NCT01175083",
+            "brief_title": "Immunization of Children Between 8 Weeks and 2 Years of Age With GSK Pneumococcal Vaccine GSK1024850A",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01175083"
+          },
+          {
+            "nct_id": "NCT01522196",
+            "brief_title": "A Study of Varespladib Infusion in Subjects With Sickle Cell Disease.",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01522196"
+          },
+          {
+            "nct_id": "NCT02065869",
+            "brief_title": "Safety Study of Gene Modified Donor T-cells Following TCRαβ+ Depleted Stem Cell Transplant",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02065869"
+          },
+          {
+            "nct_id": "NCT03720626",
+            "brief_title": "Managed Access Programs for SEG101, Crizanlizumab",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03720626"
+          },
+          {
+            "nct_id": "NCT04586985",
+            "brief_title": "Safety, Tolerability and Pharmacokinetics of FTX-6058",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04586985"
+          }
+        ],
+        "citation_total": 237,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 200 of 237 trials in this bucket."
+      },
+      {
+        "label": "Other government",
+        "value": 93,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 93,
+        "citations": [
+          {
+            "nct_id": "NCT00229294",
+            "brief_title": "Fibromyalgia in Men Suffering From PTSD",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00229294"
+          },
+          {
+            "nct_id": "NCT02615405",
+            "brief_title": "Phospholipid Hypothesis of Depression: From Molecular Biology, Neuroimaging to Behaviour",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02615405"
+          },
+          {
+            "nct_id": "NCT00611052",
+            "brief_title": "Prevention of Adolescent Major Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00611052"
+          },
+          {
+            "nct_id": "NCT02830399",
+            "brief_title": "Clinical Trial on Efficacy of rTMS to Improve ECT in Treatment-Resistant Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02830399"
+          },
+          {
+            "nct_id": "NCT07500714",
+            "brief_title": "Integrating Digital Phenotypes and AI-Driven Cognitive-Behavioral Therapy: Advancing Precision Medicine in Depression Through Digital Medicine",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT07500714"
+          }
+        ],
+        "citation_total": 93,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 93 of 93 trials in this bucket."
+      },
+      {
+        "label": "NIH",
+        "value": 92,
+        "series": "sickle cell anemia",
+        "value_is_exact": true,
+        "sample_value": 92,
+        "citations": [
+          {
+            "nct_id": "NCT05213572",
+            "brief_title": "Observational Study to Deeply Phenotype Major Organs in Sickle Cell Disease After Curative Therapies",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05213572"
+          },
+          {
+            "nct_id": "NCT01783990",
+            "brief_title": "Pediatric Hydroxyurea Phase III Clinical Trial (BABY HUG) Follow-up Observational Study II Protocol",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01783990"
+          },
+          {
+            "nct_id": "NCT00890396",
+            "brief_title": "Long-Term Effects of Hydroxyurea in Children With Sickle Cell Anemia (The BABY HUG Follow-up Study)",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00890396"
+          },
+          {
+            "nct_id": "NCT00034528",
+            "brief_title": "Stem Cell Transplantation After Reduced-Dose Chemotherapy for Patients With Sickle Cell Disease or Thalassemia",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00034528"
+          },
+          {
+            "nct_id": "NCT00023296",
+            "brief_title": "Nitric Oxide and Transfusion Therapy for Sickle Cell Patients With Pulmonary Hypertension",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00023296"
+          }
+        ],
+        "citation_total": 92,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 92 of 92 trials in this bucket."
+      },
+      {
+        "label": "NIH",
+        "value": 91,
+        "series": "neuroblastoma",
+        "value_is_exact": true,
+        "sample_value": 91,
+        "citations": [
+          {
+            "nct_id": "NCT00397384",
+            "brief_title": "Erlotinib Hydrochloride and Cetuximab in Treating Patients With Advanced Gastrointestinal Cancer, Head and Neck Cancer, Non-Small Cell Lung Cancer, or Colorectal Cancer",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00397384"
+          },
+          {
+            "nct_id": "NCT06479811",
+            "brief_title": "[212Pb]VMT-Alpha-NET in Metastatic or Inoperable Somatostatin-Receptor Positive Gastrointestinal Neuroendocrine Tumors, Pheochromocytoma/Paragangliomas, Small Cell Lung, Renal Cell, and Head and Neck Cancers",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06479811"
+          },
+          {
+            "nct_id": "NCT00001565",
+            "brief_title": "Phase I and Pharmacokinetic Trial of Phenylbutyrate Given as a Continuous Infusion in Pediatric Patients With Refractory Malignancy",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00001565"
+          },
+          {
+            "nct_id": "NCT00002825",
+            "brief_title": "Docetaxel in Treating Children With Recurrent Solid Tumors",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00002825"
+          },
+          {
+            "nct_id": "NCT00101348",
+            "brief_title": "Erlotinib and Cetuximab With or Without Bevacizumab in Treating Patients With Metastatic or Unresectable Kidney, Colorectal, Head and Neck, Pancreatic, or Non-Small Cell Lung Cancer",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00101348"
+          }
+        ],
+        "citation_total": 91,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 91 of 91 trials in this bucket."
+      },
+      {
+        "label": "NIH",
+        "value": 87,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 87,
+        "citations": [
+          {
+            "nct_id": "NCT00082030",
+            "brief_title": "Function of Catecholamines in the Brain During Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00082030"
+          },
+          {
+            "nct_id": "NCT00001545",
+            "brief_title": "Evaluation of Repetitive Transcranial Magnetic Stimulation (rTMS) in the Treatment of Mood Disorders",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00001545"
+          },
+          {
+            "nct_id": "NCT00001146",
+            "brief_title": "Omega-3 Fatty Acids in the Treatment of Bipolar Disorder: A Double-Blind, Placebo-Controlled Trial",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00001146"
+          },
+          {
+            "nct_id": "NCT03289923",
+            "brief_title": "Concurrent fMRI-guided rTMS and Cognitive Therapy for the Treatment of Major Depressive Episodes",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03289923"
+          },
+          {
+            "nct_id": "NCT06705478",
+            "brief_title": "Pramipexole Versus Escitalopram to Treat Major Depressive Disorder (MDD) and Comorbid MDD With Mild Neurocognitive Disorder (MND) in Persons With HIV",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NIH",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06705478"
+          }
+        ],
+        "citation_total": 87,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 87 of 87 trials in this bucket."
+      },
+      {
+        "label": "Industry",
+        "value": 77,
+        "series": "neuroblastoma",
+        "value_is_exact": true,
+        "sample_value": 77,
+        "citations": [
+          {
+            "nct_id": "NCT05642455",
+            "brief_title": "SPEARHEAD-3 Pediatric Study",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05642455"
+          },
+          {
+            "nct_id": "NCT04853017",
+            "brief_title": "A Study of ELI-002 in Subjects With KRAS Mutated Pancreatic Ductal Adenocarcinoma (PDAC) and Other Solid Tumors",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04853017"
+          },
+          {
+            "nct_id": "NCT04023331",
+            "brief_title": "67Cu-SARTATE™ Peptide Receptor Radionuclide Therapy Administered to Pediatric Patients With High-Risk, Relapsed, Refractory Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04023331"
+          },
+          {
+            "nct_id": "NCT06047535",
+            "brief_title": "Naxitamab and Granulocyte-Macrophage Colony Stimulating Factor (GM-CSF) Combined With Isotretinoin for Maintenance Treatment of Patients With High-Risk Neuroblastoma in First Complete Response.",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06047535"
+          },
+          {
+            "nct_id": "NCT04909515",
+            "brief_title": "Naxitamab and Granulocyte-Macrophage Colony Stimulating Factor (GMCSF) and Isotretinoin for Consolidation of Patients With High-Risk Neuroblastoma in First Remission.",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDUSTRY",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04909515"
+          }
+        ],
+        "citation_total": 77,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 77 of 77 trials in this bucket."
+      },
+      {
+        "label": "Network",
+        "value": 76,
+        "series": "neuroblastoma",
+        "value_is_exact": true,
+        "sample_value": 76,
+        "citations": [
+          {
+            "nct_id": "NCT00070200",
+            "brief_title": "Induction Chemotherapy Using Cyclophosphamide and Topotecan in Treating Patients Who Are Undergoing Autologous Peripheral Stem Cell Transplantation for Newly Diagnosed or Progressive Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00070200"
+          },
+          {
+            "nct_id": "NCT00110045",
+            "brief_title": "Caspofungin Acetate in Treating Aspergillosis in Patients With Hematologic Cancer or in Patients Who Have Undergone a Stem Cell Transplant",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00110045"
+          },
+          {
+            "nct_id": "NCT01493830",
+            "brief_title": "Biomarkers in Tumor Samples From Younger Patients With Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01493830"
+          },
+          {
+            "nct_id": "NCT01154816",
+            "brief_title": "Alisertib in Treating Young Patients With Recurrent or Refractory Solid Tumors or Leukemia",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01154816"
+          },
+          {
+            "nct_id": "NCT01798004",
+            "brief_title": "Busulfan, Melphalan, and Stem Cell Transplant After Chemotherapy in Treating Patients With Newly Diagnosed High-Risk Neuroblastoma",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01798004"
+          }
+        ],
+        "citation_total": 76,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 76 of 76 trials in this bucket."
+      },
+      {
+        "label": "U.S. Federal",
+        "value": 54,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 54,
+        "citations": [
+          {
+            "nct_id": "NCT02400736",
+            "brief_title": "Supported Employment in Patient Aligned Care Teams",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "FED",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02400736"
+          },
+          {
+            "nct_id": "NCT03302611",
+            "brief_title": "Trial of Surf and Hike Therapy for Major Depressive Disorder",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "FED",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03302611"
+          },
+          {
+            "nct_id": "NCT04260607",
+            "brief_title": "Initiating Ketamine in Acutely Suicidal Patients in the Emergency Department",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "FED",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04260607"
+          },
+          {
+            "nct_id": "NCT02752724",
+            "brief_title": "Ketamine Anesthesia for Improvement of Depression in ECT",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "FED",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02752724"
+          },
+          {
+            "nct_id": "NCT00105820",
+            "brief_title": "Evaluation Study of TIDES Depression Care Quality Improvement Intervention",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "FED",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00105820"
+          }
+        ],
+        "citation_total": 54,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 54 of 54 trials in this bucket."
+      },
+      {
+        "label": "Other government",
+        "value": 15,
+        "series": "sickle cell anemia",
+        "value_is_exact": true,
+        "sample_value": 15,
+        "citations": [
+          {
+            "nct_id": "NCT06274203",
+            "brief_title": "High Dose Vitamin D Supplementation in Children With Sickle Cell Disease",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06274203"
+          },
+          {
+            "nct_id": "NCT03498105",
+            "brief_title": "Utility of the Cardiac Electrical BiomarkerDisease",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03498105"
+          },
+          {
+            "nct_id": "NCT02004808",
+            "brief_title": "Neutrophil Extracellular Traps and Sickle Cell Disease",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02004808"
+          },
+          {
+            "nct_id": "NCT01041339",
+            "brief_title": "ST Elevation in Acute Chest Pain; Could Measurement of Lipoprotein-associated Phospholipase A2 (Lp-PLA2) be Helpful to the Clinician?",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01041339"
+          },
+          {
+            "nct_id": "NCT06417411",
+            "brief_title": "LEARNER- Low dosE AspiRiN prEterm tRial (Angola)",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06417411"
+          }
+        ],
+        "citation_total": 15,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 15 of 15 trials in this bucket."
+      },
+      {
+        "label": "Network",
+        "value": 8,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 8,
+        "citations": [
+          {
+            "nct_id": "NCT04933630",
+            "brief_title": "Tracking Response to Antidepressants in Advance of Investigational Trials, Relapse Study",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04933630"
+          },
+          {
+            "nct_id": "NCT03944447",
+            "brief_title": "Outcomes Mandate National Integration With Cannabis as Medicine",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03944447"
+          },
+          {
+            "nct_id": "NCT06105762",
+            "brief_title": "Ketogenic Diet for Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06105762"
+          },
+          {
+            "nct_id": "NCT05800925",
+            "brief_title": "Triage Survey for Psychiatry Research Eligibility",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05800925"
+          },
+          {
+            "nct_id": "NCT05423405",
+            "brief_title": "The Efficacy of Acupressure Therapy on Patient With Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05423405"
+          }
+        ],
+        "citation_total": 8,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 8 of 8 trials in this bucket."
+      },
+      {
+        "label": "Network",
+        "value": 7,
+        "series": "sickle cell anemia",
+        "value_is_exact": true,
+        "sample_value": 7,
+        "citations": [
+          {
+            "nct_id": "NCT07305181",
+            "brief_title": "Prevalence of Abnormal Haemoglobin Variants in Metropolitan Chattogram, Bangladesh",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT07305181"
+          },
+          {
+            "nct_id": "NCT06820515",
+            "brief_title": "ATHNdataset Registry",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT06820515"
+          },
+          {
+            "nct_id": "NCT04398628",
+            "brief_title": "ATHN Transcends: A Natural History Study of Non-Neoplastic Hematologic Disorders",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT04398628"
+          },
+          {
+            "nct_id": "NCT02022891",
+            "brief_title": "Systematic Psychological and Medical Care for Children With SCD",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02022891"
+          },
+          {
+            "nct_id": "NCT03944447",
+            "brief_title": "Outcomes Mandate National Integration With Cannabis as Medicine",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "NETWORK",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT03944447"
+          }
+        ],
+        "citation_total": 7,
+        "citations_truncated": true,
+        "citation_basis": "Citations drawn from 7 of 7 trials in this bucket."
+      },
+      {
+        "label": "Individual",
+        "value": 2,
+        "series": "major depressive disorder",
+        "value_is_exact": true,
+        "sample_value": 2,
+        "citations": [
+          {
+            "nct_id": "NCT02624102",
+            "brief_title": "Efficacy of Trial-Based Cognitive Therapy and Behavioral Activation in Treatment of Depression",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDIV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT02624102"
+          },
+          {
+            "nct_id": "NCT05930912",
+            "brief_title": "Psychiatric Orders in Psychoanalytic Treatment of ASD",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "INDIV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT05930912"
+          }
+        ],
+        "citation_total": 2,
+        "citations_truncated": false,
+        "citation_basis": "Citations drawn from 2 of 2 trials in this bucket."
+      },
+      {
+        "label": "Other government",
+        "value": 2,
+        "series": "neuroblastoma",
+        "value_is_exact": true,
+        "sample_value": 2,
+        "citations": [
+          {
+            "nct_id": "NCT01373736",
+            "brief_title": "123I-MIBG Scintigraphy in Patients Being Evaluated for Neuroendocrine Tumors",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT01373736"
+          },
+          {
+            "nct_id": "NCT00828516",
+            "brief_title": "Using Traditional Acupuncture in the Management of Cancer Treatment Related Lymphoedema",
+            "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.class",
+            "field_value": "OTHER_GOV",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00828516"
+          }
+        ],
+        "citation_total": 2,
+        "citations_truncated": false,
+        "citation_basis": "Citations drawn from 2 of 2 trials in this bucket."
+      }
+    ]
+  },
+  "meta": {
+    "query_interpretation": {
+      "model_interpretation": "Compare the distribution of sponsor categories across clinical trials for neuroblastoma, major depressive disorder, and sickle cell anemia.",
+      "filters_applied": {
+        "neuroblastoma / query.cond": "neuroblastoma",
+        "major depressive disorder / query.cond": "major depressive disorder",
+        "sickle cell anemia / query.cond": "sickle cell anemia"
+      },
+      "assumptions": [],
+      "plan_adjustments": []
+    },
+    "intent": "comparison",
+    "group_by": "sponsor_type",
+    "series_by": "compare:condition",
+    "measure": "trial_count",
+    "unit": "trials",
+    "sort": {
+      "by": "value_desc",
+      "direction": "desc"
+    },
+    "invariant": {
+      "kind": "multi_label",
+      "statement": "a trial can match more than one comparison arm; sum(data[].value) >= records_analyzed",
+      "assignments_total": 5830,
+      "records_analyzed": 1603
+    },
+    "coverage": {
+      "total_matching_studies": 5830,
+      "records_fetched": 1603,
+      "records_analyzed": 1603,
+      "is_sample": false,
+      "coverage_ratio": 0.275,
+      "sampling_method": "stratified_by_bucket",
+      "sampling_bias_risk": "low",
+      "fetch_cap": 10000,
+      "pages_fetched": 27,
+      "counts_are_exact": true,
+      "excluded": {
+        "missing_dimension_value": 0,
+        "imprecise_for_granularity": 0,
+        "no_selected_category": 0,
+        "memberships_removed": 0,
+        "invalid_numeric_pair": 0
+      },
+      "comparison_arms": {
+        "neuroblastoma": {
+          "total_matching": 772,
+          "records_fetched": 446,
+          "is_sample": false
+        },
+        "major depressive disorder": {
+          "total_matching": 3849,
+          "records_fetched": 644,
+          "is_sample": false
+        },
+        "sickle cell anemia": {
+          "total_matching": 1209,
+          "records_fetched": 514,
+          "is_sample": false
+        }
+      }
+    },
+    "visualization_needed": true,
+    "visualization_rationale": "7 groups split by 3 series.",
+    "suggestions": [],
+    "warnings": [],
+    "notes": {
+      "counting_rule": "A trial can be counted in several categories, so the values sum to more than the number of trials.",
+      "overrides": [],
+      "general": [
+        "Comparison arms and their matching trials: neuroblastoma (772), major depressive disorder (3,849), sickle cell anemia (1,209).",
+        "1 trials match more than one arm, so the series overlap and the bars sum to more than the trials analyzed."
+      ]
+    },
+    "citation_policy": "Citations are extracted mechanically from the ClinicalTrials.gov API response. Field values and excerpts are verbatim; the language model never writes them.",
+    "source": "clinicaltrials.gov",
+    "api_version": "2.0.5",
+    "data_timestamp": "2026-11-02T10:00:05",
+    "request_id": "64b3f2936556",
+    "elapsed_ms": 3487
+  }
+}

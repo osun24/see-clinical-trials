@@ -104,7 +104,7 @@ async def main(output, smoke=False):
                     response = await answer(QueryRequest(query=question), client)
                 body = response.model_dump(mode="json", exclude_none=True)
                 entry.update({"contract_failures":contract(body), "semantic_failures":semantic(body,expected,terms),
-                    "visualization_type":body["visualization"]["type"], "subtitle":body["visualization"]["subtitle"],
+                    "visualization_type":body["visualization"]["type"],
                     "interpretation":body["meta"]["query_interpretation"], "group_by":body["meta"].get("group_by"),
                     "series_by":body["meta"].get("series_by"), "measure":body["meta"]["measure"],
                     "coverage":body["meta"]["coverage"], "plan":(body["meta"].get("analysis") or {}).get("plan"),

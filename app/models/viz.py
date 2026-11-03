@@ -138,9 +138,5 @@ class VisualizationSpec(BaseModel):
 
     type: VizType
     title: str
-    #: Always present and never null. States the basis of the numbers, so a
-    #: viewer cannot miss that a count came from a sample. The renderer
-    #: contract requires displaying it beneath the title.
-    subtitle: str
     encoding: Encoding = Field(default_factory=Encoding)
     data: list[Datum] | NetworkData = Field(default_factory=list)

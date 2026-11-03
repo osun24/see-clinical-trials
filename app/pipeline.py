@@ -10,7 +10,6 @@ import time
 import uuid
 from typing import Any
 
-from app.analysis.engine import validate as validate_analysis
 from app.aggregate import bucketize, topn
 from app.aggregate.keys import bucket_keys, display_label, MISSING_KEY
 from app.config import settings
@@ -96,28 +95,6 @@ async def _interpret_resolved(
         resolved.adjustments.append("The planning model revised its plan once after deterministic validation failed: " + exc.message)
         return resolved, repaired
     return resolved, raw
-
-
-def _preset_for_plan(plan):
-    from app.analysis.presets import compile_preset
-    return compile_preset(DIMENSIONS[plan.group_by], DIMENSIONS.get(plan.series_by))
-
-
-async def plan_only(request: QueryRequest) -> dict[str, Any]:
-    """Interpretation without a fetch — the /plan dry run."""
-    resolved, _ = await _interpret_resolved(request)
-    spec = build_query(resolved)
-    return {
-        "plan": resolved.model_dump(),
-        "ctgov_params": spec.params,
-        "fields_mask": list(spec.fields_mask),
-        "analysis_schema": (validate_analysis(resolved.analysis) if resolved.analysis else None),
-        "compiled_preset": (_preset_for_plan(resolved).model_dump() if resolved.group_by and not resolved.analysis and not resolved.graph else None),
-        "would_use_exact_counts": bool(
-            not resolved.analysis and resolved.group_by
-            and should_stratify(DIMENSIONS[resolved.group_by], resolved)
-        ),
-    }
 
 
 async def _gather_data(
@@ -254,12 +231,11 @@ def _build_visualization(
     fetch_result: FetchResult,
     decision_type: str,
     orientation: str | None,
-    subtitle: str,
 ) -> VisualizationSpec:
     title = titles.build_title(resolved, bucket_set)
 
     if decision_type == "none":
-        return VisualizationSpec(type="none", title=title, subtitle=subtitle, data=[])
+        return VisualizationSpec(type="none", title=title, data=[])
 
     if decision_type == "stat":
         if bucket_set is None and fetch_result.studies:
@@ -291,7 +267,6 @@ def _build_visualization(
         return VisualizationSpec(
             type="network_graph",
             title=title,
-            subtitle=subtitle,
             encoding=encoding,
             data=graph,
         )
@@ -311,7 +286,6 @@ def _build_visualization(
     return VisualizationSpec(
         type=decision_type,  # type: ignore[arg-type]
         title=title,
-        subtitle=subtitle,
         encoding=encoding,
         data=data,
     )
@@ -405,7 +379,7 @@ async def _attempt(
         )
 
     coverage = _coverage(fetch_result, bucket_set, cap, comparison)
-    subtitle = titles.build_subtitle(
+    coverage_message = titles.build_coverage_message(
         total_matching=coverage.total_matching_studies,
         records_analyzed=coverage.records_analyzed,
         is_sample=coverage.is_sample,
@@ -416,15 +390,16 @@ async def _attempt(
     )
 
     visualization = _build_visualization(
-        resolved, bucket_set, fetch_result, decision.type, decision.orientation, subtitle
+        resolved, bucket_set, fetch_result, decision.type, decision.orientation
     )
 
+    graph_coverage_note: str | None = None
     graph_provenance_note: str | None = None
     if resolved.graph is not None and decision.type == "network_graph":
-        subtitle, graph_provenance_note = _semantic_graph_provenance(
+        graph_coverage_note, graph_provenance_note = _semantic_graph_provenance(
             resolved, visualization, coverage
         )
-        visualization.subtitle = subtitle
+        coverage_message = graph_coverage_note
 
     invariant = (
         bucket_set.invariant
@@ -442,7 +417,7 @@ async def _attempt(
         )
 
     notes = Notes(
-        coverage_warning=subtitle if coverage.is_sample else None,
+        coverage_warning=coverage_message if coverage.is_sample else None,
         counting_rule=(
             "Each trial is counted once."
             if invariant.kind == "partition"
@@ -453,6 +428,8 @@ async def _attempt(
     )
     if graph_provenance_note:
         notes.general.append(graph_provenance_note)
+    if graph_coverage_note and not coverage.is_sample:
+        notes.general.append(graph_coverage_note)
 
     if comparison is not None:
         arms = ", ".join(
@@ -607,23 +584,29 @@ def _semantic_graph_provenance(
 
     if basis == "full_text_query_person_association":
         if coverage.is_sample:
-            subtitle = (
+            coverage_message = (
                 f"Based on {coverage.records_fetched:,} of {coverage.total_matching_studies:,} "
                 f"trials returned by a full-text search for {subject} "
                 "(relevance-ordered sample)."
             )
         else:
-            subtitle = (
+            coverage_message = (
                 f"Based on all {coverage.total_matching_studies:,} trials returned "
                 f"by a full-text search for {subject}."
             )
-        return subtitle, (
+        return coverage_message, (
             "These are full-text associations, not independently confirmed person-level links. "
             "Exact OverallOfficialName matches provide additional citation evidence where "
             "available; missing or different official names do not exclude search results."
         )
 
-    return visualization.subtitle, (
+    return titles.build_coverage_message(
+        total_matching=coverage.total_matching_studies,
+        records_analyzed=coverage.records_analyzed,
+        is_sample=coverage.is_sample,
+        counts_are_exact=coverage.counts_are_exact,
+        sampling_method=coverage.sampling_method,
+    ), (
         "The graph root comes from the question; nodes and edges are deterministically "
         "derived from matching trial records, not generated by the language model."
     )

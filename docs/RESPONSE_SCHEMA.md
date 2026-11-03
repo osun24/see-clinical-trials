@@ -6,10 +6,10 @@ the original query or the analysis plan to render the result.
 
 ## Visualization
 
-`type` selects the branch. `title` is human-readable. Always display `subtitle`:
-it describes the counted population, sampling and material exclusions. `encoding`
-maps named data fields to visual channels. `data` is a flat array except for
-`network_graph`, which contains `nodes`, `edges`, and optional `omitted`.
+`type` selects the branch and `title` is human-readable. `encoding` maps named
+data fields to visual channels. `data` is a flat array except for `network_graph`,
+which contains `nodes`, `edges`, and optional `omitted`. Sampling disclosure is
+provided by `meta.notes.coverage_warning` when `meta.coverage.is_sample` is true.
 
 | Type | Channels | Required datum fields |
 |---|---|---|

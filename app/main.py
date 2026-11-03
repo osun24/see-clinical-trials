@@ -15,11 +15,10 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
 from app.ctgov.client import CtgovClient
-from app.dimensions.registry import describe_registry
 from app.models.errors import ErrorBody, ErrorResponse, ServiceError
 from app.models.request import QueryRequest
 from app.models.response import AnswerResponse
-from app.pipeline import answer, plan_only
+from app.pipeline import answer
 from app.viz.contract import check_response
 
 logger = logging.getLogger("clinical-trials-viz")
@@ -111,38 +110,6 @@ async def query(request: QueryRequest, http_request: Request) -> AnswerResponse:
     """Interpret, execute, aggregate, and visualize a clinical-trials question."""
     async with CtgovClient(http_request.app.state.http) as client:
         return check_response(await answer(request, client))
-
-
-@app.post(
-    "/plan",
-    summary="Interpret a question without fetching data",
-    description=(
-        "Returns the query plan and the exact ClinicalTrials.gov parameters that "
-        "would be sent. Useful for inspecting interpretation without spending a fetch."
-    ),
-)
-async def plan(request: QueryRequest) -> dict[str, Any]:
-    """Return the resolved plan and upstream parameters without fetching studies."""
-    return await plan_only(request)
-
-
-@app.get(
-    "/dimensions",
-    summary="List the groupable dimensions",
-    description=(
-        "The registry the planner chooses from, including each dimension's counting "
-        "rule and whether exact counts are available for it."
-    ),
-)
-async def dimensions() -> dict[str, Any]:
-    """Describe every caller-selectable grouping dimension and counting rule."""
-    return {
-        "dimensions": describe_registry(),
-        "counting_rules": {
-            "partition": "Each trial counts once; the values sum to the number of trials analyzed.",
-            "multi_label": "A trial can count in several buckets; the values sum to more than the number of trials analyzed.",
-        },
-    }
 
 
 @app.get("/healthz", summary="Liveness and configuration check")

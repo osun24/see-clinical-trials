@@ -180,9 +180,34 @@
       "title": "Citation",
       "type": "object"
     },
+    "ComparisonArmCoverage": {
+      "additionalProperties": false,
+      "description": "Coverage for one independently queried comparison arm.",
+      "properties": {
+        "total_matching": {
+          "title": "Total Matching",
+          "type": "integer"
+        },
+        "records_fetched": {
+          "title": "Records Fetched",
+          "type": "integer"
+        },
+        "is_sample": {
+          "title": "Is Sample",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "total_matching",
+        "records_fetched",
+        "is_sample"
+      ],
+      "title": "ComparisonArmCoverage",
+      "type": "object"
+    },
     "Coverage": {
       "additionalProperties": false,
-      "description": "What the numbers are actually based on.\n\nClinicalTrials.gov cannot aggregate a filtered query server-side, so counts\nare computed locally over a bounded fetch. When that fetch is smaller than\nthe matching universe the response says so here, in\n``VisualizationSpec.subtitle``, and per datum via ``value_is_exact``.",
+      "description": "What the numbers are actually based on.\n\nClinicalTrials.gov cannot aggregate every filtered query server-side, so\ncounts may be computed locally over a bounded fetch. This object records\nhow much of the matching universe the response represents.",
       "properties": {
         "total_matching_studies": {
           "title": "Total Matching Studies",
@@ -253,6 +278,13 @@
         },
         "excluded": {
           "$ref": "#/$defs/Exclusions"
+        },
+        "comparison_arms": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ComparisonArmCoverage"
+          },
+          "title": "Comparison Arms",
+          "type": "object"
         }
       },
       "required": [
@@ -1114,10 +1146,6 @@
           "title": "Title",
           "type": "string"
         },
-        "subtitle": {
-          "title": "Subtitle",
-          "type": "string"
-        },
         "encoding": {
           "$ref": "#/$defs/Encoding"
         },
@@ -1138,8 +1166,7 @@
       },
       "required": [
         "type",
-        "title",
-        "subtitle"
+        "title"
       ],
       "title": "VisualizationSpec",
       "type": "object"

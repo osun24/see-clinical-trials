@@ -145,7 +145,6 @@ classDiagram
     class VisualizationSpec {
         +VizType type
         +str title
-        +str subtitle
         +Encoding encoding
         +object data
     }

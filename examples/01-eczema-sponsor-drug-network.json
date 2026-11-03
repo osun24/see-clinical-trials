@@ -1,0 +1,1460 @@
+{
+  "visualization": {
+    "type": "network_graph",
+    "title": "Eczema Trials by Lead Sponsor, split by Intervention",
+    "encoding": {
+      "node": {
+        "id_field": "id",
+        "label_field": "label",
+        "group_field": "group",
+        "size_field": "size",
+        "level_field": "level"
+      },
+      "edge": {
+        "source_field": "source",
+        "target_field": "target",
+        "weight_field": "weight"
+      },
+      "layout_hint": "force"
+    },
+    "data": {
+      "nodes": [
+        {
+          "id": "lead_sponsor:Eli Lilly and Company",
+          "label": "Eli Lilly and Company",
+          "group": "lead_sponsor",
+          "size": 45,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Placebo",
+          "label": "Placebo",
+          "group": "intervention_name",
+          "size": 87,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:Regeneron Pharmaceuticals",
+          "label": "Regeneron Pharmaceuticals",
+          "group": "lead_sponsor",
+          "size": 30,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Dupilumab",
+          "label": "Dupilumab",
+          "group": "intervention_name",
+          "size": 41,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:Pfizer",
+          "label": "Pfizer",
+          "group": "lead_sponsor",
+          "size": 25,
+          "level": 0
+        },
+        {
+          "id": "lead_sponsor:AbbVie",
+          "label": "AbbVie",
+          "group": "lead_sponsor",
+          "size": 22,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Upadacitinib",
+          "label": "Upadacitinib",
+          "group": "intervention_name",
+          "size": 15,
+          "level": 1
+        },
+        {
+          "id": "intervention_name:Lebrikizumab",
+          "label": "Lebrikizumab",
+          "group": "intervention_name",
+          "size": 15,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:LEO Pharma",
+          "label": "LEO Pharma",
+          "group": "lead_sponsor",
+          "size": 22,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Tralokinumab",
+          "label": "Tralokinumab",
+          "group": "intervention_name",
+          "size": 13,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:Sanofi",
+          "label": "Sanofi",
+          "group": "lead_sponsor",
+          "size": 30,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Baricitinib",
+          "label": "Baricitinib",
+          "group": "intervention_name",
+          "size": 9,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:Novartis Pharmaceuticals",
+          "label": "Novartis Pharmaceuticals",
+          "group": "lead_sponsor",
+          "size": 9,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Amlitelimab",
+          "label": "Amlitelimab",
+          "group": "intervention_name",
+          "size": 9,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:Incyte Corporation",
+          "label": "Incyte Corporation",
+          "group": "lead_sponsor",
+          "size": 7,
+          "level": 0
+        },
+        {
+          "id": "intervention_name:Ruxolitinib cream",
+          "label": "Ruxolitinib cream",
+          "group": "intervention_name",
+          "size": 7,
+          "level": 1
+        },
+        {
+          "id": "intervention_name:Abrocitinib",
+          "label": "Abrocitinib",
+          "group": "intervention_name",
+          "size": 8,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:National Institute of Allergy and Infectious Diseases (NIAID)",
+          "label": "National Institute of Allergy and Infectious Diseases (NIAID)",
+          "group": "lead_sponsor",
+          "size": 6,
+          "level": 0
+        },
+        {
+          "id": "lead_sponsor:University of California, San Francisco",
+          "label": "University of California, San Francisco",
+          "group": "lead_sponsor",
+          "size": 8,
+          "level": 0
+        }
+      ],
+      "edges": [
+        {
+          "source": "lead_sponsor:Eli Lilly and Company",
+          "target": "intervention_name:Placebo",
+          "weight": 22,
+          "citations": [
+            {
+              "nct_id": "NCT03334435",
+              "brief_title": "A Study of Long-term Baricitinib (LY3009104) Therapy in Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03334435"
+            },
+            {
+              "nct_id": "NCT04626297",
+              "brief_title": "A Study of Lebrikizumab (LY3650150) on Vaccine Response in Adults With Atopic Dermatitis (ADopt-VA)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04626297"
+            },
+            {
+              "nct_id": "NCT05911841",
+              "brief_title": "A Study of LY3454738 in the Treatment of Adult Participants With Moderate-to-Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05911841"
+            },
+            {
+              "nct_id": "NCT04250337",
+              "brief_title": "Safety and Efficacy of Lebrikizumab (LY3650150) in Combination With Topical Corticosteroid in Moderate-to-Severe Atopic Dermatitis.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04250337"
+            },
+            {
+              "nct_id": "NCT04146363",
+              "brief_title": "Evaluation of the Efficacy and Safety of Lebrikizumab (LY3650150) in Moderate to Severe Atopic Dermatitis (ADvocate1)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04146363"
+            }
+          ],
+          "citation_total": 22,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Regeneron Pharmaceuticals",
+          "target": "intervention_name:Dupilumab",
+          "weight": 21,
+          "citations": [
+            {
+              "nct_id": "NCT02210780",
+              "brief_title": "Study of Dupilumab and Immune Responses in Adults With Atopic Dermatitis (AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02210780"
+            },
+            {
+              "nct_id": "NCT03050151",
+              "brief_title": "Study of Dupilumab Auto-injector Device When Used by Patients With Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03050151"
+            },
+            {
+              "nct_id": "NCT01979016",
+              "brief_title": "Study to Determine the Safety and Effectiveness of Dupilumab for Treatment of Atopic Dermatitis (AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01979016"
+            },
+            {
+              "nct_id": "NCT02407756",
+              "brief_title": "A Study to Determine the Safety and Tolerability of Dupilumab (REGN668/SAR231893) in Patients Aged ≥6 to <18 Years With Atopic Dermatitis (Eczema)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02407756"
+            },
+            {
+              "nct_id": "NCT01639040",
+              "brief_title": "Study to Assess the Safety of Dupilumab (REGN668/SAR231893) Administered Concomitantly With Topical Corticosteroids (TCS) in Patients With Moderate-to-severe Atopic Dermatitis (AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01639040"
+            }
+          ],
+          "citation_total": 21,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Pfizer",
+          "target": "intervention_name:Placebo",
+          "weight": 16,
+          "citations": [
+            {
+              "nct_id": "NCT06564389",
+              "brief_title": "FIH Study to Evaluate the Tolerability of PF-07832837 in Healthy Adults and Patients",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06564389"
+            },
+            {
+              "nct_id": "NCT06686797",
+              "brief_title": "A Study to Learn How Different Amounts of the Study Medicine Called PF-08049820 Are Tolerated and Act in the Body in Healthy Adults",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06686797"
+            },
+            {
+              "nct_id": "NCT06807268",
+              "brief_title": "A Study of the Medicine Called Abrocitinib in Children 6 to Less Than 12 Years of Age With Moderate-to-Severe Eczema",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06807268"
+            },
+            {
+              "nct_id": "NCT03627767",
+              "brief_title": "Study to Investigate Efficacy and Safety of PF-04965842 in Subjects Aged 12 Years and Over With Moderate to Severe Atopic Dermatitis With the Option of Rescue Treatment in Flaring Subjects",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03627767"
+            },
+            {
+              "nct_id": "NCT07216027",
+              "brief_title": "A Study to Learn About Study Medicine Called PF-08049820 in People With Eczema",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07216027"
+            }
+          ],
+          "citation_total": 16,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:AbbVie",
+          "target": "intervention_name:Upadacitinib",
+          "weight": 14,
+          "citations": [
+            {
+              "nct_id": "NCT03607422",
+              "brief_title": "A Study to Evaluate Upadacitinib in Adolescents and Adults With Moderate to Severe Atopic Dermatitis (Measure Up 2)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03607422"
+            },
+            {
+              "nct_id": "NCT03661138",
+              "brief_title": "A Study to Evaluate Safety of Upadacitinib in Combination With Topical Corticosteroids in Adolescent and Adult Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03661138"
+            },
+            {
+              "nct_id": "NCT06461897",
+              "brief_title": "A Study to Assess Adverse Events and Change in Disease Activity Comparing Oral Upadacitinib to Subcutaneous Dupilumab in Children From 2 to Less Than 12 Years of Age With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06461897"
+            },
+            {
+              "nct_id": "NCT03738397",
+              "brief_title": "A Study to Compare Safety and Efficacy of Upadacitinib to Dupilumab in Adult Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03738397"
+            },
+            {
+              "nct_id": "NCT02925117",
+              "brief_title": "A Study to Evaluate ABT-494 (Upadacitinib) in Adults With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02925117"
+            }
+          ],
+          "citation_total": 14,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Eli Lilly and Company",
+          "target": "intervention_name:Lebrikizumab",
+          "weight": 14,
+          "citations": [
+            {
+              "nct_id": "NCT05369403",
+              "brief_title": "A Study of Lebrikizumab (LY3650150) in Adult and Adolescent Participants With Moderate-to-Severe Atopic Dermatitis Previously Treated With Dupilumab",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05369403"
+            },
+            {
+              "nct_id": "NCT04392154",
+              "brief_title": "Long-term Safety and Efficacy Study of Lebrikizumab (LY3650150) in Participants With Moderate-to-Severe Atopic Dermatitis (ADjoin)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04392154"
+            },
+            {
+              "nct_id": "NCT05372419",
+              "brief_title": "A Study of (LY3650150) Lebrikizumab to Assess the Safety and Efficacy of Adult and Adolescent Participants With Moderate-to-Severe Atopic Dermatitis and Skin of Color",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05372419"
+            },
+            {
+              "nct_id": "NCT04626297",
+              "brief_title": "A Study of Lebrikizumab (LY3650150) on Vaccine Response in Adults With Atopic Dermatitis (ADopt-VA)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04626297"
+            },
+            {
+              "nct_id": "NCT04250337",
+              "brief_title": "Safety and Efficacy of Lebrikizumab (LY3650150) in Combination With Topical Corticosteroid in Moderate-to-Severe Atopic Dermatitis.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04250337"
+            }
+          ],
+          "citation_total": 14,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:LEO Pharma",
+          "target": "intervention_name:Tralokinumab",
+          "weight": 12,
+          "citations": [
+            {
+              "nct_id": "NCT03556592",
+              "brief_title": "Drug-drug Interaction Trial With Tralokinumab in Moderate to Severe Atopic Dermatitis - ECZTRA 4",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03556592"
+            },
+            {
+              "nct_id": "NCT03587805",
+              "brief_title": "Long-term Extension Trial in Subjects With Atopic Dermatitis Who Participated in Previous Tralokinumab Trials - ECZTEND",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03587805"
+            },
+            {
+              "nct_id": "NCT05958407",
+              "brief_title": "A 32-week Trial to Evaluate the Efficacy and Safety of Tralokinumab in Subjects With Moderate-to-severe Atopic Hand Eczema Who Are Candidates for Systemic Therapy",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05958407"
+            },
+            {
+              "nct_id": "NCT05194540",
+              "brief_title": "Efficacy and Safety of Tralokinumab Administered by an Autoinjector in Adults and Adolescents With Moderate to Severe Atopic Dermatitis (INJECZTRA)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05194540"
+            },
+            {
+              "nct_id": "NCT04587453",
+              "brief_title": "Tralokinumab in Combination With Topical Corticosteroids in Japanese Subjects With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04587453"
+            }
+          ],
+          "citation_total": 12,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Sanofi",
+          "target": "intervention_name:Placebo",
+          "weight": 12,
+          "citations": [
+            {
+              "nct_id": "NCT06130566",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Subcutaneous Amlitelimab Monotherapy Compared With Placebo in Participants Aged 12 Years and Older With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06130566"
+            },
+            {
+              "nct_id": "NCT06407934",
+              "brief_title": "A Study to Evaluate the Treatment Response and Safety of Two Dose Regimens of Subcutaneous Amlitelimab Compared With Treatment Withdrawal in Participants Aged 12 Years and Older With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06407934"
+            },
+            {
+              "nct_id": "NCT06241118",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Subcutaneous Amlitelimab on Background Topical Corticosteroids Therapy in Participants Aged 12 Years and Older With Moderate-to-severe AD Who Have Had an Inadequate Response to Prior Biologic Therapy or an Oral JAK Inhibitor",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06241118"
+            },
+            {
+              "nct_id": "NCT06181435",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Subcutaneous Amlitelimab Monotherapy Compared With Placebo in Participants Aged 12 Years and Older With Moderate-to-severe Atopic Dermatitis (COAST 2)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06181435"
+            },
+            {
+              "nct_id": "NCT06015308",
+              "brief_title": "A Study to Investigate Vaccine Responses in Subcutaneous Amlitelimab Treated Atopic Dermatitis Participants Aged 18 Years and Older Compared With Placebo",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06015308"
+            }
+          ],
+          "citation_total": 12,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:LEO Pharma",
+          "target": "intervention_name:Placebo",
+          "weight": 10,
+          "citations": [
+            {
+              "nct_id": "NCT05923099",
+              "brief_title": "A Trial to Evaluate the Efficacy and Safety of Different Doses of LEO 138559 in Adults With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05923099"
+            },
+            {
+              "nct_id": "NCT05958407",
+              "brief_title": "A 32-week Trial to Evaluate the Efficacy and Safety of Tralokinumab in Subjects With Moderate-to-severe Atopic Hand Eczema Who Are Candidates for Systemic Therapy",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05958407"
+            },
+            {
+              "nct_id": "NCT01423656",
+              "brief_title": "Safety, Tolerability and Pharmacokinetic Study in Healthy Subjects by Dermal Application of a LEO 29102",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01423656"
+            },
+            {
+              "nct_id": "NCT04587453",
+              "brief_title": "Tralokinumab in Combination With Topical Corticosteroids in Japanese Subjects With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04587453"
+            },
+            {
+              "nct_id": "NCT03562377",
+              "brief_title": "Vaccine Responses in Tralokinumab-Treated Atopic Dermatitis - ECZTRA 5 (ECZema TRAlokinumab Trial No. 5)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "LEO Pharma",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03562377"
+            }
+          ],
+          "citation_total": 10,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Eli Lilly and Company",
+          "target": "intervention_name:Baricitinib",
+          "weight": 9,
+          "citations": [
+            {
+              "nct_id": "NCT03334435",
+              "brief_title": "A Study of Long-term Baricitinib (LY3009104) Therapy in Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03334435"
+            },
+            {
+              "nct_id": "NCT03559270",
+              "brief_title": "A Study of Baricitinib (LY3009104) in Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03559270"
+            },
+            {
+              "nct_id": "NCT03428100",
+              "brief_title": "A Long-term Study of Baricitinib (LY3009104) With Topical Corticosteroids in Adults With Moderate to Severe Atopic Dermatitis That Are Not Controlled With Cyclosporine or for Those Who Cannot Take Oral Cyclosporine Because it is Not Medically Advisable",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03428100"
+            },
+            {
+              "nct_id": "NCT03952559",
+              "brief_title": "A Study of Baricitinib (LY3009104) in Children and Adolescents With Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03952559"
+            },
+            {
+              "nct_id": "NCT03334396",
+              "brief_title": "A Study of Baricitinib (LY3009104) in Patients With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Eli Lilly and Company",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03334396"
+            }
+          ],
+          "citation_total": 9,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Novartis Pharmaceuticals",
+          "target": "intervention_name:Placebo",
+          "weight": 9,
+          "citations": [
+            {
+              "nct_id": "NCT01552629",
+              "brief_title": "A Study Evaluating the Safety and Efficacy of QGE031 in Atopic Dermatitis Patients",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01552629"
+            },
+            {
+              "nct_id": "NCT03918980",
+              "brief_title": "Single Dose and Multiple Dose Study to Assess Safety and Tolerability of LOU064",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03918980"
+            },
+            {
+              "nct_id": "NCT07604324",
+              "brief_title": "A First-in-human Study to Investigate Single Doses of DCY636 in Healthy Volunteers and Multiple Doses in Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07604324"
+            },
+            {
+              "nct_id": "NCT03517566",
+              "brief_title": "A Study to Assess the Safety and Efficacy of ZPL389 in Patients With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03517566"
+            },
+            {
+              "nct_id": "NCT01785602",
+              "brief_title": "Efficacy and Safety Study of QAW039 in the Treatment of Patients With Moderate to Severe Atopic Dermatitis.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01785602"
+            }
+          ],
+          "citation_total": 9,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Regeneron Pharmaceuticals",
+          "target": "intervention_name:Placebo",
+          "weight": 9,
+          "citations": [
+            {
+              "nct_id": "NCT02210780",
+              "brief_title": "Study of Dupilumab and Immune Responses in Adults With Atopic Dermatitis (AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02210780"
+            },
+            {
+              "nct_id": "NCT01979016",
+              "brief_title": "Study to Determine the Safety and Effectiveness of Dupilumab for Treatment of Atopic Dermatitis (AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01979016"
+            },
+            {
+              "nct_id": "NCT03736967",
+              "brief_title": "Efficacy and Safety of REGN3500 Monotherapy and Combination of REGN3500 Plus Dupilumab in Adult Patients With Moderate-to-Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03736967"
+            },
+            {
+              "nct_id": "NCT01385657",
+              "brief_title": "Safety and Tolerability of Dupilumab in Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT01385657"
+            },
+            {
+              "nct_id": "NCT02395133",
+              "brief_title": "A Study to Confirm the Efficacy and Safety of Different Dupilumab Dose Regimens in Adults With Atopic Dermatitis (AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Regeneron Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02395133"
+            }
+          ],
+          "citation_total": 9,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Sanofi",
+          "target": "intervention_name:Amlitelimab",
+          "weight": 9,
+          "citations": [
+            {
+              "nct_id": "NCT06130566",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Subcutaneous Amlitelimab Monotherapy Compared With Placebo in Participants Aged 12 Years and Older With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06130566"
+            },
+            {
+              "nct_id": "NCT05492578",
+              "brief_title": "Long-Term Safety and Efficacy Evaluation of Amlitelimab in Participants of Previous Amlitelimab Moderate to Severe Atopic Dermatitis Clinical Trials",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05492578"
+            },
+            {
+              "nct_id": "NCT06407934",
+              "brief_title": "A Study to Evaluate the Treatment Response and Safety of Two Dose Regimens of Subcutaneous Amlitelimab Compared With Treatment Withdrawal in Participants Aged 12 Years and Older With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06407934"
+            },
+            {
+              "nct_id": "NCT06686628",
+              "brief_title": "An Open-label, DDI Study to Investigate the Effects of Amlitelimab on the PK of Selected Cytochrome P450 Substrates",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06686628"
+            },
+            {
+              "nct_id": "NCT06241118",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Subcutaneous Amlitelimab on Background Topical Corticosteroids Therapy in Participants Aged 12 Years and Older With Moderate-to-severe AD Who Have Had an Inadequate Response to Prior Biologic Therapy or an Oral JAK Inhibitor",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06241118"
+            }
+          ],
+          "citation_total": 9,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Sanofi",
+          "target": "intervention_name:Dupilumab",
+          "weight": 9,
+          "citations": [
+            {
+              "nct_id": "NCT06192563",
+              "brief_title": "A Study to Observe How Pediatric Patients With Severe Atopic Dermatitis Despite Less Extensive Skin Lesions Respond to Dupilumab Treatment",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06192563"
+            },
+            {
+              "nct_id": "NCT07905547",
+              "brief_title": "A Study to Investigate Dupixent/ Dupilumab in Adult Indian Participants With Moderate-to-severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07905547"
+            },
+            {
+              "nct_id": "NCT06415175",
+              "brief_title": "Study in Paediatric Patients With Atopic Dermatitis Treated With Dupilumab in Spain",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06415175"
+            },
+            {
+              "nct_id": "NCT07467564",
+              "brief_title": "The Impact of Dupilumab Treatment on Anxiety and Depression Symptoms in Patients With Moderate-to-Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07467564"
+            },
+            {
+              "nct_id": "NCT06169527",
+              "brief_title": "A Long-term Data Collection Study of Participants in France Aged 6 Years Old or More With Atopic Dermatitis Receiving Dupilumab",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Sanofi",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06169527"
+            }
+          ],
+          "citation_total": 9,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Incyte Corporation",
+          "target": "intervention_name:Ruxolitinib cream",
+          "weight": 7,
+          "citations": [
+            {
+              "nct_id": "NCT05906628",
+              "brief_title": "Topical Ruxolitinib Evaluation in Chronic Hand Eczema",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Incyte Corporation",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05906628"
+            },
+            {
+              "nct_id": "NCT03745651",
+              "brief_title": "TRuE AD2 - An Efficacy and Safety Study of Ruxolitinib Cream in Adolescents and Adults With Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Incyte Corporation",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03745651"
+            },
+            {
+              "nct_id": "NCT05233410",
+              "brief_title": "Topical Ruxolitinib Evaluation in Chronic Hand Eczema Study 2",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Incyte Corporation",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05233410"
+            },
+            {
+              "nct_id": "NCT05034822",
+              "brief_title": "Study of Ruxolitinib Cream in Children With Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Incyte Corporation",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05034822"
+            },
+            {
+              "nct_id": "NCT03920852",
+              "brief_title": "A Maximum Use Trial of Ruxolitinib Cream in Adolescent and Adult Participants With Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Incyte Corporation",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03920852"
+            }
+          ],
+          "citation_total": 7,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:Pfizer",
+          "target": "intervention_name:Abrocitinib",
+          "weight": 7,
+          "citations": [
+            {
+              "nct_id": "NCT05721937",
+              "brief_title": "A Study of How Safe Abrocitinib (CIBINQO) is in Pregnant Women and Their Offspring",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05721937"
+            },
+            {
+              "nct_id": "NCT05391061",
+              "brief_title": "A Study to Learn About the Study Medicine (Called Cibinqo) in People With Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05391061"
+            },
+            {
+              "nct_id": "NCT06807268",
+              "brief_title": "A Study of the Medicine Called Abrocitinib in Children 6 to Less Than 12 Years of Age With Moderate-to-Severe Eczema",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06807268"
+            },
+            {
+              "nct_id": "NCT07823595",
+              "brief_title": "Abrocitinib Treatment of Atopic Dermatitis in Children 2 to Less Than 6 Years of Age",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07823595"
+            },
+            {
+              "nct_id": "NCT06899204",
+              "brief_title": "Real World Efficiency of Abrocitinib Treatment at Patients With Moderate to Severe Atopic Dermatitis Who Had Inadequate Response to Previous Biologic Therapies.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06899204"
+            }
+          ],
+          "citation_total": 7,
+          "citations_truncated": true
+        },
+        {
+          "source": "lead_sponsor:AbbVie",
+          "target": "intervention_name:Placebo",
+          "weight": 5,
+          "citations": [
+            {
+              "nct_id": "NCT06718101",
+              "brief_title": "A Study to Evaluate the Effectiveness and Safety of Treatments, Either Alone or in Combination, for the Treatment of Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06718101"
+            },
+            {
+              "nct_id": "NCT03706040",
+              "brief_title": "A Study to Evaluate Risankizumab in Adults and Adolescents With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03706040"
+            },
+            {
+              "nct_id": "NCT02925117",
+              "brief_title": "A Study to Evaluate ABT-494 (Upadacitinib) in Adults With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02925117"
+            },
+            {
+              "nct_id": "NCT06701331",
+              "brief_title": "Safety and Efficacy of Upadacitinib in Combination With Topical Corticosteroids in Children From 2 to Less Than 12 Years of Age in Japan With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06701331"
+            },
+            {
+              "nct_id": "NCT03568318",
+              "brief_title": "A Study to Evaluate Upadacitinib in Combination With Topical Corticosteroids in Adolescent and Adult Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03568318"
+            }
+          ],
+          "citation_total": 5,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:National Institute of Allergy and Infectious Diseases (NIAID)",
+          "target": "intervention_name:Placebo",
+          "weight": 4,
+          "citations": [
+            {
+              "nct_id": "NCT03389893",
+              "brief_title": "Effect of Dupilumab (Anti-IL4Rα) on the Host-Microbe Interface in Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "National Institute of Allergy and Infectious Diseases (NIAID)",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03389893"
+            },
+            {
+              "nct_id": "NCT00789880",
+              "brief_title": "Analysis of Response of Subjects With Atopic Dermatitis or Psoriasis to Oral Vitamin D3",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "National Institute of Allergy and Infectious Diseases (NIAID)",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT00789880"
+            },
+            {
+              "nct_id": "NCT05177328",
+              "brief_title": "Targeted Investigation of Microbiome Elimination",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "National Institute of Allergy and Infectious Diseases (NIAID)",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05177328"
+            },
+            {
+              "nct_id": "NCT00346398",
+              "brief_title": "Promoting Tolerance to Common Allergens in High-Risk Children: Global Prevention of Asthma in Children (GPAC) Study",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "National Institute of Allergy and Infectious Diseases (NIAID)",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT00346398"
+            }
+          ],
+          "citation_total": 4,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:University of California, San Francisco",
+          "target": "intervention_name:Dupilumab",
+          "weight": 4,
+          "citations": [
+            {
+              "nct_id": "NCT03667014",
+              "brief_title": "The Impact of Dupilumab on Quality of Life in Moderate to Severe Atopic Dermatitis Patients",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03667014"
+            },
+            {
+              "nct_id": "NCT05858619",
+              "brief_title": "Molecular Signatures of Cutaneous Dupilumab Response",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05858619"
+            },
+            {
+              "nct_id": "NCT03293030",
+              "brief_title": "Immunogenetic Profiling of Dupilumab for the Treatment of Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03293030"
+            },
+            {
+              "nct_id": "NCT07352566",
+              "brief_title": "Utilization of a Microdevice for Psoriasis and Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07352566"
+            }
+          ],
+          "citation_total": 4,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:AbbVie",
+          "target": "intervention_name:Dupilumab",
+          "weight": 3,
+          "citations": [
+            {
+              "nct_id": "NCT06461897",
+              "brief_title": "A Study to Assess Adverse Events and Change in Disease Activity Comparing Oral Upadacitinib to Subcutaneous Dupilumab in Children From 2 to Less Than 12 Years of Age With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06461897"
+            },
+            {
+              "nct_id": "NCT03738397",
+              "brief_title": "A Study to Compare Safety and Efficacy of Upadacitinib to Dupilumab in Adult Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03738397"
+            },
+            {
+              "nct_id": "NCT05601882",
+              "brief_title": "A Study to Evaluate Adverse Events and Change in Disease Activity Comparing Oral Upadacitinib to Subcutaneous Dupilumab in Adolescent and Adult Participants With Moderate to Severe Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AbbVie",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05601882"
+            }
+          ],
+          "citation_total": 3,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:National Institute of Allergy and Infectious Diseases (NIAID)",
+          "target": "intervention_name:Dupilumab",
+          "weight": 2,
+          "citations": [
+            {
+              "nct_id": "NCT03389893",
+              "brief_title": "Effect of Dupilumab (Anti-IL4Rα) on the Host-Microbe Interface in Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "National Institute of Allergy and Infectious Diseases (NIAID)",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03389893"
+            },
+            {
+              "nct_id": "NCT05436535",
+              "brief_title": "Longitudinal Endotyping Of Atopic Dermatitis Through Transcriptomic Skin Analysis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "National Institute of Allergy and Infectious Diseases (NIAID)",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05436535"
+            }
+          ],
+          "citation_total": 2,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:Pfizer",
+          "target": "intervention_name:Dupilumab",
+          "weight": 2,
+          "citations": [
+            {
+              "nct_id": "NCT03720470",
+              "brief_title": "Study Evaluating Efficacy and Safety of PF-04965842 and Dupilumab in Adult Subjects With Moderate to Severe Atopic Dermatitis on Background Topical Therapy",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03720470"
+            },
+            {
+              "nct_id": "NCT07783425",
+              "brief_title": "A Study to Learn About the Study Medicine Called Tilrekimig in People With Moderate-to Severe Eczema",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Pfizer",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07783425"
+            }
+          ],
+          "citation_total": 2,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:University of California, San Francisco",
+          "target": "intervention_name:Abrocitinib",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT07352566",
+              "brief_title": "Utilization of a Microdevice for Psoriasis and Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07352566"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:University of California, San Francisco",
+          "target": "intervention_name:Lebrikizumab",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT07352566",
+              "brief_title": "Utilization of a Microdevice for Psoriasis and Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07352566"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:University of California, San Francisco",
+          "target": "intervention_name:Tralokinumab",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT07352566",
+              "brief_title": "Utilization of a Microdevice for Psoriasis and Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07352566"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:University of California, San Francisco",
+          "target": "intervention_name:Upadacitinib",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT07352566",
+              "brief_title": "Utilization of a Microdevice for Psoriasis and Atopic Dermatitis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "University of California, San Francisco",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07352566"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        }
+      ],
+      "omitted": {
+        "trials": 2654,
+        "distinct_values_collapsed": 715,
+        "reason": "Collapsed into 'Other' by the top-10 limit, so it has no single intervention_name value to link to."
+      }
+    }
+  },
+  "meta": {
+    "analysis": {
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "lead_sponsor",
+            "output": "primary"
+          },
+          {
+            "op": "memberships",
+            "id": "series_rows",
+            "input": "primary_rows",
+            "dimension": "intervention_name",
+            "output": "secondary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "series_rows",
+            "group_by": [
+              "primary",
+              "secondary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "schema": {
+        "columns": [
+          "label",
+          "value"
+        ],
+        "filter_canonicalisation": [],
+        "column_types": {
+          "label": "string",
+          "value": "integer"
+        },
+        "group_types": {
+          "primary": "string",
+          "secondary": "string"
+        },
+        "source_columns": [],
+        "fields_mask": [
+          "BriefTitle",
+          "InterventionName",
+          "LeadSponsorName",
+          "NCTId"
+        ],
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "lead_sponsor",
+            "output": "primary"
+          },
+          {
+            "op": "memberships",
+            "id": "series_rows",
+            "input": "primary_rows",
+            "dimension": "intervention_name",
+            "output": "secondary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "series_rows",
+            "group_by": [
+              "primary",
+              "secondary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "input_fingerprint": "86569ea612614e0cc2e0f37641e45a41df89a1b1d2a83633396324f417e34d78",
+      "excluded_trial_ids": [],
+      "trace": [
+        {
+          "step": "primary_rows",
+          "op": "memberships",
+          "rows": 1763
+        },
+        {
+          "step": "series_rows",
+          "op": "memberships",
+          "rows": 3259
+        },
+        {
+          "step": "counts",
+          "op": "aggregate",
+          "rows": 2620
+        }
+      ],
+      "filtered_rows": 0,
+      "missing_group_rows": 0,
+      "numeric_summary": null,
+      "invalid_pairs": 0,
+      "measure": "count_distinct_trials",
+      "evidence_basis": "All values are extracted from trial records or computed deterministically from them."
+    },
+    "query_interpretation": {
+      "model_interpretation": "Show a network graph of lead sponsors and intervention names (drugs) for clinical trials studying eczema.",
+      "filters_applied": {
+        "query.cond": "eczema"
+      },
+      "assumptions": [],
+      "plan_adjustments": [
+        "Built a lead_sponsor / intervention_name co-occurrence graph across the matching trials. Edges mean both values are recorded on the same trial."
+      ]
+    },
+    "intent": "relationship",
+    "group_by": "lead_sponsor",
+    "series_by": "intervention_name",
+    "measure": "trial_count",
+    "unit": "trials",
+    "sort": {
+      "by": "value_desc",
+      "direction": "desc"
+    },
+    "invariant": {
+      "kind": "multi_label",
+      "statement": "sum(data.edges[].weight) + data.omitted.trials (2,654) >= meta.coverage.records_analyzed (a trial can span several edges)",
+      "assignments_total": 3259,
+      "records_analyzed": 1763
+    },
+    "coverage": {
+      "total_matching_studies": 1763,
+      "records_fetched": 1763,
+      "records_analyzed": 1763,
+      "is_sample": false,
+      "coverage_ratio": 1.0,
+      "sampling_method": "census",
+      "sampling_bias_risk": "none",
+      "fetch_cap": 10000,
+      "pages_fetched": 2,
+      "counts_are_exact": false,
+      "excluded": {
+        "missing_dimension_value": 0,
+        "imprecise_for_granularity": 0,
+        "no_selected_category": 0,
+        "memberships_removed": 0,
+        "invalid_numeric_pair": 0
+      },
+      "comparison_arms": {}
+    },
+    "truncation": {
+      "dimension": "lead_sponsor",
+      "rule": "top_n",
+      "shown": 10,
+      "total_distinct": 725,
+      "collapsed_into_other": 2610
+    },
+    "visualization_needed": true,
+    "visualization_rationale": "The question is about how two dimensions co-occur.",
+    "suggestions": [],
+    "warnings": [],
+    "notes": {
+      "counting_rule": "A trial can be counted in several categories, so the values sum to more than the number of trials.",
+      "overrides": [],
+      "general": [
+        "Sponsor names are not entity-resolved: 'Merck Sharp & Dohme LLC' and 'Merck KGaA' are counted as different sponsors.",
+        "Showing the top 10 of 725 values; the remaining 715 are grouped into 'Other'.",
+        "2,654 trials are not drawn on the graph. Collapsed into 'Other' by the top-10 limit, so it has no single intervention_name value to link to. They are reported in data.omitted."
+      ]
+    },
+    "citation_policy": "Citations are extracted mechanically from the ClinicalTrials.gov API response. Field values and excerpts are verbatim; the language model never writes them.",
+    "source": "clinicaltrials.gov",
+    "api_version": "2.0.5",
+    "data_timestamp": "2026-11-02T10:00:05",
+    "request_id": "dd7861ec7013",
+    "elapsed_ms": 4281
+  }
+}

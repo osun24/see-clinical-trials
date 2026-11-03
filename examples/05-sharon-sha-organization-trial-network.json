@@ -1,0 +1,689 @@
+{
+  "visualization": {
+    "type": "network_graph",
+    "title": "Sharon Sha — Associated Sponsors",
+    "encoding": {
+      "node": {
+        "id_field": "id",
+        "label_field": "label",
+        "group_field": "group",
+        "size_field": "size",
+        "level_field": "level"
+      },
+      "edge": {
+        "source_field": "source",
+        "target_field": "target",
+        "weight_field": "weight"
+      },
+      "layout_hint": "force"
+    },
+    "data": {
+      "nodes": [
+        {
+          "id": "person:Sharon Sha",
+          "label": "Sharon Sha",
+          "group": "person",
+          "size": 11,
+          "level": 0,
+          "verification_basis": "full_text_query_person_association"
+        },
+        {
+          "id": "lead_sponsor:bristol-myers squibb",
+          "label": "Bristol-Myers Squibb",
+          "group": "lead_sponsor",
+          "size": 3,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:novartis pharmaceuticals",
+          "label": "Novartis Pharmaceuticals",
+          "group": "lead_sponsor",
+          "size": 3,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:anthos therapeutics, inc.",
+          "label": "Anthos Therapeutics, Inc.",
+          "group": "lead_sponsor",
+          "size": 1,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:aribio co., ltd.",
+          "label": "AriBio Co., Ltd.",
+          "group": "lead_sponsor",
+          "size": 1,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:servier bio-innovation llc",
+          "label": "Servier Bio-Innovation LLC",
+          "group": "lead_sponsor",
+          "size": 1,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:stanford university",
+          "label": "Stanford University",
+          "group": "lead_sponsor",
+          "size": 1,
+          "level": 1
+        },
+        {
+          "id": "lead_sponsor:the methodist hospital research institute",
+          "label": "The Methodist Hospital Research Institute",
+          "group": "lead_sponsor",
+          "size": 1,
+          "level": 1
+        },
+        {
+          "id": "trial:NCT06976203",
+          "label": "A Study to Evaluate the Efficacy and Safety of KarXT + KarX-EC for Cognitive Impairment in Alzheimer's Disease (MINDSET 2)",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT06976203",
+          "url": "https://clinicaltrials.gov/study/NCT06976203"
+        },
+        {
+          "id": "trial:NCT04817618",
+          "label": "Study of Efficacy and Safety of Iptacopan in Patients With C3 Glomerulopathy.",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT04817618",
+          "url": "https://clinicaltrials.gov/study/NCT04817618"
+        },
+        {
+          "id": "trial:NCT05712200",
+          "label": "Study to evaLuate the effIcacy and Safety of abeLacimab in High-risk Patients With Atrial Fibrillation Who Have Been Deemed Unsuitable for Oral antiCoagulation (LILAC-TIMI 76)",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT05712200",
+          "url": "https://clinicaltrials.gov/study/NCT05712200"
+        },
+        {
+          "id": "trial:NCT05531526",
+          "label": "Phase 3, Double-blind, Randomized, Placebo-controlled Trial to Evaluate the Efficacy and Safety of AR1001 in Participants With Early Alzheimer's Disease (Polaris-AD)",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT05531526",
+          "url": "https://clinicaltrials.gov/study/NCT05531526"
+        },
+        {
+          "id": "trial:NCT06127407",
+          "label": "Ivosidenib in Participants With Locally Advanced or Metastatic Conventional Chondrosarcoma Untreated or Previously Treated With 1 or 2 Systemic Treatment Regimens",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT06127407",
+          "url": "https://clinicaltrials.gov/study/NCT06127407"
+        },
+        {
+          "id": "trial:NCT02256306",
+          "label": "The PLasma for Alzheimer SymptoM Amelioration (PLASMA) Study",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT02256306",
+          "url": "https://clinicaltrials.gov/study/NCT02256306"
+        },
+        {
+          "id": "trial:NCT03487367",
+          "label": "Clinical Trial Readiness for SCA1 and SCA3",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT03487367",
+          "url": "https://clinicaltrials.gov/study/NCT03487367"
+        },
+        {
+          "id": "trial:NCT06979453",
+          "label": "A Study to Evaluate the Efficacy, Safety, and Drug Levels of Deucravacitinib (BMS-986165) in Adolescent Participants With Moderate to Severe Plaque Psoriasis",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT06979453",
+          "url": "https://clinicaltrials.gov/study/NCT06979453"
+        },
+        {
+          "id": "trial:NCT05939414",
+          "label": "An Open-label Study Comparing Lutetium (177Lu) Vipivotide Tetraxetan Versus Observation in PSMA Positive OMPC.",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT05939414",
+          "url": "https://clinicaltrials.gov/study/NCT05939414"
+        },
+        {
+          "id": "trial:NCT07106762",
+          "label": "Phase 2/3 Trial of Izalontamab Brengitecan vs Platinum-based Chemotherapy for Metastatic Urothelial Cancer With Disease Progression on or After Immunotherapy",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT07106762",
+          "url": "https://clinicaltrials.gov/study/NCT07106762"
+        },
+        {
+          "id": "trial:NCT07225504",
+          "label": "A Study to Evaluate the Efficacy and Safety of Remibrutinib in Secondary Progressive Multiple Sclerosis",
+          "group": "trial",
+          "size": 1,
+          "level": 2,
+          "nct_id": "NCT07225504",
+          "url": "https://clinicaltrials.gov/study/NCT07225504"
+        }
+      ],
+      "edges": [
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:bristol-myers squibb",
+          "weight": 3,
+          "citations": [
+            {
+              "nct_id": "NCT06976203",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of KarXT + KarX-EC for Cognitive Impairment in Alzheimer's Disease (MINDSET 2)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Bristol-Myers Squibb",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06976203"
+            },
+            {
+              "nct_id": "NCT06979453",
+              "brief_title": "A Study to Evaluate the Efficacy, Safety, and Drug Levels of Deucravacitinib (BMS-986165) in Adolescent Participants With Moderate to Severe Plaque Psoriasis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Bristol-Myers Squibb",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06979453"
+            },
+            {
+              "nct_id": "NCT07106762",
+              "brief_title": "Phase 2/3 Trial of Izalontamab Brengitecan vs Platinum-based Chemotherapy for Metastatic Urothelial Cancer With Disease Progression on or After Immunotherapy",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Bristol-Myers Squibb",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07106762"
+            }
+          ],
+          "citation_total": 3,
+          "citations_truncated": false
+        },
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:novartis pharmaceuticals",
+          "weight": 3,
+          "citations": [
+            {
+              "nct_id": "NCT04817618",
+              "brief_title": "Study of Efficacy and Safety of Iptacopan in Patients With C3 Glomerulopathy.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04817618"
+            },
+            {
+              "nct_id": "NCT05939414",
+              "brief_title": "An Open-label Study Comparing Lutetium (177Lu) Vipivotide Tetraxetan Versus Observation in PSMA Positive OMPC.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05939414"
+            },
+            {
+              "nct_id": "NCT07225504",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Remibrutinib in Secondary Progressive Multiple Sclerosis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07225504"
+            }
+          ],
+          "citation_total": 3,
+          "citations_truncated": false
+        },
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:anthos therapeutics, inc.",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT05712200",
+              "brief_title": "Study to evaLuate the effIcacy and Safety of abeLacimab in High-risk Patients With Atrial Fibrillation Who Have Been Deemed Unsuitable for Oral antiCoagulation (LILAC-TIMI 76)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Anthos Therapeutics, Inc.",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05712200"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:aribio co., ltd.",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT05531526",
+              "brief_title": "Phase 3, Double-blind, Randomized, Placebo-controlled Trial to Evaluate the Efficacy and Safety of AR1001 in Participants With Early Alzheimer's Disease (Polaris-AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AriBio Co., Ltd.",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05531526"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:servier bio-innovation llc",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT06127407",
+              "brief_title": "Ivosidenib in Participants With Locally Advanced or Metastatic Conventional Chondrosarcoma Untreated or Previously Treated With 1 or 2 Systemic Treatment Regimens",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Servier Bio-Innovation LLC",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06127407"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:stanford university",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT02256306",
+              "brief_title": "The PLasma for Alzheimer SymptoM Amelioration (PLASMA) Study",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Stanford University",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02256306"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "person:Sharon Sha",
+          "target": "lead_sponsor:the methodist hospital research institute",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT03487367",
+              "brief_title": "Clinical Trial Readiness for SCA1 and SCA3",
+              "field_path": "protocolSection.contactsLocationsModule.overallOfficials[].name + protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "overallOfficialName=Sharon Sha; lead_sponsor=The Methodist Hospital Research Institute",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03487367"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:bristol-myers squibb",
+          "target": "trial:NCT06976203",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT06976203",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of KarXT + KarX-EC for Cognitive Impairment in Alzheimer's Disease (MINDSET 2)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Bristol-Myers Squibb",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06976203"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:novartis pharmaceuticals",
+          "target": "trial:NCT04817618",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT04817618",
+              "brief_title": "Study of Efficacy and Safety of Iptacopan in Patients With C3 Glomerulopathy.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT04817618"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:anthos therapeutics, inc.",
+          "target": "trial:NCT05712200",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT05712200",
+              "brief_title": "Study to evaLuate the effIcacy and Safety of abeLacimab in High-risk Patients With Atrial Fibrillation Who Have Been Deemed Unsuitable for Oral antiCoagulation (LILAC-TIMI 76)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Anthos Therapeutics, Inc.",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05712200"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:aribio co., ltd.",
+          "target": "trial:NCT05531526",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT05531526",
+              "brief_title": "Phase 3, Double-blind, Randomized, Placebo-controlled Trial to Evaluate the Efficacy and Safety of AR1001 in Participants With Early Alzheimer's Disease (Polaris-AD)",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "AriBio Co., Ltd.",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05531526"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:servier bio-innovation llc",
+          "target": "trial:NCT06127407",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT06127407",
+              "brief_title": "Ivosidenib in Participants With Locally Advanced or Metastatic Conventional Chondrosarcoma Untreated or Previously Treated With 1 or 2 Systemic Treatment Regimens",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Servier Bio-Innovation LLC",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06127407"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:stanford university",
+          "target": "trial:NCT02256306",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT02256306",
+              "brief_title": "The PLasma for Alzheimer SymptoM Amelioration (PLASMA) Study",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Stanford University",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT02256306"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:the methodist hospital research institute",
+          "target": "trial:NCT03487367",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT03487367",
+              "brief_title": "Clinical Trial Readiness for SCA1 and SCA3",
+              "field_path": "protocolSection.contactsLocationsModule.overallOfficials[].name + protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "overallOfficialName=Sharon Sha; lead_sponsor=The Methodist Hospital Research Institute",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT03487367"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:bristol-myers squibb",
+          "target": "trial:NCT06979453",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT06979453",
+              "brief_title": "A Study to Evaluate the Efficacy, Safety, and Drug Levels of Deucravacitinib (BMS-986165) in Adolescent Participants With Moderate to Severe Plaque Psoriasis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Bristol-Myers Squibb",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT06979453"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:novartis pharmaceuticals",
+          "target": "trial:NCT05939414",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT05939414",
+              "brief_title": "An Open-label Study Comparing Lutetium (177Lu) Vipivotide Tetraxetan Versus Observation in PSMA Positive OMPC.",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT05939414"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:bristol-myers squibb",
+          "target": "trial:NCT07106762",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT07106762",
+              "brief_title": "Phase 2/3 Trial of Izalontamab Brengitecan vs Platinum-based Chemotherapy for Metastatic Urothelial Cancer With Disease Progression on or After Immunotherapy",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Bristol-Myers Squibb",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07106762"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        },
+        {
+          "source": "lead_sponsor:novartis pharmaceuticals",
+          "target": "trial:NCT07225504",
+          "weight": 1,
+          "citations": [
+            {
+              "nct_id": "NCT07225504",
+              "brief_title": "A Study to Evaluate the Efficacy and Safety of Remibrutinib in Secondary Progressive Multiple Sclerosis",
+              "field_path": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+              "field_value": "Novartis Pharmaceuticals",
+              "evidence_kind": "field_value",
+              "excerpt": null,
+              "source_url": "https://clinicaltrials.gov/study/NCT07225504"
+            }
+          ],
+          "citation_total": 1,
+          "citations_truncated": false
+        }
+      ]
+    }
+  },
+  "meta": {
+    "analysis": {
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "lead_sponsor",
+            "output": "primary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "primary_rows",
+            "group_by": [
+              "primary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "schema": {
+        "columns": [
+          "label",
+          "value"
+        ],
+        "filter_canonicalisation": [],
+        "column_types": {
+          "label": "string",
+          "value": "integer"
+        },
+        "group_types": {
+          "primary": "string"
+        },
+        "source_columns": [],
+        "fields_mask": [
+          "BriefTitle",
+          "LeadSponsorName",
+          "NCTId"
+        ],
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "lead_sponsor",
+            "output": "primary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "primary_rows",
+            "group_by": [
+              "primary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "input_fingerprint": "8d70c06a9d6d6d03130e535dfe07b4a15149b571947b78efa3462047da5de796",
+      "excluded_trial_ids": [],
+      "trace": [
+        {
+          "step": "primary_rows",
+          "op": "memberships",
+          "rows": 11
+        },
+        {
+          "step": "counts",
+          "op": "aggregate",
+          "rows": 7
+        }
+      ],
+      "filtered_rows": 0,
+      "missing_group_rows": 0,
+      "numeric_summary": null,
+      "invalid_pairs": 0,
+      "measure": "count_distinct_trials",
+      "evidence_basis": "All values are extracted from trial records or computed deterministically from them."
+    },
+    "query_interpretation": {
+      "model_interpretation": "Identify the organizations (lead sponsors) and trials associated with the person named Sharon Sha.",
+      "filters_applied": {
+        "query.term": "Sharon Sha"
+      },
+      "assumptions": [],
+      "plan_adjustments": [
+        "Interpreted association for 'Sharon Sha' as an evidence-backed lead_sponsor relationship graph."
+      ]
+    },
+    "intent": "relationship",
+    "group_by": "lead_sponsor",
+    "measure": "trial_count",
+    "unit": "trials",
+    "sort": {
+      "by": "value_desc",
+      "direction": "desc"
+    },
+    "invariant": {
+      "kind": "multi_label",
+      "statement": "Each edge is backed by cited trial records. Edge weights are per relationship layer and must not be summed across levels.",
+      "records_analyzed": 11
+    },
+    "coverage": {
+      "total_matching_studies": 11,
+      "records_fetched": 11,
+      "records_analyzed": 11,
+      "is_sample": false,
+      "coverage_ratio": 1.0,
+      "sampling_method": "census",
+      "sampling_bias_risk": "none",
+      "fetch_cap": 10000,
+      "pages_fetched": 1,
+      "counts_are_exact": false,
+      "excluded": {
+        "missing_dimension_value": 0,
+        "imprecise_for_granularity": 0,
+        "no_selected_category": 0,
+        "memberships_removed": 0,
+        "invalid_numeric_pair": 0
+      },
+      "comparison_arms": {}
+    },
+    "visualization_needed": true,
+    "visualization_rationale": "The validated graph plan asks how evidence-backed entities relate through trials.",
+    "suggestions": [],
+    "warnings": [],
+    "notes": {
+      "counting_rule": "A trial can be counted in several categories, so the values sum to more than the number of trials.",
+      "overrides": [],
+      "general": [
+        "Sponsor names are not entity-resolved: 'Merck Sharp & Dohme LLC' and 'Merck KGaA' are counted as different sponsors.",
+        "These are full-text associations, not independently confirmed person-level links. Exact OverallOfficialName matches provide additional citation evidence where available; missing or different official names do not exclude search results."
+      ]
+    },
+    "citation_policy": "Citations are extracted mechanically from the ClinicalTrials.gov API response. Field values and excerpts are verbatim; the language model never writes them.",
+    "source": "clinicaltrials.gov",
+    "api_version": "2.0.5",
+    "data_timestamp": "2026-11-02T10:00:05",
+    "request_id": "18f3dd28a99a",
+    "elapsed_ms": 1951
+  }
+}

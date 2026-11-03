@@ -67,9 +67,8 @@ interpretation and deterministic execution. It:
 - salvages useful search words if no explicit filter was found; and
 - records every correction in `ResolvedPlan.adjustments`.
 
-When interpretation looks wrong, call `POST /plan`. It runs this phase and
-returns the resolved plan and exact upstream parameters without fetching trial
-records.
+Interpretation behavior is tested directly through `interpret.merge.resolve()`
+and the request pipeline.
 
 ### 2. Fetch data
 
@@ -132,7 +131,7 @@ type is already valid for the data.
 The rest of `pipeline.answer()` builds the response around the visualization:
 
 - `_coverage()` says how much of the matching universe was inspected;
-- `viz.titles` creates deterministic titles and the required coverage subtitle;
+- `viz.titles` creates deterministic titles and coverage disclosure text;
 - `_graph_invariant()` rewrites flat-array invariants in graph terminology;
 - `_general_notes()` surfaces dimension-specific and truncation caveats;
 - `_filters_applied()` reports the upstream filters actually used; and
@@ -308,8 +307,8 @@ look for these values in order:
 8. Rows from `encode_bar()` with `label`, `value`, exactness, and citations.
 9. Coverage, filters, invariant, and notes in the final `meta` object.
 
-This is also a practical debugging checklist. `POST /plan` covers steps 1–3;
-unit tests can exercise every later step without an OpenAI call.
+This is also a practical debugging checklist; unit tests can exercise the
+deterministic execution steps without an OpenAI call.
 
 ## Finalized execution model
 

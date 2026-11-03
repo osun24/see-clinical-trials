@@ -1,10 +1,4 @@
-"""Titles, and the subtitle that states what the numbers are based on.
-
-The subtitle is the load-bearing honesty mechanism in this API. A boolean flag
-a frontend has to remember to check will eventually be forgotten; a required
-string sitting next to the title cannot be. ``VisualizationSpec.subtitle`` is
-therefore never null and the renderer contract requires displaying it.
-"""
+"""Deterministic visualization titles and coverage disclosure text."""
 
 from __future__ import annotations
 
@@ -103,7 +97,7 @@ def build_title(plan: ResolvedPlan, bucket_set: BucketSet | None) -> str:
     return f"{title} ({', '.join(qualifiers)})" if qualifiers else title
 
 
-def build_subtitle(
+def build_coverage_message(
     *,
     total_matching: int,
     records_analyzed: int,
@@ -113,7 +107,7 @@ def build_subtitle(
     excluded_missing: int = 0,
     comparison_arms: int = 0,
 ) -> str:
-    """One sentence a viewer cannot miss, stating the basis of the numbers."""
+    """Build display-ready text describing the basis of the numbers."""
     if total_matching == 0:
         return "No trials matched these filters."
     if comparison_arms and counts_are_exact:

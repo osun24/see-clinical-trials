@@ -428,7 +428,7 @@ def get(dimension_id: str) -> DimensionDef:
 
 
 def describe_registry() -> list[dict[str, Any]]:
-    """Serialisable registry, for the self-documenting GET /dimensions route."""
+    """Return serialisable registry metadata for internal tooling."""
     return [
         {
             "id": d.id,

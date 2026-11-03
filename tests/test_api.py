@@ -71,7 +71,7 @@ def test_query_returns_a_renderable_spec(client, payload):
     viz, meta = body["visualization"], body["meta"]
 
     assert viz["type"] == "bar_chart"
-    assert viz["title"] and viz["subtitle"]
+    assert viz["title"]
 
     # Every channel must name a key present on every row, or a renderer breaks.
     x, y = viz["encoding"]["x"]["field"], viz["encoding"]["y"]["field"]
@@ -86,8 +86,7 @@ def test_query_returns_a_renderable_spec(client, payload):
 
 
 @respx.mock
-def test_subtitle_states_the_sampling_basis(client, payload):
-    """The subtitle is the one honesty signal a frontend cannot forget."""
+def test_coverage_warning_states_the_sampling_basis(client, payload):
     sampled = {**payload, "totalCount": 3139}
     mock_ctgov(sampled)
     with (
@@ -101,11 +100,10 @@ def test_subtitle_states_the_sampling_basis(client, payload):
     assert coverage["counts_are_exact"] is False
     assert coverage["sampling_bias_risk"] == "high"
 
-    subtitle = body["visualization"]["subtitle"]
-    assert "3,139" in subtitle
-    assert f"{coverage['records_analyzed']:,}" in subtitle
-    assert "approximate" in subtitle
-    assert body["meta"]["notes"]["coverage_warning"] == subtitle
+    warning = body["meta"]["notes"]["coverage_warning"]
+    assert "3,139" in warning
+    assert f"{coverage['records_analyzed']:,}" in warning
+    assert "approximate" in warning
 
 
 @respx.mock
@@ -262,9 +260,10 @@ def test_named_person_drug_graph_uses_drug_names_and_trial_evidence(client):
     visualization = body["visualization"]
     assert visualization["type"] == "network_graph"
     assert visualization["title"] == "Sharon Sha — Associated Drugs"
-    assert "all 2 trials returned by a full-text search for Sharon Sha" in visualization[
-        "subtitle"
-    ]
+    assert any(
+        "all 2 trials returned by a full-text search for Sharon Sha" in note
+        for note in body["meta"]["notes"]["general"]
+    )
 
     nodes = visualization["data"]["nodes"]
     branches = {node["label"] for node in nodes if node["level"] == 1}
@@ -359,23 +358,9 @@ def test_missing_api_key_is_a_500_and_fetches_nothing(client, monkeypatch):
 
 # --- supporting routes -----------------------------------------------------
 
-def test_dimensions_route_documents_the_registry(client):
-    body = client.get("/dimensions").json()
-    ids = {d["id"] for d in body["dimensions"]}
-    assert {"phase", "country", "overall_status"} <= ids
-    assert body["counting_rules"]["partition"]
-    for dimension in body["dimensions"]:
-        assert dimension["counting_rule"]
-        assert "counts_can_be_exact" in dimension
-
-
-def test_plan_route_shows_params_without_fetching(client):
-    with patch("app.pipeline.interpret", return_value=make_plan(group_by="phase")):
-        body = client.post("/plan", json={"query": "pembrolizumab by phase"}).json()
-
-    assert body["ctgov_params"]["query.intr"] == "pembrolizumab"
-    assert body["plan"]["group_by"] == "phase"
-    assert "NCTId" in body["fields_mask"]
+def test_removed_internal_routes_are_not_exposed(client):
+    assert client.post("/plan", json={"query": "q"}).status_code == 404
+    assert client.get("/dimensions").status_code == 404
 
 
 def test_healthz_reports_configuration(client):
@@ -387,6 +372,8 @@ def test_healthz_reports_configuration(client):
 def test_openapi_documents_the_response_schema(client):
     schema = client.get("/openapi.json").json()
     assert "/query" in schema["paths"]
+    assert "/plan" not in schema["paths"]
+    assert "/dimensions" not in schema["paths"]
     assert "AnswerResponse" in schema["components"]["schemas"]
     assert "Citation" in schema["components"]["schemas"]
     request_schema = schema["components"]["schemas"]["QueryRequest"]
@@ -429,7 +416,6 @@ def test_a_universe_within_the_cap_is_reported_as_a_census(client, payload):
     # Null fields are stripped from the response, so absence is the signal.
     assert coverage.get("truncated_reason") is None
     assert coverage["coverage_ratio"] == 1.0
-    assert "all" in body["visualization"]["subtitle"]
     assert body["meta"]["notes"].get("coverage_warning") is None
 
 

@@ -2,7 +2,6 @@
   "visualization": {
     "type": "network_graph",
     "title": "Illustrative renderer fixture",
-    "subtitle": "Synthetic example; not clinical findings.",
     "encoding": {
       "node": {
         "id_field": "id",
@@ -85,7 +84,8 @@
         "no_selected_category": 0,
         "memberships_removed": 0,
         "invalid_numeric_pair": 0
-      }
+      },
+      "comparison_arms": {}
     },
     "visualization_needed": true,
     "visualization_rationale": "",

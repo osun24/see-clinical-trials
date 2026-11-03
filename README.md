@@ -1,620 +1,458 @@
 # Clinical Trials Visualization API
 
-An AI-enabled backend that answers natural-language questions about clinical trials.
-It interprets the question with the OpenAI API, retrieves matching trials from the
-[ClinicalTrials.gov v2 Data API](https://clinicaltrials.gov/data-api/api), decides
-whether a visualization is warranted and which type fits the data, and returns a
-renderable **visualization specification** in which every plotted value carries
-citations back to the trial records that produced it.
+## Run the application
 
-If you are reading or changing the implementation, start with
-[`docs/CODEBASE.md`](docs/CODEBASE.md). It follows a request through the code,
-explains the important data contracts, and gives change recipes for the most
-common extensions. The companion [`docs/UML.md`](docs/UML.md) shows the core
-types and request sequence. This README is the API and behavior reference.
+### Requirements
 
-```
-POST /query  {"query": "How many pembrolizumab trials are there by phase?"}
-   -> {"visualization": {type, title, subtitle, encoding, data}, "meta": {...}}
-```
+- Python 3.12 or newer
+- [uv](https://docs.astral.sh/uv/)
+- OpenAI API key (set in `.env` file as `OPENAI_API_KEY`)
 
----
-
-## Quick start
+### Install
 
 ```bash
 uv sync
-cp .env.example .env          # then set OPENAI_API_KEY
+```
+
+### Configure
+
+Create a local environment file and add your API key:
+
+```bash
+cp .env.example .env
+```
+
+```dotenv
+OPENAI_API_KEY=sk-...
+```
+
+### Start
+
+```bash
 uv run uvicorn app.main:app --reload
 ```
 
-Open <http://localhost:8000> for the demo renderer, or <http://localhost:8000/docs>
-for the generated OpenAPI documentation.
+The service is then available at:<http://localhost:8000>
 
-```bash
-uv run pytest        # fully offline
-uv run pytest -m live   # 10 additional tests that hit the real API
-```
+##  Implementation reflection
+## Tools used
+- Codex
+- Claude Code
 
----
+## Validating correctness
+- Adversarial review by other models from a different provider
+- Implemented a suite of tests to ensure correctness
+- Manual review of the generated responses for critical aspects of the implementation
 
-## Two design decisions worth knowing up front
+## Design vs. adaptation
+- Started with initial high-level planning by sketching a flowchart
+ - Aimed to balance flexibility for query input and need for determinism and reliability in creating the visualization
+ - To prevent hallucination and excess cost, I decided to have the API request and visualization run locally with Python. 
+ - To ensure flexibility of visualization and usefulness, I decided to use a LLM to interpret the query and generate a plan for the visualization, including providing fields for the API request
+ - Used structured model outputs to ensure that the output remained constrained and to reduce hallucination
+![plan]("Initial high level planning.png")
 
-**The model produces intent, not output.** The OpenAI call picks a grouping dimension
-from a closed enum, extracts filters, and states how it read the question. It never
-produces a count, a bucket label, a chart title, a quotation, or the final chart type.
-Everything a viewer could be misled by is computed deterministically from real API data
-and is unit-tested. There is no fallback planner: a missing API key is a loud
-misconfiguration (HTTP 500 `llm_misconfigured`), not a reason to quietly answer a
-different question.
+- Adapted: 
+  - Code was generated according to specifications in prompt and were continually iterated and adapted upon based on testing and review
+  - Visualization renderer, initial tests, and metadata schema were generated and adapted 
+  - Prototyped with allowing the LLM to enrich the output based on its knowledge (e.g., classify drugs into mechanistic classes or combine synonyms) but found that this disrupted downstream visualization, so I removed it.
+  - Adapted with number of trials to fetch, achieving exact counts when possible, and sampling when it would take too much time to fetch all trials.
 
-**Every number is computed locally, so the response says what it counted.**
-ClinicalTrials.gov's `/stats/field/values` endpoint rejects any scoped query, so there
-is no way to ask the server for "phase distribution *for pembrolizumab*". All
-aggregation therefore happens over records this service fetched — which is also exactly
-what makes per-datum citations possible. The default cap is sized so a specific drug or
-condition is counted **completely**, but a broad query cannot be, so sampling is treated
-as a normal outcome and reported in three redundant places:
-`visualization.subtitle` (always present), `meta.coverage`, and `value_is_exact` on
-every datum.
+## Key design decisions and tradeoffs
+1. Used only an unstructured input query as input, reducing friction for the user. However, this relies on the LLM to flexibly interpret the query, determining the intent of the user, and generate a plan for visualization. 
+2. Used an LLM to generate fields for API request and visualization plan, but not to fetch trials or generate the visualization itself. This allows for flexibility in query input while ensuring that the output is deterministic and reliable. However, this sometimes can result in invalid fields for the API request or visualization plan, which is mitigated by validation and retry.
+3. Used deterministic Python to select the visualization type and generate the visualization itself. Certain questions cannot be best visualized as there is no downstream enrichment or interpretation of the API output.  
+ - One such question is "How have the drug classes for new NSCLC trials changed over time?" requires consolidating individual drugs into mechanistic classes, which is not possible with the current API output as it is not included in clinicaltrials.gov. 
 
----
+## Future work 
+1. Implement enrichment downstream to allow for richer visualization and expansion in the space of questions answerable by the visualizer.
+2. Implement more complex visualizations, such as a Sankey diagram.
 
 ## Request schema
 
-`POST /query` and `POST /plan` take the same body. The natural-language question
-is the complete request; the planner derives filters, grouping, and presentation
-intent from it.
+### `POST /query`
 
-| Field | Type | Required | Validation | Notes |
-|---|---|---|---|---|
-| `query` | string | **yes** | 1–500 chars, not blank | The natural-language question. |
+Interprets and answers a natural-language clinical-trials question.
 
-### Comparisons
-
-"Compare A against B" is the question shape an executive asks most, and it cannot be
-expressed as one ClinicalTrials.gov query. When the model sets `compare_by` (one of
-`sponsor`, `condition`, `drug_name`, `country`) and two to five `compare_values`, each
-value becomes its own scoped query, run concurrently, and its own series on the chart.
-
-```
-"Compare the phase distribution of Pfizer against Merck."
-  -> grouped_bar, group_by=phase, series=compare:sponsor
-  -> filters_applied: {"Pfizer / query.spons": "Pfizer", "Merck / query.spons": "Merck"}
+```json
+{
+  "query": "Compare trial phases for pembrolizumab and nivolumab"
+}
 ```
 
-Because arms are independent queries, one trial can satisfy several of them. That overlap
-is **measured and reported** (`meta.notes.general`, and `invariant.kind` becomes
-`multi_label`) rather than assumed away. Arm totals and any arm that matched nothing are
-reported too. A comparison always renders grouped, never stacked — stacking would hide
-the difference the question asked about.
+| Field | Type | Required | Validation |
+|---|---|---:|---|
+| `query` | string | Yes | Nonblank, 1–500 characters |
 
-Unknown fields are rejected. Validation failures return **422** `invalid_request`.
+Example:
 
----
+```bash
+curl -X POST http://localhost:8000/query \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"How many pembrolizumab trials are there by phase?"}'
+```
 
 ## Response schema
+
+A successful `POST /query` response contains a visualization specification and
+response metadata:
 
 ```json
 {
   "visualization": {
     "type": "bar_chart",
     "title": "Pembrolizumab Trials by Phase",
-    "subtitle": "Based on 2,000 of 2,999 matching trials (first 2,000 by API relevance order); counts are approximate.",
     "encoding": {
-      "x": {"field": "label", "type": "nominal", "axis_title": "Trial Phase", "sort": "none"},
-      "y": {"field": "value", "type": "quantitative", "axis_title": "Number of Trials", "unit": "trials"},
-      "orientation": "vertical",
-      "tooltip": ["label", "value"]
+      "x": {"field": "label", "type": "nominal", "axis_title": "Trial Phase"},
+      "y": {"field": "value", "type": "quantitative", "axis_title": "Trials", "unit": "trials"},
+      "orientation": "vertical"
     },
     "data": [
       {
-        "label": "Phase 1/Phase 2",
-        "value": 308,
+        "label": "Phase 2",
+        "value": 1,
         "value_is_exact": false,
-        "citation_total": 308,
-        "citations_truncated": true,
+        "citation_total": 1,
+        "citations_truncated": false,
         "citations": [
           {
-            "nct_id": "NCT04956640",
-            "brief_title": "Study of LY3537982 in Cancer Patients With a Specific Genetic Mutation",
+            "nct_id": "NCT00000001",
+            "brief_title": "Illustrative trial",
             "field_path": "protocolSection.designModule.phases",
-            "field_value": "[\"PHASE1\",\"PHASE2\"]",
+            "field_value": "PHASE2",
             "evidence_kind": "field_value",
-            "excerpt": null,
-            "source_url": "https://clinicaltrials.gov/study/NCT04956640"
+            "source_url": "https://clinicaltrials.gov/study/NCT00000001"
           }
         ]
       }
     ]
   },
-  "meta": { "...": "see below" }
+  "meta": {
+    "query_interpretation": {
+      "model_interpretation": "Count pembrolizumab trials by phase.",
+      "filters_applied": {"query.intr": "pembrolizumab"},
+      "assumptions": [],
+      "plan_adjustments": []
+    },
+    "intent": "distribution",
+    "group_by": "phase",
+    "measure": "trial_count",
+    "unit": "trials",
+    "invariant": {
+      "kind": "partition",
+      "statement": "sum(data[].value) == meta.coverage.records_analyzed"
+    },
+    "coverage": {
+      "total_matching_studies": 1,
+      "records_fetched": 1,
+      "records_analyzed": 1,
+      "is_sample": false,
+      "coverage_ratio": 1.0,
+      "sampling_method": "census",
+      "sampling_bias_risk": "none",
+      "fetch_cap": 10000,
+      "pages_fetched": 1,
+      "counts_are_exact": false,
+      "excluded": {}
+    }
+  }
 }
 ```
 
-### `visualization`
+### Visualization specification
 
-| Field | Type | Notes |
+Treat the response as a display contract, not as data to reinterpret. A frontend
+renderer should follow this order:
+
+1. Validate that `visualization.type` is supported. Show a visible error for an
+   unknown type; do not fall back to a different chart.
+2. Display `visualization.title` as visible text.
+3. Display coverage and general warnings using the policy below.
+4. If `type` is `none`, render the documented empty state and stop.
+5. Otherwise, read field names and presentation options from `encoding`, then
+   render `data` with the matching type-specific branch.
+6. Attach citations to the mark they came from: a flat-data row or a graph edge.
+
+Do not re-interpret the question, use `meta` to select a chart, or infer field
+names from labels. Every channel `field` names a property that exists on every
+applicable row. `network_graph` is the only type whose `data` is not a flat
+array.
+
+| Field | Required | Renderer behavior |
+|---|---:|---|
+| `type` | Yes | Select exactly one renderer branch using the table below. Unknown values must produce a visible unsupported-type error. |
+| `title` | Yes | Display as the visualization heading. |
+| `encoding` | Yes | Read channel field names, types, titles, units, sorting, and presentation options from this object. |
+| `data` | Yes | Flat row array for every type except `network_graph`; graph data is an object. |
+
+#### Encoding and channel contract
+
+The channel keys are `x`, `y`, `series`, `theta`, `color`, `size`, `value`, and
+`label`. A channel object always has `field`; all other channel properties are
+optional and are omitted when they do not apply:
+
+| Field | Values | Behavior |
 |---|---|---|
-| `type` | enum | One of the 9 types below. Never null. |
-| `title` | string | Human-readable. Never mutated by coverage. |
-| `subtitle` | string | **Always present. The renderer contract requires displaying it.** States what the numbers are based on. |
-| `encoding` | object | Channel → field mapping. See the per-type table. |
-| `data` | array\|object | Flat array of rows, except `network_graph`. |
+| `field` | string | Required row property to read. Never substitute a hard-coded property. |
+| `type` | `nominal`, `quantitative`, `temporal` | Defaults to `nominal` if omitted. Select categorical, numeric, or time handling. |
+| `axis_title` | string | Display as the axis heading. Omitted means no axis heading. |
+| `legend_title` | string | Display as the legend heading. Omitted means no legend heading. |
+| `unit` | string | Append to formatted values for this channel. This takes precedence over `meta.unit`. |
+| `format` | string | Formatting hint. `integer` means locale-formatted with zero fractional digits. Ignore unknown hints without changing the value. |
+| `granularity` | `year` or `month` | Time-axis bucket size. Values are already bucketed; do not aggregate them again. |
+| `scale` | `linear` or `log` | Defaults to `linear`. A log scale changes position only, not the displayed raw value. |
+| `sort` | string | `none` means preserve response order. If omitted, preserve response order. |
 
-### Two guarantees that make a renderer a pure `switch (type)`
+The encoding object can also contain:
 
-1. **`data` is always a flat array of rows sharing their encoded fields.** The single documented
-   exception is `network_graph`, which is `{"nodes": [...], "edges": [...]}`.
-2. **Every `encoding` channel's `field` names a key present on every row.** You never
-   have to guess which property holds the value.
+- `orientation`: `vertical` or `horizontal`; change mark layout, not channel
+  bindings. For example, `x.field` remains the category field for a horizontal
+  bar chart even though it is drawn on the vertical screen axis.
+- `stack`: `false`, `true`, or `normalize`. `normalize` divides each segment by
+  its within-category total for geometry only; tooltips and labels still show
+  the raw row value.
+- `point_markers`: draw time-series point marks unless explicitly `false`.
+- `total`: backend-supplied denominator for part-to-whole geometry. Do not
+  recompute it from visible rows.
+- `tooltip`: ordered row-field names. Include fields that exist on the row and
+  silently skip any absent optional field.
+- `layout_hint`: requested graph layout; currently `force`.
 
-### Encoding by type
+Render strings as untrusted text, including titles, labels, warning text,
+citations, and graph fields. Never inject them as HTML. Numeric channel values
+are JSON numbers; temporal bucket values are display-ready strings.
 
-| `type` | `encoding` keys | `data` row shape |
-|---|---|---|
-| `stat` | `value`, `label` | one row: `{label, value}` |
-| `bar_chart` | `x`, `y`, `orientation`, `tooltip` | `{label, value}` |
-| `grouped_bar` | above + `series`, `stack: false` | `{label, series, value}` |
-| `stacked_bar` | above + `stack: true \| "normalize"` | `{label, series, value}` |
-| `time_series` | `x` (`type: temporal`, `granularity`), `y`, `point_markers`, optional `series` | `{bucket, label, value}` — **zero-filled**, no gaps |
-| `pie_chart` | `theta`, `color`, `total` | `{label, value, share}` where `share` is 0–1 |
-| `scatter_plot` | `x`, `y`, optional `size`/`color` | one row per trial |
-| `network_graph` | `node`, `edge`, `layout_hint` | `{nodes: [{id,label,group,size,level}], edges: [{source,target,weight,citations}], omitted?}` |
-| `none` | `{}` | `[]` — read `meta.answer_text` and `meta.suggestions` |
+#### Visualization types
 
-The bundled demo implements all nine types: `bar_chart` and `grouped_bar` as bars,
-`stacked_bar` as a true 100% stack when `stack: "normalize"`, `time_series` and
-`scatter_plot` as SVG line and point plots with axes and gridlines, `pie_chart` as an
-SVG pie with a legend, `network_graph` as a labeled hierarchical SVG graph, plus `stat`
-and `none`. A test asserts every member of the type enum has a renderer branch.
-
-`network_graph` is the one non-flat shape. Ordinary two-dimension relationship graphs
-carry an edge-weight reconciliation invariant because they have no `data[].value`:
-
-```json
-"invariant": {"kind": "multi_label",
-  "statement": "sum(data.edges[].weight) + data.omitted.trials (2,114) >= meta.coverage.records_analyzed (a trial can span several edges)"}
-```
-
-A collapsed `Other` bucket has no second-dimension value, so there is no edge to place it
-on. Rather than drop those trials, the graph reports them in `data.omitted`
-(`{trials, distinct_values_collapsed, reason}`) and in `meta.notes.general`, so edge
-weights always reconcile against `records_analyzed`.
-
-Named-subject questions use a more meaningful semantic graph. The LLM proposes only the
-shape — a constrained `GraphPlan` such as person → drug → trial — while deterministic
-code validates the root against the question, queries ClinicalTrials.gov, and derives
-every node, edge weight, label, and citation from fetched records. The model cannot
-invent graph contents. Supported first-level relationships are drugs, lead sponsors,
-conditions, and countries; an optional trial level supplies the evidence leaves.
-
-For a person root, all fetched full-text search matches contribute to the graph.
-The subtitle states whether retrieval was complete or a relevance-ordered sample.
-Exact normalized OverallOfficialName matches supply additional citation evidence
-where available, but missing or different official names do not exclude records.
-These are full-text associations, not independently confirmed person-level links.
-
-### Row fields
-
-| Field | Type | Notes |
-|---|---|---|
-| `label` | string | Display label for the bucket. |
-| `value` | number | The count. |
-| `value_is_exact` | boolean | `true` when the count came from a server-side count rather than the sample. |
-| `sample_value` | integer | Records actually inspected, present alongside an exact `value`. |
-| `series` | string | Present for grouped/stacked types. |
-| `share` | number | Present for `pie_chart`, 0–1. |
-| `is_other` | boolean | This row is the collapsed tail. |
-| `is_missing` | boolean | This row is the "no value reported" bucket. |
-| `distinct_values_collapsed` | integer | How many values folded into `Other`. |
-| `citations` | Citation[] | Up to `citation_limit` (default 5). |
-| `citation_total` | integer | The true number of contributing trials. |
-| `citations_truncated` | boolean | `citation_total > citations.length`. |
-| `citation_sample` | boolean | The `Other` bucket's citations are a token sample. |
-| `citation_basis` | string | Prose describing where the citations came from. |
-
-### `meta`
-
-| Field | Notes |
-|---|---|
-| `query_interpretation.model_interpretation` | One sentence restating the question as read. |
-| `query_interpretation.filters_applied` | The exact ClinicalTrials.gov parameters sent. |
-| `query_interpretation.assumptions` | Guesses the model had to make ("recent" → 2020+). |
-| `query_interpretation.plan_adjustments` | Clamps and drops applied to the plan. |
-| `intent` | `count_total`, `distribution`, `trend`, `comparison`, `ranking`, `composition`, `relationship`, `lookup`. |
-| `group_by` / `series_by` | Dimension ids. |
-| `measure` / `unit` / `sort` | `trial_count`, `trials`, sort spec. |
-| `invariant` | **What the values sum to.** See below. |
-| `coverage` | What was actually counted. See below. |
-| `truncation` | `{dimension, rule, shown, total_distinct, collapsed_into_other}` or null. |
-| `visualization_needed` | `false` for `stat` and `none`. |
-| `visualization_rationale` | Why this chart type was chosen. |
-| `answer_text` | A direct prose answer, for `stat` and `none`. |
-| `suggestions` | Filter relaxations to try, when nothing matched. |
-| `warnings` | e.g. the query is extremely broad. |
-| `notes.counting_rule` | Plain-language version of the invariant. |
-| `notes.overrides` | Chart types that were requested and refused, with reasons. |
-| `notes.general` | Caveats specific to this dimension and these filters. |
-| `citation_policy` | Statement that citations are mechanical. |
-| `source` / `api_version` / `data_timestamp` | Provenance. |
-| `request_id` / `elapsed_ms` | Diagnostics. |
-
----
-
-## The two things that make these numbers trustworthy
-
-### 1. `meta.invariant` — what the bars sum to
-
-A bar chart of trial counts carries an unspoken promise: the bars add up to the number
-of trials. For some dimensions that is true and for others it cannot be, so the response
-states which:
-
-```json
-{"kind": "partition", "statement": "sum(data[].value) == meta.coverage.records_analyzed"}
-```
-
-```json
-{"kind": "multi_label",
- "statement": "a trial may appear in several buckets; sum(data[].value) >= records_analyzed",
- "assignments_total": 2624, "records_analyzed": 2000}
-```
-
-A trial with sites in nine countries genuinely belongs in nine country buckets. Rather
-than hide that, `country`, `condition`, `intervention_type`, `age_group`, and
-`phase_any` are declared `multi_label`. **This single field is what stops a frontend
-from innocently summing a multi-label axis and reporting a bogus total.** It is also
-enforced: a pie chart over a `multi_label` dimension is structurally refused, because
-slices that do not sum to the whole misrepresent proportion.
-
-Two source quirks are resolved explicitly, because getting them wrong produces a chart
-that is wrong in a way nobody can see:
-
-- **`phases` is an array.** A `["PHASE1","PHASE2"]` trial lands in **one** combined
-  `"Phase 1/Phase 2"` bucket, not one in each, which preserves the partition invariant.
-  ClinicalTrials.gov's own UI labels it the same way. If you genuinely want a trial
-  counted under every phase it includes, group by `phase_any` instead — a separate
-  dimension with its own declared invariant, so the two are never silently swapped.
-- **`locations[].country` repeats once per site.** The fixture contains one trial with
-  **963 site entries**. Countries are de-duplicated per trial first, so that trial
-  contributes 1 to the United States, not 963. Site counts answer a different question
-  than trial counts.
-
-**Top-N ranks the dimension, not the cells.** With a `series_by` dimension a key spans
-several buckets, so ranking buckets directly would keep "the biggest cells" — which can be
-five bars of one country — rather than the five biggest countries the caller asked for.
-Ranking is always by the primary key's total, and `truncation.total_distinct` counts keys
-rather than cells. High-cardinality dimensions keep the top `limit` keys and fold the rest
-into one `Other` bucket, which carries a labelled sample of citations rather than hundreds
-or none.
-
-Missing data is shown, not dropped: `phase` distinguishes `"Not Applicable"` (the API's
-`NA` — a real editorial answer meaning a non-phased study, 240,302 studies) from
-`"Not Specified"` (no phase field at all, 144,616 studies). Merging those would destroy
-the most common finding in the dataset. Dimensions with no honest axis position for
-"unknown" — `start_year`, `completion_year`, `enrollment_bucket`, `duration_bucket` —
-exclude such trials and report the count in `coverage.excluded`.
-
-### 2. `meta.coverage` — what was actually counted
-
-```json
-{
-  "total_matching_studies": 2999,
-  "records_fetched": 2000,
-  "records_analyzed": 1987,
-  "is_sample": true,
-  "coverage_ratio": 0.6669,
-  "sampling_method": "first_n_by_api_relevance_order",
-  "sampling_bias_risk": "high",
-  "fetch_cap": 2000,
-  "pages_fetched": 2,
-  "truncated_reason": "fetch_cap_reached",
-  "counts_are_exact": false,
-  "excluded": {"missing_dimension_value": 13, "imprecise_for_granularity": 0}
-}
-```
-
-`sampling_bias_risk: "high"` is stated rather than glossed. The API's default ordering
-is relevance, which is **not** random, so a 67% sample is not a statistically clean 67%
-sample. (`sort=NCTId` is rejected by the API with a 400, and registration order would
-only trade an unknown bias for a known one toward older trials.)
-
-**Why the cap is 10,000.** Fetching costs about 0.85 s per 1,000 records and pagination
-is strictly sequential, so the cap is a direct latency trade. The queries this tool
-exists for land under it — pembrolizumab is 2,253 trials, melanoma 3,781, glioblastoma
-2,281 — and those become **complete censuses** in 2–4 s rather than relevance-ordered
-samples. It was raised from 5,000 once measurement showed common questions landing just
-above the old ceiling (diabetes ~24.6k, a Pfizer/Merck comparison ~11.4k), where a few
-extra pages buy a census outright. That is a qualitative difference, not a
-marginal one: a census has no sampling bias at all, whereas a 53 % relevance-ordered
-sample has bias of unknown direction. A ceiling is still necessary, because breadth is
-genuinely unbounded (`cancer` is ~124,000 trials, roughly 106 s), so broad queries
-sample and say so. Operators can raise the `MAX_RECORDS` setting, up to the configured
-safety ceiling, to convert a larger universe into a census.
-
-The cap barely affects the exact-capable dimensions below, where counts come from
-`countTotal` and fetched records only supply citations. Its real effect falls on the
-sampled dimensions — precisely where bias would distort the answer.
-
-**Exact counts, where they are possible.** For dimensions whose buckets are expressible
-as a server-side filter — `overall_status`, `start_year`, `completion_year`,
-`study_type`, `sponsor_type`, `phase_any`, `results_posted` — the service issues one
-scoped `countTotal` request per bucket, concurrently. This yields `counts_are_exact:
-true`, citations drawn evenly from every bucket rather than concentrated wherever
-relevance ranking happened to look, and real parallelism, which the token-chained flat
-fetch structurally cannot have. In practice it is both exact *and* faster: 965 ms for 14
-parallel requests versus 1,832 ms for 2 sequential pages.
-
-It is deliberately **not** applied to `lead_sponsor`, `condition`, `country`, or
-`intervention_name`, whose buckets are fuzzy string matches and whose `Other` bucket is
-unexpressible in principle. Those report sampled counts with full disclosure.
-`sex` is also excluded: `AREA[Sex](ALL)` was verified to return the entire result set
-rather than only `sex=ALL` trials, and a live test documents that so it can be promoted
-if the API changes.
-
----
-
-## Deep citations
-
-Every plotted value carries references to the trial records behind it — on each datum
-for flat types, on each **edge** for `network_graph`, and on the single row for `stat`.
-
-```json
-{
-  "nct_id": "NCT04956640",
-  "brief_title": "Study of LY3537982 in Cancer Patients...",
-  "field_path": "protocolSection.designModule.phases",
-  "field_value": "[\"PHASE1\",\"PHASE2\"]",
-  "evidence_kind": "field_value",
-  "excerpt": null,
-  "source_url": "https://clinicaltrials.gov/study/NCT04956640"
-}
-```
-
-`field_value` is the raw value at `field_path`, serialised exactly as the API returned
-it. `excerpt`, when present, is a **verbatim substring** of a fetched text field;
-when the value does not literally appear in the text, `excerpt` is `null` rather than a
-paraphrase, so an excerpt is always checkable against its source.
-
-**The language model never touches citations.** An LLM-authored "excerpt" would be a
-fabricated quote, which is the worst available failure mode for a traceability feature,
-so it is never given the opportunity. This is enforced by a property test
-(`tests/test_citations.py`) that walks every bucket of every dimension over 300 real
-trial records and asserts each cited value literally appears at the cited path in the
-cited record — 289 citations checked, zero tolerance for a mismatch.
-
----
-
-## Choosing the visualization
-
-The model supplies a `chart_hint`; deterministic code decides. The decision depends on
-facts that do not exist when the model is called — how many buckets survived top-N
-collapsing, whether the dimension double-counts trials, whether anything matched at all
-— so the hint is advisory input to a resolver, never the output. **Every refusal is
-reported** in `meta.notes.overrides`:
-
-```json
-{"requested": "pie_chart", "applied": "bar_chart",
- "reason": "A trial can appear in several country buckets, so the slices would not sum to the total."}
-```
-
-Ordered rules, first match wins:
-
-| Condition | Result |
-|---|---|
-| no matching trials | `none` |
-| not a clinical-trials question | `none` (HTTP 400 `out_of_scope`) |
-| `intent = count_total`, or no grouping | `stat` |
-| `intent = lookup` | `none` with a suggestion to ask for a count or grouping |
-| temporal dimension, ≥ 3 buckets | `time_series` |
-| temporal dimension, exactly 2 buckets | `bar_chart` — two points cannot support a trend line |
-| validated semantic `GraphPlan` | hierarchical `network_graph`, capped at 60 evidence-backed nodes |
-| `intent = relationship`, two categorical dimensions | `network_graph` (> 60 nodes → primary-dimension `bar_chart`) |
-| `pie_chart` hint + partition + 2–6 buckets + < 40% missing | `pie_chart` |
-| two dimensions, ≤ 60 cells | `stacked_bar` if `composition`, else `grouped_bar` |
-| otherwise | `bar_chart` |
-
-Bar orientation is decided server-side (horizontal for long-label dimensions or > 8
-buckets), so no label-length heuristics leak into the frontend.
-
-**"No visualization needed" is a first-class answer.** `visualization` is never null —
-a frontend should not have to special-case its absence — but `meta.visualization_needed`
-is `false` and `meta.visualization_rationale` explains why, for the `stat` and `none`
-paths.
-
----
-
-## Supporting endpoints
-
-| Route | Purpose |
-|---|---|
-| `POST /query` | The main endpoint. |
-| `POST /plan` | **Interpretation dry run.** Returns the plan and the exact ClinicalTrials.gov parameters that *would* be sent, without fetching. The fastest way to see how a question was read. |
-| `GET /dimensions` | The dimension registry, with each one's counting rule and whether exact counts are available. Self-documenting. |
-| `GET /healthz` | Liveness and configuration. |
-| `GET /docs` | Generated OpenAPI documentation. |
-| `GET /` | Demo renderer. |
-
----
-
-## Errors
-
-All errors share one envelope:
-
-```json
-{"error": {"code": "upstream_unavailable", "message": "...", "retryable": true, "detail": {}}}
-```
-
-| Condition | HTTP | `code` | Retryable |
+| `type` | Required encoding | Required data fields | Rendering rule |
 |---|---|---|---|
-| Request failed validation | 422 | `invalid_request` | no |
-| No usable dimension or filter, or the model refused | 400 | `query_not_interpretable` | no |
-| Not a clinical-trials question | 400 | `out_of_scope` | no |
-| `OPENAI_API_KEY` missing or rejected | 500 | `llm_misconfigured` | no |
-| OpenAI timeout / 5xx / rate limit after retries | 503 | `llm_unavailable` | **yes** |
-| ClinicalTrials.gov unreachable, zero pages fetched | 502 | `upstream_unavailable` | **yes** |
-| ClinicalTrials.gov rejected a filter *we* built | 400 | `upstream_rejected_query` | no |
+| `stat` | `value`, `label` | Fields named by those channels; currently `label`, `value` | Render exactly the first row as one prominent value and supporting label. |
+| `bar_chart` | `x`, `y`, `orientation` | Fields named by `x.field` and `y.field`; normally `label`, `value` | One bar per row. Preserve array order when channel sort is `none`. |
+| `grouped_bar` | `x`, `y`, `series`, `stack:false` | Fields named by the three channels; currently `label`, `value`, `series` | Group rows with equal `x.field` values and draw one adjacent bar per `series.field` value. Missing x/series combinations mean no mark; do not synthesize zeros. |
+| `stacked_bar` | `x`, `y`, `series`, `stack` | Fields named by the three channels; currently `label`, `value`, `series` | Stack series within equal `x.field` values. Normalize geometry only when `stack` is `normalize`. |
+| `time_series` | temporal `x`, quantitative `y`, optional `series`, `point_markers` | Encoded fields; currently `bucket`, `value`, and optional `series` | Order x buckets chronologically and draw one line per series, or one line when no series channel exists. Generated zero buckets are already rows; do not zero-fill again. |
+| `pie_chart` | `theta`, `color`, `total` | Encoded fields plus `share`; currently `value`, `label` | Use `theta.field / total` for angle and `color.field` for slice identity. Display `share` as a percentage; it is a fraction in `[0,1]`. |
+| `scatter_plot` | quantitative `x`, quantitative `y`, optional `size`/`color` | Encoded fields plus `trial_id` and `label` | Draw one point per row. Apply channel scale, title, and unit independently. Use the ordered `tooltip` fields; `trial_id` is suitable as the record identifier. |
+| `network_graph` | `node`, `edge`, `layout_hint` | See graph contract below | Render nodes and weighted edges with opaque IDs. |
+| `none` | Empty object | Empty array | Render `meta.answer_text` as the primary message and each `meta.suggestions` string as a separate suggested next query. Do not allocate chart space. |
 
-**Zero results and over-broad queries are 200s, not errors.** "No trials match that" is a
-correct answer to a question; the response carries `type: "none"`, `meta.answer_text`,
-and concrete `meta.suggestions` for relaxing filters. A query matching more than 50,000
-trials returns a sampled answer with a `meta.warnings` entry rather than refusing.
+Labels are display-ready. Render them exactly as returned; do not convert enum
+values, title-case them, or reconstruct them from `group_by`. Empty flat data for
+a chart type is a valid no-points state: keep the title and warnings and
+show “No data points”; do not change the type to `none`.
 
-A `400` from ClinicalTrials.gov is treated as **our** bug, not a transient fault, so it
-is never retried and the offending parameters are attached to the error detail.
+#### Network graph contract
 
----
+For `network_graph`, data has this shape:
 
-## Architecture
-
-```
-app/
-  main.py          routes, exception handlers, static mount
-  pipeline.py      the whole flow in one readable place
-  config.py        settings (env / .env)
-  dimensions/      registry.py  <- single source of truth
-                   extractors.py  labels.py  bins.py
-  interpret/       planner.py (the one OpenAI call)  prompt.py  merge.py
-  ctgov/           client.py  params.py  fetch.py  stratified.py
-  aggregate/       keys.py  bucketize.py  topn.py  citations.py
-  viz/             resolver.py  encoders.py  titles.py
-  models/          request  plan  study  buckets  viz  response  errors
-  static/index.html  spec-driven demo renderer, no build step
-```
-
-```
-QueryRequest -> QueryPlan -> ResolvedPlan -> CtgovQuerySpec
-  -> FetchResult -> BucketSet -> VisualizationSpec -> AnswerResponse
-```
-
-`dimensions/registry.py` is the single source of truth. Each dimension declares its API
-field, JSON path, datatype, counting semantics, cardinality rule, missing-value policy,
-and exact-count filter expression in one place, so adding a dimension is one entry
-rather than edits spread across the planner, aggregator, and resolver. A test asserts the
-registry and the model's dimension enum cannot drift apart.
-
-A dimension may instead be **derived** from several fields: `duration_bucket` computes
-months between the start and completion dates. Its citations quote both source dates
-verbatim plus the computed result, since the derived number appears nowhere in the record
-and quoting it alone would be unverifiable.
-
-### Validation happens in three layers
-
-1. **`models/request.py`** — Pydantic on the inbound request → 422.
-2. **`interpret/merge.py`** — Structured Outputs with `strict: true` already guarantees
-   enum membership and shape, which is the main reason to use it: an invalid dimension
-   is structurally impossible rather than something to catch later. But strict mode
-   **ignores numeric bounds** (`minimum`, `maximum`) and cannot express a constraint
-   spanning two fields, so all clamping and combination validation lives here —
-   including dropping a second `multi_label` axis, which would otherwise put one trial
-   in dozens of cells at once. It also constrains semantic graph paths, requires the
-   proposed root to appear in the question, and clamps the graph to 60 nodes. Every
-   change is recorded in `plan_adjustments`.
-3. **`viz/resolver.py`** — the chart type, validated against the realised data.
-
----
-
-## Testing
-
-```bash
-uv run pytest           # no network, no API key
-uv run pytest -m live   # 10 tests against the real API
+```json
+{
+  "nodes": [
+    {"id": "opaque-id", "label": "Displayed name", "group": "lead_sponsor", "size": 12, "level": 0},
+    {"id": "other-id", "label": "Drug name", "group": "intervention_name", "size": 4, "level": 1}
+  ],
+  "edges": [
+    {
+      "source": "opaque-id",
+      "target": "other-id",
+      "weight": 4,
+      "citations": [
+        {
+          "nct_id": "NCT00000001",
+          "field_path": "protocolSection.identificationModule.nctId",
+          "field_value": "NCT00000001",
+          "evidence_kind": "field_value",
+          "source_url": "https://clinicaltrials.gov/study/NCT00000001"
+        }
+      ]
+    }
+  ],
+  "omitted": {
+    "trials": 2,
+    "distinct_values_collapsed": 1,
+    "reason": "Why these trials could not be drawn"
+  }
+}
 ```
 
-The offline suite runs against **300 real trial records** captured from the API
-(`tests/fixtures/`), which happen to contain every edge case that matters: 63
-multi-phase trials, 5 with `NA`, 26 with no phase field, 2 with no start date, 77
-multi-country trials, and one trial with 963 site entries.
+`omitted` is optional. Never manufacture an “Unknown” node for omitted trials.
+When present, show “`trials` trials omitted” and `reason` as visible text near
+the graph. If `distinct_values_collapsed` is present, also show how many distinct
+values were collapsed.
 
-The load-bearing tests:
+Read graph property names from the encoding:
 
-| Test | What it protects |
+```json
+{
+  "node": {
+    "id_field": "id",
+    "label_field": "label",
+    "group_field": "group",
+    "size_field": "size",
+    "level_field": "level"
+  },
+  "edge": {
+    "source_field": "source",
+    "target_field": "target",
+    "weight_field": "weight"
+  },
+  "layout_hint": "force"
+}
+```
+
+Read all graph property names from these mappings rather than from the example
+names. Node IDs are opaque strings: use them only for joins and never display or
+parse them. Every edge endpoint references an existing node ID. Scale node marks
+monotonically using the mapped size and edge thickness monotonically using the
+mapped weight; the exact pixel scale is a frontend concern. Use the mapped group
+for color and legend. The mapped level identifies graph layers but does not
+prescribe screen position. Force-layout position and distance carry no semantic
+meaning. Select an edge to show its citations; nodes do not own citations.
+
+#### Common row annotations
+
+Flat visualization rows can also contain:
+
+| Field | Meaning |
 |---|---|
-| `test_phase_composite_keeps_partition_invariant` | Bars sum to the trials analyzed. |
-| `test_na_phase_is_distinct_from_missing_phase` | "Not Applicable" ≠ "Not Specified". |
-| `test_country_dedupes_sites_not_studies` | 7 US sites + 1 CA site → US=1, CA=1. |
-| `test_every_citation_matches_the_raw_payload` | Citations are derived, not generated. |
-| `test_excerpts_are_verbatim_substrings` | An excerpt is a real quote or absent. |
-| `test_pie_over_multi_label_is_structurally_refused` | No misleading part-to-whole charts. |
-| `test_planner_failure_never_reaches_clinicaltrials_gov` | No fetch when interpretation failed. |
-| `test_subtitle_states_the_sampling_basis` | The honesty signal is actually populated. |
-| `test_plan_literal_matches_registry` | The model cannot pick a dimension we can't aggregate. |
-| `test_top_n_keeps_n_distinct_keys_not_n_cells` | "Top 5 countries" means 5 countries. |
-| `test_collapsed_other_is_reported_not_dropped` | Graph edge weights reconcile with the trial count. |
-| `test_network_graph_invariant_describes_the_shape_it_returns` | The invariant names fields that exist. |
-| `test_named_person_drug_graph_uses_drug_names_and_trial_evidence` | A person graph uses actual drug names, verified officials, and cited trial leaves. |
-| `test_every_type_has_a_renderer` | No type silently degrades to a different chart. |
-| `test_time_series_draws_a_line_not_percentage_height_bars` | The trend chart actually renders. |
+| `value_is_exact` | `true` only when this value is a server-side count. It is not a formatting instruction. |
+| `sample_value` | Number of fetched supporting records when `value` is an exact server-side count. Show as evidence context, not as a replacement value. |
+| `is_other` | Row is a top-N tail collapsed into “Other”. Retain it as an ordinary mark. |
+| `is_missing` | Row represents an unreported grouping value. Retain it as an ordinary mark. |
+| `distinct_values_collapsed` | Number of distinct values represented by an `is_other` row. |
+| `citations` | Bounded supporting trial records. |
+| `citation_total` | Total represented contributors or memberships. It is independent of the plotted value and citation-array length. |
+| `citations_truncated` | `true` means the citation array is incomplete. Show “Showing N of M supporting records.” |
+| `citation_sample` | Citations are examples rather than the records used to calculate the value. When true, label the list “Example supporting records.” |
+| `citation_basis` | Display-ready explanation of how citations were selected. Show with the citation list. |
 
-The `live` suite exists because the registry encodes claims about the upstream API
-(which filter expressions work, that `AREA[Sex]` over-matches). If ClinicalTrials.gov
-changes, those claims should fail loudly rather than quietly produce wrong counts.
+Omitted optional booleans mean `false`; omitted optional arrays mean empty; and
+omitted optional strings mean “do not render that element.” Zero-filled rows may
+have no citations. For flat data, open citations from the selected row; for a
+graph, open them from the selected edge. Do not disable a nonzero mark merely
+because its citation array is empty.
 
----
+A citation contains `nct_id`, optional `brief_title`, `field_path`, `field_value`,
+`evidence_kind`, optional `excerpt`, and `source_url`. Render the link text as
+`nct_id` (optionally followed by `brief_title`) and use `source_url` as its
+destination with normal external-link protections. `field_path` and
+`field_value` are audit detail; show them in the evidence panel. Show `excerpt`
+only when present. Never infer value accuracy or completeness from the number of
+citations returned.
 
-## Known limitations
+#### Sampling and warning policy
 
-- **Sponsor names are not entity-resolved.** `query.spons=Merck` matches
-  "EMD Serono Research & Development Institute"; "Merck Sharp & Dohme LLC" and
-  "Merck KGaA" count as different sponsors. Surfaced in `meta.notes.general`.
-- **A truncated fetch is relevance-ordered, not random.** Proportions are more reliable
-  than absolute counts whenever `counts_are_exact` is `false` **and** `is_sample` is
-  `true`. Two strategies avoid it: a universe within the 10,000-record cap is a census,
-  and a grouping with a closed value set (phase, status, study type, sponsor type,
-  results posted, start/completion year) is counted exactly per bucket at any size —
-  `cancer` by recruitment status is exact across all ~124,000 trials. An open-ended
-  grouping (sponsor, condition, country) over a universe past the cap still samples.
-- **`condition` is sponsor free text**, so spelling and specificity vary.
-  `condition_mesh` groups by normalised vocabulary and is usually the better choice.
-- **`intervention_name` is disabled for ordinary grouping** — names embed arm-specific
-  dosing ("Pembrolizumab 200mg Q3W"), making broad distributions unreliable. It is
-  allowed as a graph-only relationship entity where each value stays attached to its
-  source trial.
-- **Enrollment counts mix planned and actual figures**; the API's `EnrollmentType` is
-  not yet used to separate them.
-- **`scatter_plot` is renderable but not yet produced** by the resolver: no current
-  intent maps to two numeric per-trial measures, so the type exists in the schema and the
-  demo renders it, but nothing emits it today.
-- **Semantic graph paths are deliberately narrow.** They currently support subject →
-  drug/lead sponsor/condition/country → trial, rendered as labeled hierarchical levels.
-  Arbitrary LLM-proposed entity types and edges are rejected.
-- **Co-sponsorship is not available.** The sponsor leaves are lead sponsors because
-  collaborator records are not currently fetched.
-- **"Our pipeline" cannot be resolved.** The service has no notion of who is asking, so a
-  first-person question is answered across all sponsors with that stated in
-  `assumptions`. Name the organisation in the question to scope it.
-- **Growth rates are not a measure.** "Which countries are growing fastest?" returns
-  current volume by country, not a rate of change; `measure` only supports `trial_count`.
-- **Durations use estimated completion dates** for trials still running, and are
-  month-precision because the API mixes date precisions in the same field.
-- **No persistent cache.** The 15-minute cache is per-process.
+Use `meta.coverage.is_sample` as the sole switch for a visually prominent
+coverage warning:
 
-## Finalized capability boundary
+- When `true`, show `meta.notes.coverage_warning`. If it is unexpectedly absent,
+  show “Results are based on `records_analyzed` of `total_matching_studies`
+  matching trials.” If `comparison_arms` is nonempty,
+  list every arm as “name: `records_fetched` of `total_matching`” and identify
+  arms whose `is_sample` is true. Do not calculate one combined comparison
+  percentage.
+- When `false`, do not show a coverage banner, including when
+  `counts_are_exact` is `true`.
+- Render every string in `meta.warnings` as its own additional visible warning,
+  regardless of `is_sample`.
 
-No enrichment is supported. Analyses use trial-record fields and deterministic
-calculations. Drug classes, medical classifications, ownership, approvals, and
-benefit judgments require unsupported external knowledge and are not inferred.
+`counts_are_exact` describes the complete chart strategy. `value_is_exact`
+describes one datum. A complete record census can have exact arithmetic while
+`value_is_exact` remains false because the value was calculated locally.
 
-Registered dimensions compile into the shared composable executor. Comparisons
-reuse it; graphs use a specialized serialization adapter. See
-[finalization decisions](docs/FINALIZATION.md), the authoritative
-[renderer contract](docs/RESPONSE_SCHEMA.md), the
-[evaluation report](docs/EVALUATION.md), and [codebase guide](docs/CODEBASE.md).
+### Response metadata
 
-Run offline replay without a model:
+`meta` contains rendering context, audit information, and provenance:
 
-```bash
-uv run python -m app.analysis.replay --plan plan.json --records records.json
+- Required for every successful response: `query_interpretation`, `intent`,
+  `invariant`, and `coverage`.
+- Optional null properties are omitted from the JSON, and empty presentation
+  properties may also be omitted. Apply the explicit defaults in this section;
+  do not use truthiness for numeric fields because zero is meaningful.
+
+| Field | Description |
+|---|---|
+| `query_interpretation` | `model_interpretation`, exact `filters_applied`, `assumptions`, and defensive `plan_adjustments`. Display in an optional “How this was interpreted” panel. |
+| `intent` | Requested analytical intent. Audit context; the selected renderer is still `visualization.type`. |
+| `group_by`, `series_by` | Dimensions represented by the chart. Use for context, not field lookup. |
+| `measure`, `unit`, `sort` | Measurement semantics. Channel-level units and sorting control marks and axes. |
+| `invariant` | `partition` means values are additive as described by `statement`; `multi_label` means a trial can appear in several values and values must not be summed into a unique population. Display `statement` in methodology details. |
+| `coverage` | Population, sampling, exactness, request count, cap, per-arm coverage, and exclusions. |
+| `truncation` | Top-N rule and how many categories were collapsed. When present, show this in methodology details; the collapsed mark itself is identified by `is_other`. |
+| `analysis` | Optional replayable analysis plan and trace. Not required for rendering. |
+| `notes` | Coverage warning, counting rule, renderer overrides, and general caveats. Display every `notes.general` string; expose counting rule and overrides in methodology details. |
+| `warnings` | Warning strings that should be shown to the user. |
+| `visualization_needed`, `visualization_rationale` | Why a chart was or was not selected. |
+| `answer_text`, `suggestions` | Primary text and alternatives for `none`; `answer_text` may also supplement a `stat`. |
+| `source`, `api_version`, `data_timestamp` | Data provenance. |
+| `request_id`, `elapsed_ms` | Request tracing and timing. |
+
+`coverage` contains:
+
+| Field | Meaning |
+|---|---|
+| `total_matching_studies` | Upstream matching count. For comparisons this is the sum of arm totals, not a deduplicated population. |
+| `records_fetched` | Distinct trial records fetched. |
+| `records_analyzed` | Records directly inspected by local aggregation. For exact stratified counts, these are citation records rather than the full counted universe. |
+| `is_sample` | Whether unfetched matching records could affect chart values. Controls the coverage banner. |
+| `coverage_ratio` | `records_fetched / total_matching_studies`; do not use as a comparison-arm completeness measure. |
+| `sampling_method` | `census`, `first_n_by_api_relevance_order`, or `stratified_by_bucket`. |
+| `sampling_bias_risk` | `none`, `low`, or `high`. |
+| `fetch_cap`, `pages_fetched`, `truncated_reason` | Fetch diagnostics. |
+| `counts_are_exact` | All displayed category values are exact server-side counts. |
+| `comparison_arms` | Map of arm label to `total_matching`, `records_fetched`, and `is_sample`. |
+| `excluded` | Counts excluded for missing values, precision, selection, memberships, or invalid numeric pairs. |
+
+Before shipping a renderer, verify these contract cases:
+
+- All nine `type` values have distinct branches, including `stat` and `none`.
+- A horizontal bar still reads category and value from the encoded x and y
+  fields; only its screen layout changes.
+- A normalized stack uses percentages for geometry but raw values in evidence
+  and tooltips.
+- A zero time-series row is drawn even when it has no citations.
+- A graph omission is disclosed and never becomes a synthetic node.
+- A sampled response and every `meta.warnings` entry are visibly disclosed.
+- A `none` response renders text and suggestions without an empty plot.
+- An unknown visualization type and malformed response produce a visible error.
+- All response strings are escaped as text.
+
+Detailed per-visualization rendering rules are documented in
+[`docs/RESPONSE_SCHEMA.md`](docs/RESPONSE_SCHEMA.md). Machine-readable schemas
+and complete examples are available in:
+
+- [`docs/answer.schema.json`](docs/answer.schema.json)
+- [`docs/error.schema.json`](docs/error.schema.json)
+- [`docs/analysis.schema.json`](docs/analysis.schema.json)
+- [`docs/examples/`](docs/examples/)
+- [`examples/`](examples/) — five complete responses generated from live queries
+
+### Error response
+
+No matches is a successful response with `visualization.type = "none"`. Transport,
+validation, provider, and upstream failures use one error envelope:
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The request did not match the expected schema.",
+    "retryable": false,
+    "detail": null
+  }
+}
 ```
 
-Run the release evaluation (90 live queries plus negative cases):
+Handle errors as follows:
 
-```bash
-uv run python -m evaluations.run --output evaluations/results.json
-```
+- Display `error.message` to the user.
+- Use `error.code` for application logic and diagnostics.
+- Offer a retry only when `error.retryable` is `true`.
+- Treat `error.retryable` as authoritative; do not infer retry behavior from the
+  HTTP status.
+- Treat `error.detail` as optional diagnostic data; never require it for display.
 
-Evaluation artifacts distinguish automated contract/constraint checks from the
-full semantic audit. Passing unit tests alone is not release qualification.
-The gate result, run history, and remaining limitations are reported in
-[docs/EVALUATION.md](docs/EVALUATION.md); `evaluations/gate-run-*.json` keep the
-earlier runs, including the failing ones, as an audit trail.
+Relevant statuses are 400 for an uninterpretable/rejected query, 422 for invalid
+or unsupported input, 429 for provider rate limiting, 502 for ClinicalTrials.gov
+failure, 503 for provider availability/quota, 504 for provider timeout, and 500
+for configuration or internal failures.

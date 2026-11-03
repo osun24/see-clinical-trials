@@ -39,7 +39,6 @@
     border-radius: 10px; padding: 20px; margin-bottom: 16px;
   }
   .chart-title { font-size: 17px; font-weight: 600; margin: 0 0 2px; }
-  .chart-subtitle { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
   .banner {
     background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink);
     border-radius: 7px; padding: 10px 13px; font-size: 13px; margin-bottom: 16px;
@@ -168,8 +167,6 @@ function render(root, body) {
   const panel = document.createElement("div");
   panel.className = "panel";
 
-  // The subtitle stays in the API response; the demo shows the coverage
-  // banner below instead of repeating it as prose.
   panel.innerHTML = `<p class="chart-title">${esc(v.title)}</p>`;
 
   if (m.coverage?.is_sample) {
@@ -675,11 +672,8 @@ function bars(el, v, m, nested) {
 function rawPanel(body) {
   const d = document.createElement("div");
   d.className = "panel";
-  // Shown without the subtitle, which the panel above no longer displays.
-  const shown = {...body, visualization: {...body.visualization}};
-  delete shown.visualization.subtitle;
   d.innerHTML = `<details><summary>Raw response JSON</summary>
-    <pre>${esc(JSON.stringify(shown, null, 2))}</pre></details>`;
+    <pre>${esc(JSON.stringify(body, null, 2))}</pre></details>`;
   return d;
 }
 </script>

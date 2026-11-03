@@ -2,7 +2,6 @@
   "visualization": {
     "type": "pie_chart",
     "title": "Illustrative renderer fixture",
-    "subtitle": "Synthetic example; not clinical findings.",
     "encoding": {
       "theta": {
         "field": "value",
@@ -83,7 +82,8 @@
         "no_selected_category": 0,
         "memberships_removed": 0,
         "invalid_numeric_pair": 0
-      }
+      },
+      "comparison_arms": {}
     },
     "visualization_needed": true,
     "visualization_rationale": "",

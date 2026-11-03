@@ -23,10 +23,9 @@ class ComparisonArmCoverage(BaseModel):
 class Coverage(BaseModel):
     """What the numbers are actually based on.
 
-    ClinicalTrials.gov cannot aggregate a filtered query server-side, so counts
-    are computed locally over a bounded fetch. When that fetch is smaller than
-    the matching universe the response says so here, in
-    ``VisualizationSpec.subtitle``, and per datum via ``value_is_exact``.
+    ClinicalTrials.gov cannot aggregate every filtered query server-side, so
+    counts may be computed locally over a bounded fetch. This object records
+    how much of the matching universe the response represents.
     """
 
     model_config = {"extra": "forbid"}

@@ -84,9 +84,6 @@ async def test_pipeline_analysis_contract(monkeypatch, records):
     assert response.meta.analysis["trace"][-1]["rows"] == 2
     assert response.meta.unit == "trials"
     assert response.visualization.encoding.y.unit == "trials"
-    dry_run = await pipeline.plan_only(QueryRequest(query="Which US cities have Pfizer trials?"))
-    assert dry_run["analysis_schema"]["columns"] == ["label", "value"]
-    assert not dry_run["would_use_exact_counts"]
 
 
 @pytest.mark.asyncio
@@ -188,7 +185,7 @@ async def test_numeric_response_contract(monkeypatch):
     assert response.visualization.encoding.x.unit == "participants"
     assert response.visualization.encoding.y.unit == "months"
     assert response.meta.coverage.records_analyzed == 3
-    assert "Pearson" in response.visualization.subtitle
+    assert "Pearson" in response.meta.answer_text
 
 
 def test_relationship_rejects_text_axes():
@@ -261,7 +258,7 @@ async def test_temporal_pipeline_renders_series(monkeypatch):
     assert response.visualization.type == "time_series"
     assert response.visualization.encoding.series.field == "series"
     assert len(response.visualization.data) == 3
-    assert "study start year" in response.visualization.subtitle
+    assert any("study start year" in note for note in response.meta.notes.general)
 
 
 @pytest.mark.asyncio

@@ -122,7 +122,7 @@ async def fetch_flat(
 
 
 async def fetch_total_only(client: CtgovClient, spec: CtgovQuerySpec) -> int:
-    """Just the matching count — used by the /plan dry run and bucket counting."""
+    """Fetch only the matching count for adaptive comparison allocation."""
     params = _request_params(spec, 1)
     params["countTotal"] = "true"
     payload = await client.get_json("/studies", params)

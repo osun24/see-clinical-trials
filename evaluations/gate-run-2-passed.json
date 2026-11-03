@@ -50,7 +50,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 4,092 matching trials.",
       "interpretation": {
         "model_interpretation": "Identify the lead sponsors with the highest number of clinical trials for Alzheimer's disease.",
         "filters_applied": {
@@ -117,7 +116,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 4,092 matching trials.",
       "interpretation": {
         "model_interpretation": "Identify the lead sponsors with the highest number of clinical trials for Alzheimer's disease.",
         "filters_applied": {
@@ -184,7 +182,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 4,092 matching trials.",
       "interpretation": {
         "model_interpretation": "Identify the lead sponsors with the highest number of clinical trials for Alzheimer's disease.",
         "filters_applied": {
@@ -251,7 +248,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,999 matching trials.",
       "interpretation": {
         "model_interpretation": "Count of clinical trials involving pembrolizumab grouped by trial phase.",
         "filters_applied": {
@@ -318,7 +314,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,999 matching trials.",
       "interpretation": {
         "model_interpretation": "Count of clinical trials involving pembrolizumab grouped by trial phase.",
         "filters_applied": {
@@ -385,7 +380,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,999 matching trials.",
       "interpretation": {
         "model_interpretation": "Count the number of clinical trials involving pembrolizumab, grouped by trial phase.",
         "filters_applied": {
@@ -452,7 +446,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "stat",
-      "subtitle": "Based on all 2,314 matching trials.",
       "interpretation": {
         "model_interpretation": "Count the total number of clinical trials that are currently recruiting participants for lung cancer.",
         "filters_applied": {
@@ -499,7 +492,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "stat",
-      "subtitle": "Based on all 2,314 matching trials.",
       "interpretation": {
         "model_interpretation": "Count the total number of clinical trials that are currently recruiting participants for lung cancer.",
         "filters_applied": {
@@ -546,7 +538,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "stat",
-      "subtitle": "Based on all 2,314 matching trials.",
       "interpretation": {
         "model_interpretation": "Count the total number of clinical trials that are currently recruiting participants for lung cancer.",
         "filters_applied": {
@@ -593,7 +584,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,281 matching trials.",
       "interpretation": {
         "model_interpretation": "Distribution of recruitment status for clinical trials studying glioblastoma.",
         "filters_applied": {
@@ -660,7 +650,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,281 matching trials.",
       "interpretation": {
         "model_interpretation": "Distribution of recruitment status for clinical trials studying glioblastoma.",
         "filters_applied": {
@@ -727,7 +716,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,281 matching trials.",
       "interpretation": {
         "model_interpretation": "Distribution of recruitment status for clinical trials studying glioblastoma.",
         "filters_applied": {
@@ -794,7 +782,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Distribution of study types reported for trials studying diabetes.",
         "filters_applied": {
@@ -862,7 +849,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Distribution of study types reported for trials studying diabetes.",
         "filters_applied": {
@@ -930,7 +916,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Distribution of study types reported for trials studying diabetes.",
         "filters_applied": {
@@ -998,7 +983,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,962 of 11,352 matching trials (first 4,962 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of clinical trial phases between Pfizer and Merck trials.",
         "filters_applied": {
@@ -1046,7 +1030,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,962 of 11,352 matching trials (first 4,962 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of clinical trial phases between Pfizer and Merck trials.",
         "filters_applied": {
@@ -1094,7 +1077,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,962 of 11,352 matching trials (first 4,962 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of clinical trial phases between Pfizer and Merck trials.",
         "filters_applied": {
@@ -1142,7 +1124,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,871 of 18,473 matching trials (first 4,871 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of recruitment status for clinical trials studying melanoma versus lung cancer.",
         "filters_applied": {
@@ -1190,7 +1171,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,871 of 18,473 matching trials (first 4,871 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of recruitment status between melanoma trials and lung cancer trials.",
         "filters_applied": {
@@ -1238,7 +1218,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,871 of 18,473 matching trials (first 4,871 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of recruitment status between melanoma trials and lung cancer trials.",
         "filters_applied": {
@@ -1289,7 +1268,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 2,342 of 2,540 matching trials (first 2,342 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of melanoma clinical trial phases between the United States and Canada.",
         "filters_applied": {
@@ -1338,7 +1316,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 2,342 of 2,540 matching trials (first 2,342 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of melanoma clinical trial phases between the United States and Canada.",
         "filters_applied": {
@@ -1387,7 +1364,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 2,342 of 2,540 matching trials (first 2,342 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of melanoma clinical trial phases between the United States and Canada.",
         "filters_applied": {
@@ -1439,7 +1415,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "none",
-      "subtitle": "No trials matched these filters.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of clinical trial phases between trials involving pembrolizumab and trials involving nivolumab.",
         "filters_applied": {
@@ -1489,7 +1464,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,286 of 5,038 matching trials (first 4,286 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of clinical trial phases between trials involving pembrolizumab and trials involving nivolumab.",
         "filters_applied": {
@@ -1537,7 +1511,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "none",
-      "subtitle": "No trials matched these filters.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of clinical trial phases between trials involving pembrolizumab and trials involving nivolumab.",
         "filters_applied": {
@@ -1590,7 +1563,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,990 of 11,211 matching trials (first 4,990 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of study types between Pfizer and Novartis trials.",
         "filters_applied": {
@@ -1638,7 +1610,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,990 of 11,211 matching trials (first 4,990 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of study types between Pfizer and Novartis trials.",
         "filters_applied": {
@@ -1686,7 +1657,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "grouped_bar",
-      "subtitle": "Based on 4,990 of 11,211 matching trials (first 4,990 by API relevance order); counts are approximate.",
       "interpretation": {
         "model_interpretation": "Compare the distribution of study types between Pfizer and Novartis trials.",
         "filters_applied": {
@@ -1734,7 +1704,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 22 matching trials. Counts represent distinct trials per category. 968 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Identify U.S. cities where Pfizer has clinical trial sites for phase 4 cancer trials, grouped and sorted by city and state.",
         "filters_applied": {
@@ -1843,7 +1812,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 22 matching trials. Counts represent distinct trials per category. 697 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Distribution of U.S. cities where Pfizer has clinical trial sites for phase 4 cancer trials.",
         "filters_applied": {
@@ -1935,7 +1903,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 22 matching trials. Counts represent distinct trials per category. 697 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List U.S. cities where Pfizer has clinical trial sites for phase 4 cancer trials, limited to top 25 cities by trial count.",
         "filters_applied": {
@@ -2027,7 +1994,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 3,781 matching trials. Counts represent distinct trials per category. 19121 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Identify US states that have trial sites for melanoma clinical trials, counting distinct trials per state and sorting by count descending.",
         "filters_applied": {
@@ -2108,7 +2074,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 3,781 matching trials. Counts represent distinct trials per category. 19121 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List US states that have trial sites for melanoma clinical trials, counting distinct trials per state.",
         "filters_applied": {
@@ -2189,7 +2154,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 3,781 matching trials. Counts represent distinct trials per category. 19121 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List US states that have trial sites for melanoma clinical trials, counting distinct trials per state.",
         "filters_applied": {
@@ -2270,7 +2234,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 1,390 matching trials. Counts represent distinct trials per category. 7424 rows filtered; 55 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List the facilities in the United States that host clinical trial sites for glioblastoma.",
         "filters_applied": {
@@ -2360,7 +2323,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 1,390 matching trials. Counts represent distinct trials per category. 2729 rows filtered; 81 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Identify facilities in the United States that host clinical trial sites for glioblastoma.",
         "filters_applied": {
@@ -2438,7 +2400,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 1,390 matching trials. Counts represent distinct trials per category. 7424 rows filtered; 55 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List and count facilities in the United States that host glioblastoma trial sites, sorted by number of trials.",
         "filters_applied": {
@@ -2528,7 +2489,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "none",
-      "subtitle": "Based on all 36 matching trials. Counts represent distinct trials per category. 36 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List the intervention names recorded in phase 4 NSCLC trials started in the last five years.",
         "filters_applied": {
@@ -2674,7 +2634,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "none",
-      "subtitle": "Based on all 30 matching trials. Counts represent distinct trials per category. 30 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List the intervention names recorded in phase 4 NSCLC trials started in the last five years.",
         "filters_applied": {
@@ -2786,7 +2745,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "none",
-      "subtitle": "Based on all 38 matching trials. Counts represent distinct trials per category. 38 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "List the intervention names recorded in phase 4 NSCLC trials started in the last five years.",
         "filters_applied": {
@@ -2883,7 +2841,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 3,781 matching trials. Counts represent collection entries, not unique trials. 20955 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Count the number of site entries per US city for trials studying melanoma.",
         "filters_applied": {
@@ -2973,7 +2930,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,277 matching trials. Counts represent collection entries, not unique trials. 14111 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Count the number of site entries per US city for trials studying melanoma.",
         "filters_applied": {
@@ -3061,7 +3017,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "bar_chart",
-      "subtitle": "Based on all 2,277 matching trials. Counts represent collection entries, not unique trials. 14111 rows filtered; 0 rows excluded for missing grouping values.",
       "interpretation": {
         "model_interpretation": "Count of site entries per US city for trials studying melanoma.",
         "filters_applied": {
@@ -3152,7 +3107,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 1,825 matching trials. Counts represent distinct trials per category. 164 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
       "interpretation": {
         "model_interpretation": "Analyze the number of melanoma clinical trial starts each year over the last ten years.",
         "filters_applied": {
@@ -3233,7 +3187,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 1,825 matching trials.",
       "interpretation": {
         "model_interpretation": "Analyze the trend of melanoma clinical trial starts over the last ten years from 2016-11-02 to 2026-11-02.",
         "filters_applied": {
@@ -3303,7 +3256,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 1,825 matching trials.",
       "interpretation": {
         "model_interpretation": "Analyze the trend of melanoma clinical trial starts over the last ten years from 2016-11-02 to 2026-11-02.",
         "filters_applied": {
@@ -3375,7 +3327,6 @@
         "temporal chart missing"
       ],
       "visualization_type": "none",
-      "subtitle": "Based on all 937 matching trials. Counts represent distinct trials per category. 937 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
       "interpretation": {
         "model_interpretation": "Trend of glioblastoma trial completions over the last ten years.",
         "filters_applied": {
@@ -3484,7 +3435,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 937 matching trials. Counts represent distinct trials per category. 124 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
       "interpretation": {
         "model_interpretation": "Analyze the trend of glioblastoma trial completions over the last ten years.",
         "filters_applied": {
@@ -3573,7 +3523,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 1,337 matching trials. Counts represent distinct trials per category. 3442 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
       "interpretation": {
         "model_interpretation": "Analyze the number of pembrolizumab trial starts per year over the past five years.",
         "filters_applied": {
@@ -3660,7 +3609,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 1,337 matching trials. Counts represent distinct trials per category. 3442 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
       "interpretation": {
         "model_interpretation": "Trend of clinical trial starts involving pembrolizumab over the past five years.",
         "filters_applied": {
@@ -3747,7 +3695,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 1,337 matching trials. Counts represent distinct trials per category. 3442 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
       "interpretation": {
         "model_interpretation": "Analyze the number of pembrolizumab trial starts per year over the past five years.",
         "filters_applied": {
@@ -3834,7 +3781,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 123 matching trials. Counts represent distinct trials per category. 74 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records. Showing the top 6 series by summed trial-year memberships; 66 additional series are retained in analysis metadata.",
       "interpretation": {
         "model_interpretation": "Analyze how intervention names in phase 4 non-small cell lung cancer trials have changed over the past 20 years.",
         "filters_applied": {
@@ -3932,7 +3878,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 123 matching trials. Counts represent distinct trials per category. 74 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records. Showing the top 6 series by summed trial-year memberships; 66 additional series are retained in analysis metadata.",
       "interpretation": {
         "model_interpretation": "Analyze how intervention names in phase 4 non-small cell lung cancer trials have changed over the past 20 years.",
         "filters_applied": {
@@ -4038,7 +3983,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 123 matching trials. Counts represent distinct trials per category. 74 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records. Showing the top 6 series by summed trial-year memberships; 66 additional series are retained in analysis metadata.",
       "interpretation": {
         "model_interpretation": "Trend of intervention names in phase 4 non-small cell lung cancer trials over the past 20 years.",
         "filters_applied": {
@@ -4135,7 +4079,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 264 matching trials.",
       "interpretation": {
         "model_interpretation": "Trend of Pfizer-sponsored cancer trial starts over the past five years.",
         "filters_applied": {
@@ -4206,7 +4149,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 264 matching trials.",
       "interpretation": {
         "model_interpretation": "Trend of Pfizer-sponsored cancer trial starts over the past five years.",
         "filters_applied": {
@@ -4277,7 +4219,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "time_series",
-      "subtitle": "Based on all 264 matching trials.",
       "interpretation": {
         "model_interpretation": "Trend of the number of Pfizer-sponsored cancer clinical trial starts over the past five years.",
         "filters_applied": {
@@ -4348,7 +4289,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 3,781 matching trials. 2734 rows excluded by analysis filters. 992 complete trial pairs; 55 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.530. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess if planned enrollment size is associated with trial duration for melanoma trials.",
         "filters_applied": {
@@ -4441,7 +4381,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 3,781 matching trials. 2734 rows excluded by analysis filters. 992 complete trial pairs; 55 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.530. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess whether planned enrollment size is associated with trial duration for melanoma trials.",
         "filters_applied": {
@@ -4532,7 +4471,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 3,781 matching trials. 2734 rows excluded by analysis filters. 992 complete trial pairs; 55 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.530. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess if planned enrollment size is associated with trial duration for melanoma trials.",
         "filters_applied": {
@@ -4618,7 +4556,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 2,281 matching trials. 1592 rows excluded by analysis filters. 678 complete trial pairs; 11 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.227. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess whether enrollment size is associated with trial duration for glioblastoma trials using estimated enrollment and trial start and completion dates.",
         "filters_applied": {
@@ -4705,7 +4642,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 2,281 matching trials. 1592 rows excluded by analysis filters. 678 complete trial pairs; 11 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.227. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess whether enrollment size is associated with trial duration for glioblastoma trials.",
         "filters_applied": {
@@ -4787,7 +4723,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 2,281 matching trials. 1592 rows excluded by analysis filters. 678 complete trial pairs; 11 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.227. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess the association between enrollment size and trial duration for glioblastoma trials.",
         "filters_applied": {
@@ -4872,7 +4807,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on all 2,999 matching trials. 1989 rows excluded by analysis filters. 1010 complete trial pairs; 0 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.257. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess if planned enrollment is associated with trial duration for pembrolizumab trials.",
         "filters_applied": {
@@ -4986,7 +4920,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate. 3930 rows excluded by analysis filters. 1042 complete trial pairs; 28 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.050. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Determine if there is an association between enrollment size and trial duration for diabetes trials.",
         "filters_applied": {
@@ -5072,7 +5005,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate. 3930 rows excluded by analysis filters. 1042 complete trial pairs; 28 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.050. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Determine if there is an association between enrollment size and trial duration for diabetes clinical trials.",
         "filters_applied": {
@@ -5155,7 +5087,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate. 3930 rows excluded by analysis filters. 1042 complete trial pairs; 28 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.050. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess whether enrollment size is associated with trial duration for diabetes trials.",
         "filters_applied": {
@@ -5241,7 +5172,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on 5,000 of 14,692 matching trials (first 5,000 by API relevance order); counts are approximate. 3560 rows excluded by analysis filters. 1396 complete trial pairs; 44 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.080. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess if planned enrollment is associated with trial duration for lung cancer trials.",
         "filters_applied": {
@@ -5327,7 +5257,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on 5,000 of 14,692 matching trials (first 5,000 by API relevance order); counts are approximate. 3560 rows excluded by analysis filters. 1396 complete trial pairs; 44 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.080. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Assess if planned enrollment is associated with trial duration for lung cancer trials.",
         "filters_applied": {
@@ -5423,7 +5352,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "scatter_plot",
-      "subtitle": "Based on 5,000 of 14,692 matching trials (first 5,000 by API relevance order); counts are approximate. 3560 rows excluded by analysis filters. 1396 complete trial pairs; 44 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.080. Descriptive association, not causation or a significance test.",
       "interpretation": {
         "model_interpretation": "Determine if planned enrollment is associated with trial duration for lung cancer trials.",
         "filters_applied": {
@@ -5518,7 +5446,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the organizations (lead sponsors) and trials associated with the person named Sharon Sha.",
         "filters_applied": {
@@ -5587,7 +5514,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify organizations (lead sponsors) and trials associated with the person named Sharon Sha.",
         "filters_applied": {
@@ -5656,7 +5582,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the organizations (lead sponsors) and trials associated with the person named Sharon Sha.",
         "filters_applied": {
@@ -5725,7 +5650,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 10 trials returned by a full-text search for Crystal Mackall.",
       "interpretation": {
         "model_interpretation": "Identify the organizations (lead sponsors) and trials associated with Crystal Mackall.",
         "filters_applied": {
@@ -5794,7 +5718,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 10 trials returned by a full-text search for Crystal Mackall.",
       "interpretation": {
         "model_interpretation": "Identify the organizations (lead sponsors) and trials associated with Crystal Mackall.",
         "filters_applied": {
@@ -5863,7 +5786,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 10 trials returned by a full-text search for Crystal Mackall.",
       "interpretation": {
         "model_interpretation": "Identify the organizations (lead sponsors) and trials associated with Crystal Mackall.",
         "filters_applied": {
@@ -5932,7 +5854,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the drugs and trials associated with Sharon Sha.",
         "filters_applied": {
@@ -6001,7 +5922,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the drugs and trials associated with Sharon Sha.",
         "filters_applied": {
@@ -6069,7 +5989,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the drugs and trials associated with Sharon Sha.",
         "filters_applied": {
@@ -6138,7 +6057,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 10 trials returned by a full-text search for Crystal Mackall.",
       "interpretation": {
         "model_interpretation": "Identify the countries and trials associated with Crystal Mackall.",
         "filters_applied": {
@@ -6207,7 +6125,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 10 trials returned by a full-text search for Crystal Mackall.",
       "interpretation": {
         "model_interpretation": "Identify the countries and trials associated with Crystal Mackall.",
         "filters_applied": {
@@ -6276,7 +6193,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 10 trials returned by a full-text search for Crystal Mackall.",
       "interpretation": {
         "model_interpretation": "Identify the countries and trials associated with Crystal Mackall.",
         "filters_applied": {
@@ -6345,7 +6261,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the conditions studied and trials associated with Sharon Sha.",
         "filters_applied": {
@@ -6413,7 +6328,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the conditions studied and trials associated with the person named Sharon Sha.",
         "filters_applied": {
@@ -6481,7 +6395,6 @@
       "contract_failures": [],
       "semantic_failures": [],
       "visualization_type": "network_graph",
-      "subtitle": "Based on all 11 trials returned by a full-text search for Sharon Sha.",
       "interpretation": {
         "model_interpretation": "Identify the conditions studied and trials associated with Sharon Sha as a named person in trial records.",
         "filters_applied": {

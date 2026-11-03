@@ -1,4 +1,4 @@
-"""The natural-language request accepted by POST /query and POST /plan."""
+"""The natural-language request accepted by POST /query."""
 
 from __future__ import annotations
 

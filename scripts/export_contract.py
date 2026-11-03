@@ -33,7 +33,7 @@ def export():
         "none": ({},[]),
     }
     for kind,(encoding,data) in examples.items():
-        body = {"visualization":{"type":kind,"title":"Illustrative renderer fixture","subtitle":"Synthetic example; not clinical findings.","encoding":encoding,"data":data},
+        body = {"visualization":{"type":kind,"title":"Illustrative renderer fixture","encoding":encoding,"data":data},
                 "meta":{"query_interpretation":{"model_interpretation":"Illustrate the response schema."},"intent":"distribution","unit":"trials",
                     "invariant":{"kind":"multi_label","statement":"Example only; values may overlap."},
                     "coverage":{"total_matching_studies":1,"records_fetched":1,"records_analyzed":1,"is_sample":False,"coverage_ratio":1,"sampling_method":"census","sampling_bias_risk":"none","fetch_cap":5000,"pages_fetched":1},
