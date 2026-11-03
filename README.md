@@ -1,6 +1,7 @@
 # Clinical Trials Visualization API
-### Demo
-https://youtu.be/SuAbWyzfqkQ
+### Demo 
+https://youtu.be/r5TpBdqYtBg
+- Note: video is slightly faster than audio for some reason.
 
 ### Requirements
 
