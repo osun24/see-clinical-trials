@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 from app.models.buckets import Citation
 
@@ -67,6 +67,14 @@ class Encoding(BaseModel):
     node: dict[str, str] | None = None
     edge: dict[str, str] | None = None
     layout_hint: str | None = None
+
+
+    @model_serializer(mode="wrap")
+    def serialize_channels(self, handler):
+        result = handler(self)
+        if not result.get("tooltip"):
+            result.pop("tooltip", None)
+        return result
 
 
 class Datum(BaseModel):

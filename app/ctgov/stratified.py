@@ -69,7 +69,7 @@ def bucket_universe(dimension: DimensionDef, plan: ResolvedPlan) -> list[str]:
 
 def should_stratify(dimension: DimensionDef, plan: ResolvedPlan) -> bool:
     """Return whether exact per-bucket requests are safe and bounded."""
-    if plan.category_selection or plan.search is not None:
+    if plan.category_selection:
         return False
     if not settings.exact_counts or not dimension.is_exact_capable:
         return False
@@ -77,7 +77,19 @@ def should_stratify(dimension: DimensionDef, plan: ResolvedPlan) -> bool:
         # A second axis would multiply the request count; sample instead.
         return False
     universe = bucket_universe(dimension, plan)
-    return 0 < len(universe) <= settings.exact_max_buckets
+    if not 0 < len(universe) <= settings.exact_max_buckets:
+        return False
+
+    # A bucket filter layers onto the base query. ``filter.advanced`` merges
+    # with AND, which only ever narrows, but every other parameter is replaced
+    # outright — so stratifying a dimension the question already filters on
+    # would overwrite that constraint and report buckets the user excluded.
+    # "Recruiting melanoma trials by status" must not answer for all statuses.
+    from app.ctgov.params import build_query
+
+    base = build_query(plan).params
+    sample = dimension.exact_filter(universe[0]) if dimension.exact_filter else {}
+    return not any(key != "filter.advanced" and key in base for key in sample)
 
 
 async def fetch_stratified(
@@ -87,15 +99,21 @@ async def fetch_stratified(
     plan: ResolvedPlan,
     *,
     total_matching: int,
+    semaphore: asyncio.Semaphore | None = None,
+    deadline: float | None = None,
 ) -> StratifiedResult:
-    """One scoped request per bucket, run concurrently."""
+    """One scoped request per bucket, run concurrently.
+
+    Comparison matrices pass shared concurrency and deadline controls so that
+    adding arms does not multiply the configured upstream request pressure.
+    """
     assert dimension.exact_filter is not None
     universe = bucket_universe(dimension, plan)
-    semaphore = asyncio.Semaphore(settings.exact_concurrency)
-    deadline = time.monotonic() + settings.fetch_budget_s
+    request_slots = semaphore or asyncio.Semaphore(settings.exact_concurrency)
+    stop_at = deadline or (time.monotonic() + settings.fetch_budget_s)
 
     async def one(key: str) -> Stratum | None:
-        if time.monotonic() > deadline:
+        if time.monotonic() > stop_at:
             return None
         scoped = spec.with_overrides(dimension.exact_filter(key))
         params: dict[str, Any] = {
@@ -104,13 +122,14 @@ async def fetch_stratified(
             "pageSize": str(settings.exact_page_size),
             "countTotal": "true",
         }
-        async with semaphore:
+        async with request_slots:
+            if time.monotonic() > stop_at:
+                return None
             try:
                 payload = await client.get_json("/studies", params)
             except ServiceError:
-                # One unlucky bucket must not sink the whole answer; it is
-                # reported as zero-with-no-citations rather than a 502.
-                return None
+                # Never certify an incomplete bucket universe as exact.
+                raise
         return Stratum(
             key=key,
             exact_count=int(payload.get("totalCount", 0)),

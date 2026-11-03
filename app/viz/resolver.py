@@ -57,11 +57,13 @@ def resolve(
     bucket_set: BucketSet | None,
     *,
     records_fetched: int,
+    dimension_definition: DimensionDef | None = None,
+    series_definition: DimensionDef | None = None,
 ) -> VizDecision:
     """Choose a truthful visualization from intent and realized bucket shape."""
     hint = plan.chart_hint
-    dimension = DIMENSIONS.get(bucket_set.dimension) if bucket_set else None
-    series_dimension = (
+    dimension = dimension_definition or (DIMENSIONS.get(bucket_set.dimension) if bucket_set else None)
+    series_dimension = series_definition or (
         DIMENSIONS.get(bucket_set.series_dimension or "") if bucket_set else None
     )
     # Comparison arms are a synthetic series with no registry entry, but they
@@ -91,7 +93,20 @@ def resolve(
             rationale="The question is not about clinical trials.",
         )
 
-    # 3. A single number.
+    # 3. Comparing the arms' own totals: one bar per arm, not one number.
+    #    Without this the arms collapse into a single stat and the question
+    #    ("compare A, B and C") goes unanswered.
+    if bucket_set is not None and (bucket_set.dimension or "").startswith("compare:"):
+        return VizDecision(
+            type="bar_chart",
+            rationale=(
+                f"{len(bucket_set.buckets)} compared populations, each an exact "
+                "server-reported total."
+            ),
+            orientation=_orientation(None, len(bucket_set.buckets)),
+        )
+
+    # 4. A single number.
     if plan.intent == "count_total" or (plan.group_by is None and plan.intent != "lookup"):
         decision = VizDecision(
             type="stat",

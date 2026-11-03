@@ -450,3 +450,42 @@ def describe_registry() -> list[dict[str, Any]]:
         for d in DIMENSIONS.values()
         if d.enabled
     ]
+
+
+#: Area names ClinicalTrials.gov resolves inside an advanced filter: a snapshot
+#: of ``/studies/search-areas`` (area names plus their field pieces). Held here
+#: so a planner-invented area such as ``AREA[Country]`` — the real name is
+#: ``LocationCountry`` — is caught before a live request earns a 400.
+SEARCH_AREA_NAMES: frozenset[str] = frozenset({
+    "Acronym", "ArmGroupDescription", "ArmGroupLabel", "ArmGroupType",
+    "BasicSearch", "BioSpecDescription", "BriefSummary", "BriefTitle",
+    "CentralContactName", "CollaboratorClass", "CollaboratorName",
+    "Condition", "ConditionAncestorTerm", "ConditionMeshTerm",
+    "ConditionSearch", "ContactSearch", "DesignAllocation",
+    "DesignInterventionModel", "DesignMasking",
+    "DesignObservationalModel", "DesignPrimaryPurpose",
+    "DesignTimePerspective", "DesignWhoMasked", "EligibilityCriteria",
+    "EligibilitySearch", "ExternalIdTypesSearch", "ExternalIdsSearch",
+    "FunderTypeSearch", "IdSearch", "InterventionAncestorTerm",
+    "InterventionDescription", "InterventionMeshTerm", "InterventionName",
+    "InterventionNameSearch", "InterventionOtherName",
+    "InterventionSearch", "InterventionType", "Keyword",
+    "LeadSponsorClass", "LeadSponsorName", "LocationCity",
+    "LocationContactName", "LocationCountry", "LocationFacility",
+    "LocationSearch", "LocationState", "LocationStatus", "LocationZip",
+    "NCTId", "NCTIdAlias", "NCTIdSearch", "ObsoleteConditionSearch",
+    "OfficialTitle", "OrgFullName", "OrgStudyId", "OrgStudyIdType",
+    "OtherOutcomeDescription", "OtherOutcomeMeasure",
+    "OutcomeMeasureDescription", "OutcomeMeasurePopulationDescription",
+    "OutcomeMeasureTitle", "OutcomeNameSearch", "OutcomeSearch",
+    "OverallOfficialAffiliation", "OverallOfficialName",
+    "OverallOfficialRole", "PatientSearch", "Phase",
+    "PrimaryOutcomeDescription", "PrimaryOutcomeMeasure",
+    "ResponsiblePartyInvestigatorAffiliation",
+    "ResponsiblePartyInvestigatorFullName",
+    "ResponsiblePartyInvestigatorTitle", "ResponsiblePartyOldNameTitle",
+    "ResponsiblePartyOldOrganization", "ResponsiblePartySearch",
+    "SecondaryId", "SecondaryIdType", "SecondaryOutcomeDescription",
+    "SecondaryOutcomeMeasure", "SponsorSearch", "StdAge",
+    "StudyPopulation", "StudyType", "TitleSearch",
+})

@@ -43,6 +43,10 @@ class Bucket(BaseModel):
 
     is_other: bool = False
     is_missing: bool = False
+    #: True when the SERIES value is absent from the record. Flagged rather
+    #: than inferred from the label, so a graph can refuse to draw an edge to
+    #: an unreported value without string-matching "Not Reported".
+    series_is_missing: bool = False
     distinct_values_collapsed: int | None = None
 
     citations: list[Citation] = Field(default_factory=list)
@@ -72,6 +76,7 @@ class Exclusions(BaseModel):
     imprecise_for_granularity: int = 0
     no_selected_category: int = 0
     memberships_removed: int = 0
+    invalid_numeric_pair: int = 0
 
 
 class Truncation(BaseModel):
@@ -97,6 +102,10 @@ class BucketSet(BaseModel):
     invariant: Invariant
     exclusions: Exclusions = Field(default_factory=Exclusions)
     truncation: Truncation | None = None
+    #: Series values dropped by the co-occurrence node budget. They are removed
+    #: rather than pooled: an edge to an "Other" node would assert a
+    #: co-occurrence that no trial records.
+    series_truncated: int = 0
     records_analyzed: int = 0
     counts_are_exact: bool = False
     extra: dict[str, Any] = Field(default_factory=dict)

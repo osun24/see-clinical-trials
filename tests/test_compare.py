@@ -259,6 +259,10 @@ async def test_comparison_renders_as_grouped_not_stacked():
     )
     route = respx.get(f"{BASE}/studies")
     route.side_effect = [
+        # Adaptive comparison fetching probes each arm total before assigning
+        # the shared record budget.
+        httpx.Response(200, json=_page(["NCT1", "NCT2"], "PHASE1", 2)),
+        httpx.Response(200, json=_page(["NCT3"], "PHASE2", 1)),
         httpx.Response(200, json=_page(["NCT1", "NCT2"], "PHASE1", 2)),
         httpx.Response(200, json=_page(["NCT3"], "PHASE2", 1)),
     ]

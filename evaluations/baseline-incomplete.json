@@ -1,0 +1,632 @@
+{
+  "status": "running",
+  "results": [
+    {
+      "case": 0,
+      "run": 0,
+      "family": "counts",
+      "question": "Which lead sponsors run the most Alzheimer's trials?",
+      "contract_failures": [],
+      "semantic_failures": [],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on all 4,092 matching trials. Counts represent distinct trials per category. 561 rows filtered; 0 rows excluded for missing grouping values.",
+      "interpretation": {
+        "model_interpretation": "Identify lead sponsors with the highest number of Alzheimer's disease clinical trials.",
+        "filters_applied": {
+          "query.cond": "Alzheimer"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled.",
+          "The planning model revised its plan once after deterministic validation failed: Unknown grouping column."
+        ]
+      },
+      "group_by": "lead_sponsor",
+      "series_by": null,
+      "measure": "count_distinct_trials",
+      "coverage": {
+        "total_matching_studies": 4092,
+        "records_fetched": 4092,
+        "records_analyzed": 4092,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 5,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "filter",
+            "id": "filter_condition",
+            "input": "trials",
+            "field": "condition",
+            "predicate": "contains",
+            "value": "Alzheimer"
+          },
+          {
+            "op": "memberships",
+            "id": "memberships_lead_sponsor",
+            "input": "filter_condition",
+            "dimension": "lead_sponsor",
+            "output": "lead_sponsor"
+          },
+          {
+            "op": "aggregate",
+            "id": "aggregate_sponsors",
+            "input": "memberships_lead_sponsor",
+            "group_by": [
+              "lead_sponsor"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "exclude"
+          },
+          {
+            "op": "sort",
+            "id": "sort_desc",
+            "input": "aggregate_sponsors",
+            "field": "value",
+            "descending": true
+          },
+          {
+            "op": "limit",
+            "id": "limit_top25",
+            "input": "sort_desc",
+            "count": 25,
+            "tail": "drop"
+          }
+        ]
+      },
+      "repair": true,
+      "elapsed_s": 9.6,
+      "passed_checks": true
+    },
+    {
+      "case": 0,
+      "run": 2,
+      "family": "counts",
+      "question": "Which lead sponsors run the most Alzheimer's trials?",
+      "contract_failures": [],
+      "semantic_failures": [
+        "wrong grouping"
+      ],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on all 4,092 matching trials. Counts represent distinct trials per category. 561 rows filtered; 0 rows excluded for missing grouping values.",
+      "interpretation": {
+        "model_interpretation": "Identify lead sponsors with the highest number of Alzheimer's disease clinical trials.",
+        "filters_applied": {
+          "query.cond": "Alzheimer"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled.",
+          "The planning model revised its plan once after deterministic validation failed: Unknown grouping column."
+        ]
+      },
+      "group_by": "lead_sponsor_membership",
+      "series_by": null,
+      "measure": "count_distinct_trials",
+      "coverage": {
+        "total_matching_studies": 4092,
+        "records_fetched": 4092,
+        "records_analyzed": 4092,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 5,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "filter",
+            "id": "filter_condition",
+            "input": "trials",
+            "field": "condition",
+            "predicate": "contains",
+            "value": "Alzheimer"
+          },
+          {
+            "op": "memberships",
+            "id": "memberships_lead_sponsor",
+            "input": "filter_condition",
+            "dimension": "lead_sponsor",
+            "output": "lead_sponsor_membership"
+          },
+          {
+            "op": "aggregate",
+            "id": "aggregate_sponsors",
+            "input": "memberships_lead_sponsor",
+            "group_by": [
+              "lead_sponsor_membership"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "exclude"
+          },
+          {
+            "op": "sort",
+            "id": "sort_sponsors",
+            "input": "aggregate_sponsors",
+            "field": "value",
+            "descending": true
+          },
+          {
+            "op": "limit",
+            "id": "limit_top25",
+            "input": "sort_sponsors",
+            "count": 25,
+            "tail": "drop"
+          }
+        ]
+      },
+      "repair": true,
+      "elapsed_s": 9.62,
+      "passed_checks": false
+    },
+    {
+      "case": 0,
+      "run": 1,
+      "family": "counts",
+      "question": "Which lead sponsors run the most Alzheimer's trials?",
+      "contract_failures": [],
+      "semantic_failures": [
+        "wrong grouping"
+      ],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on all 4,092 matching trials. Counts represent distinct trials per category. 561 rows filtered; 0 rows excluded for missing grouping values.",
+      "interpretation": {
+        "model_interpretation": "Identify the lead sponsors that run the most clinical trials for Alzheimer's disease, ranked by number of trials.",
+        "filters_applied": {
+          "query.cond": "Alzheimer"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled.",
+          "The planning model revised its plan once after deterministic validation failed: Unknown grouping column."
+        ]
+      },
+      "group_by": "lead_sponsor_membership",
+      "series_by": null,
+      "measure": "count_distinct_trials",
+      "coverage": {
+        "total_matching_studies": 4092,
+        "records_fetched": 4092,
+        "records_analyzed": 4092,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 5,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "filter",
+            "id": "filter_condition",
+            "input": "trials",
+            "field": "condition",
+            "predicate": "contains",
+            "value": "Alzheimer"
+          },
+          {
+            "op": "memberships",
+            "id": "memberships_lead_sponsor",
+            "input": "filter_condition",
+            "dimension": "lead_sponsor",
+            "output": "lead_sponsor_membership"
+          },
+          {
+            "op": "aggregate",
+            "id": "aggregate_sponsors",
+            "input": "memberships_lead_sponsor",
+            "group_by": [
+              "lead_sponsor_membership"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "exclude"
+          },
+          {
+            "op": "sort",
+            "id": "sort_desc",
+            "input": "aggregate_sponsors",
+            "field": "value",
+            "descending": true
+          },
+          {
+            "op": "limit",
+            "id": "limit_top25",
+            "input": "sort_desc",
+            "count": 25,
+            "tail": "drop"
+          }
+        ]
+      },
+      "repair": true,
+      "elapsed_s": 10.0,
+      "passed_checks": false
+    },
+    {
+      "case": 1,
+      "run": 2,
+      "family": "counts",
+      "question": "How many pembrolizumab trials are there by phase?",
+      "error": "query_not_interpretable",
+      "message": "Step pembro_search: column 'interventions.name' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 5.62,
+      "passed_checks": false
+    },
+    {
+      "case": 1,
+      "run": 1,
+      "family": "counts",
+      "question": "How many pembrolizumab trials are there by phase?",
+      "error": "query_not_interpretable",
+      "message": "Step pembro_search: column 'interventions.name' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 6.0,
+      "passed_checks": false
+    },
+    {
+      "case": 1,
+      "run": 0,
+      "family": "counts",
+      "question": "How many pembrolizumab trials are there by phase?",
+      "error": "query_not_interpretable",
+      "message": "Step pembro_filter: column 'interventions.name' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 6.21,
+      "passed_checks": false
+    },
+    {
+      "case": 2,
+      "run": 0,
+      "family": "counts",
+      "question": "How many trials are recruiting for lung cancer?",
+      "error": "query_not_interpretable",
+      "message": "Analysis must produce a grouped aggregate.",
+      "detail": null,
+      "elapsed_s": 4.86,
+      "passed_checks": false
+    },
+    {
+      "case": 2,
+      "run": 2,
+      "family": "counts",
+      "question": "How many trials are recruiting for lung cancer?",
+      "error": "query_not_interpretable",
+      "message": "Step recruiting_trials: column 'overall_status' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 5.27,
+      "passed_checks": false
+    },
+    {
+      "case": 2,
+      "run": 1,
+      "family": "counts",
+      "question": "How many trials are recruiting for lung cancer?",
+      "error": "query_not_interpretable",
+      "message": "Aggregate once using one to three distinct grouping columns.",
+      "detail": null,
+      "elapsed_s": 5.58,
+      "passed_checks": false
+    },
+    {
+      "case": 3,
+      "run": 1,
+      "family": "counts",
+      "question": "What is the recruitment status of glioblastoma trials?",
+      "contract_failures": [],
+      "semantic_failures": [],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on all 1,929 matching trials.",
+      "interpretation": {
+        "model_interpretation": "Retrieve the distribution of recruitment status for clinical trials studying glioblastoma.",
+        "filters_applied": {
+          "query.intr": "glioblastoma",
+          "query.cond": "glioblastoma"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": "overall_status",
+      "series_by": null,
+      "measure": "trial_count",
+      "coverage": {
+        "total_matching_studies": 1929,
+        "records_fetched": 1929,
+        "records_analyzed": 1929,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 2,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "overall_status",
+            "output": "primary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "primary_rows",
+            "group_by": [
+              "primary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 3.86,
+      "passed_checks": true
+    },
+    {
+      "case": 3,
+      "run": 0,
+      "family": "counts",
+      "question": "What is the recruitment status of glioblastoma trials?",
+      "error": "query_not_interpretable",
+      "message": "Unknown grouping column.",
+      "detail": null,
+      "elapsed_s": 4.86,
+      "passed_checks": false
+    },
+    {
+      "case": 3,
+      "run": 2,
+      "family": "counts",
+      "question": "What is the recruitment status of glioblastoma trials?",
+      "error": "query_not_interpretable",
+      "message": "Unknown grouping column.",
+      "detail": null,
+      "elapsed_s": 5.03,
+      "passed_checks": false
+    },
+    {
+      "case": 4,
+      "run": 0,
+      "family": "counts",
+      "question": "What study types are reported for diabetes trials?",
+      "error": "query_not_interpretable",
+      "message": "Unknown grouping column.",
+      "detail": null,
+      "elapsed_s": 5.2,
+      "passed_checks": false
+    },
+    {
+      "case": 4,
+      "run": 1,
+      "family": "counts",
+      "question": "What study types are reported for diabetes trials?",
+      "contract_failures": [],
+      "semantic_failures": [],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on 5,000 of 24,588 matching trials (first 5,000 by API relevance order); counts are approximate. Counts represent distinct trials per category. 1003 rows filtered; 0 rows excluded for missing grouping values.",
+      "interpretation": {
+        "model_interpretation": "What study types are reported for diabetes trials?",
+        "filters_applied": {
+          "query.cond": "diabetes"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": "study_type",
+      "series_by": null,
+      "measure": "count_distinct_trials",
+      "coverage": {
+        "total_matching_studies": 24588,
+        "records_fetched": 5000,
+        "records_analyzed": 5000,
+        "is_sample": true,
+        "coverage_ratio": 0.2034,
+        "sampling_method": "first_n_by_api_relevance_order",
+        "sampling_bias_risk": "high",
+        "fetch_cap": 5000,
+        "pages_fetched": 5,
+        "truncated_reason": "fetch_cap_reached",
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "filter",
+            "id": "filter_diabetes",
+            "input": "trials",
+            "field": "condition",
+            "predicate": "contains",
+            "value": "diabetes"
+          },
+          {
+            "op": "memberships",
+            "id": "membership_study_type",
+            "input": "filter_diabetes",
+            "dimension": "study_type",
+            "output": "study_type"
+          },
+          {
+            "op": "aggregate",
+            "id": "aggregate_study_type",
+            "input": "membership_study_type",
+            "group_by": [
+              "study_type"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "exclude"
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 5.88,
+      "passed_checks": true
+    },
+    {
+      "case": 4,
+      "run": 2,
+      "family": "counts",
+      "question": "What study types are reported for diabetes trials?",
+      "error": "query_not_interpretable",
+      "message": "Unknown grouping column.",
+      "detail": null,
+      "elapsed_s": 5.1,
+      "passed_checks": false
+    },
+    {
+      "case": 5,
+      "run": 0,
+      "family": "comparisons",
+      "question": "Compare the phase distribution of Pfizer trials against Merck trials.",
+      "error": "query_not_interpretable",
+      "message": "Step pfizer_trials: column 'lead_sponsor' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 5.62,
+      "passed_checks": false
+    },
+    {
+      "case": 5,
+      "run": 1,
+      "family": "comparisons",
+      "question": "Compare the phase distribution of Pfizer trials against Merck trials.",
+      "error": "query_not_interpretable",
+      "message": "Step pfizer_trials: column 'lead_sponsor' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 6.16,
+      "passed_checks": false
+    },
+    {
+      "case": 5,
+      "run": 2,
+      "family": "comparisons",
+      "question": "Compare the phase distribution of Pfizer trials against Merck trials.",
+      "error": "query_not_interpretable",
+      "message": "Step pfizer_trials: column 'lead_sponsor' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 6.05,
+      "passed_checks": false
+    },
+    {
+      "case": 6,
+      "run": 0,
+      "family": "comparisons",
+      "question": "Compare recruitment status for melanoma versus lung cancer trials.",
+      "error": "query_not_interpretable",
+      "message": "Step filter_lung input must be 'agg_melanoma', not 'trials'; each step consumes the preceding step.",
+      "detail": null,
+      "elapsed_s": 6.91,
+      "passed_checks": false
+    },
+    {
+      "case": 6,
+      "run": 2,
+      "family": "comparisons",
+      "question": "Compare recruitment status for melanoma versus lung cancer trials.",
+      "error": "query_not_interpretable",
+      "message": "Step lung_trials input must be 'melanoma_status', not 'trials'; each step consumes the preceding step.",
+      "detail": null,
+      "elapsed_s": 6.11,
+      "passed_checks": false
+    },
+    {
+      "case": 6,
+      "run": 1,
+      "family": "comparisons",
+      "question": "Compare recruitment status for melanoma versus lung cancer trials.",
+      "error": "query_not_interpretable",
+      "message": "Step lung_trials input must be 'melanoma_status', not 'trials'; each step consumes the preceding step.",
+      "detail": null,
+      "elapsed_s": 6.55,
+      "passed_checks": false
+    },
+    {
+      "case": 7,
+      "run": 0,
+      "family": "comparisons",
+      "question": "Compare melanoma trial phases in the United States versus Canada.",
+      "error": "query_not_interpretable",
+      "message": "Step filter_ca input must be 'agg_us', not 'expand_locations'; each step consumes the preceding step.",
+      "detail": null,
+      "elapsed_s": 7.32,
+      "passed_checks": false
+    },
+    {
+      "case": 7,
+      "run": 2,
+      "family": "comparisons",
+      "question": "Compare melanoma trial phases in the United States versus Canada.",
+      "error": "query_not_interpretable",
+      "message": "Step filter_ca input must be 'aggregate_us', not 'expand_locations'; each step consumes the preceding step.",
+      "detail": null,
+      "elapsed_s": 6.41,
+      "passed_checks": false
+    },
+    {
+      "case": 7,
+      "run": 1,
+      "family": "comparisons",
+      "question": "Compare melanoma trial phases in the United States versus Canada.",
+      "error": "query_not_interpretable",
+      "message": "Step filter_ca input must be 'aggregate_us', not 'expand_locations'; each step consumes the preceding step.",
+      "detail": null,
+      "elapsed_s": 6.86,
+      "passed_checks": false
+    }
+  ]
+}

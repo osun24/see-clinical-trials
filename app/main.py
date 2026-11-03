@@ -20,6 +20,7 @@ from app.models.errors import ErrorBody, ErrorResponse, ServiceError
 from app.models.request import QueryRequest
 from app.models.response import AnswerResponse
 from app.pipeline import answer, plan_only
+from app.viz.contract import check_response
 
 logger = logging.getLogger("clinical-trials-viz")
 
@@ -109,7 +110,7 @@ async def _unhandled_handler(request: Request, exc: Exception) -> JSONResponse:
 async def query(request: QueryRequest, http_request: Request) -> AnswerResponse:
     """Interpret, execute, aggregate, and visualize a clinical-trials question."""
     async with CtgovClient(http_request.app.state.http) as client:
-        return await answer(request, client)
+        return check_response(await answer(request, client))
 
 
 @app.post(
@@ -158,5 +159,14 @@ async def healthz() -> dict[str, Any]:
 
 @app.get("/", include_in_schema=False)
 async def demo() -> FileResponse:
-    """Serve the no-build reference renderer."""
-    return FileResponse(STATIC_DIR / "index.html")
+    """Serve the no-build reference renderer.
+
+    Sent uncacheable on purpose. The page carries the whole renderer inline, so
+    a browser holding a stale copy shows an old visualization against current
+    data with nothing on screen to reveal the mismatch — a changed renderer
+    looked like it had not been deployed at all.
+    """
+    return FileResponse(
+        STATIC_DIR / "index.html",
+        headers={"Cache-Control": "no-store, must-revalidate"},
+    )

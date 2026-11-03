@@ -1,0 +1,1164 @@
+{
+  "$defs": {
+    "Channel": {
+      "additionalProperties": false,
+      "description": "One visual channel bound to a field on every data row.",
+      "properties": {
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "type": {
+          "default": "nominal",
+          "enum": [
+            "nominal",
+            "quantitative",
+            "temporal"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "axis_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Axis Title"
+        },
+        "legend_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legend Title"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Format"
+        },
+        "granularity": {
+          "anyOf": [
+            {
+              "enum": [
+                "year",
+                "month"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Granularity"
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "enum": [
+                "linear",
+                "log"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale"
+        },
+        "sort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sort"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "Channel",
+      "type": "object"
+    },
+    "Citation": {
+      "additionalProperties": false,
+      "description": "A single trial record supporting one visualised datum.\n\nBuilt mechanically from the fetched JSON. ``field_value`` is the raw value\nat ``field_path`` and ``excerpt`` is a verbatim substring of a fetched\nfield \u2014 never model-generated prose, which would be a fabricated quote.",
+      "properties": {
+        "nct_id": {
+          "title": "Nct Id",
+          "type": "string"
+        },
+        "brief_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brief Title"
+        },
+        "field_path": {
+          "title": "Field Path",
+          "type": "string"
+        },
+        "field_value": {
+          "title": "Field Value",
+          "type": "string"
+        },
+        "evidence_kind": {
+          "default": "field_value",
+          "enum": [
+            "field_value",
+            "text_excerpt"
+          ],
+          "title": "Evidence Kind",
+          "type": "string"
+        },
+        "excerpt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excerpt"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nct_id",
+        "field_path",
+        "field_value",
+        "source_url"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "description": "What the numbers are actually based on.\n\nClinicalTrials.gov cannot aggregate a filtered query server-side, so counts\nare computed locally over a bounded fetch. When that fetch is smaller than\nthe matching universe the response says so here, in\n``VisualizationSpec.subtitle``, and per datum via ``value_is_exact``.",
+      "properties": {
+        "total_matching_studies": {
+          "title": "Total Matching Studies",
+          "type": "integer"
+        },
+        "records_fetched": {
+          "title": "Records Fetched",
+          "type": "integer"
+        },
+        "records_analyzed": {
+          "title": "Records Analyzed",
+          "type": "integer"
+        },
+        "is_sample": {
+          "title": "Is Sample",
+          "type": "boolean"
+        },
+        "coverage_ratio": {
+          "title": "Coverage Ratio",
+          "type": "number"
+        },
+        "sampling_method": {
+          "enum": [
+            "census",
+            "first_n_by_api_relevance_order",
+            "stratified_by_bucket"
+          ],
+          "title": "Sampling Method",
+          "type": "string"
+        },
+        "sampling_bias_risk": {
+          "enum": [
+            "none",
+            "low",
+            "high"
+          ],
+          "title": "Sampling Bias Risk",
+          "type": "string"
+        },
+        "fetch_cap": {
+          "title": "Fetch Cap",
+          "type": "integer"
+        },
+        "pages_fetched": {
+          "title": "Pages Fetched",
+          "type": "integer"
+        },
+        "truncated_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "fetch_cap_reached",
+                "time_budget_exceeded"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Truncated Reason"
+        },
+        "counts_are_exact": {
+          "default": false,
+          "title": "Counts Are Exact",
+          "type": "boolean"
+        },
+        "excluded": {
+          "$ref": "#/$defs/Exclusions"
+        }
+      },
+      "required": [
+        "total_matching_studies",
+        "records_fetched",
+        "records_analyzed",
+        "is_sample",
+        "coverage_ratio",
+        "sampling_method",
+        "sampling_bias_risk",
+        "fetch_cap",
+        "pages_fetched"
+      ],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "Datum": {
+      "additionalProperties": true,
+      "description": "One row of ``data``.\n\nDeclared with ``extra=\"allow\"`` because each visualization type adds its own\nkeys (for example, ``share`` for pie charts). The fields below are the ones\na renderer can rely on for any aggregated type.",
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "series": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Series"
+        },
+        "value_is_exact": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Is Exact"
+        },
+        "sample_value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sample Value"
+        },
+        "is_other": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Other"
+        },
+        "is_missing": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Missing"
+        },
+        "distinct_values_collapsed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distinct Values Collapsed"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "citation_total": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citation Total"
+        },
+        "citations_truncated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citations Truncated"
+        },
+        "citation_sample": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citation Sample"
+        },
+        "citation_basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citation Basis"
+        }
+      },
+      "title": "Datum",
+      "type": "object"
+    },
+    "Encoding": {
+      "additionalProperties": false,
+      "description": "Channels for every supported type. Only the relevant keys are populated.",
+      "properties": {
+        "x": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "y": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "series": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "theta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "color": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "size": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "label": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "orientation": {
+          "anyOf": [
+            {
+              "enum": [
+                "vertical",
+                "horizontal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Orientation"
+        },
+        "stack": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "const": "normalize",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stack"
+        },
+        "point_markers": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Point Markers"
+        },
+        "total": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total"
+        },
+        "tooltip": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tooltip",
+          "type": "array"
+        },
+        "node": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Node"
+        },
+        "edge": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Edge"
+        },
+        "layout_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layout Hint"
+        }
+      },
+      "title": "Encoding",
+      "type": "object"
+    },
+    "Exclusions": {
+      "additionalProperties": false,
+      "description": "Records that could not be placed honestly on the selected axis.",
+      "properties": {
+        "missing_dimension_value": {
+          "default": 0,
+          "title": "Missing Dimension Value",
+          "type": "integer"
+        },
+        "imprecise_for_granularity": {
+          "default": 0,
+          "title": "Imprecise For Granularity",
+          "type": "integer"
+        },
+        "no_selected_category": {
+          "default": 0,
+          "title": "No Selected Category",
+          "type": "integer"
+        },
+        "memberships_removed": {
+          "default": 0,
+          "title": "Memberships Removed",
+          "type": "integer"
+        },
+        "invalid_numeric_pair": {
+          "default": 0,
+          "title": "Invalid Numeric Pair",
+          "type": "integer"
+        }
+      },
+      "title": "Exclusions",
+      "type": "object"
+    },
+    "Invariant": {
+      "additionalProperties": false,
+      "description": "What a client may safely assume about the sum of the bar values.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "partition",
+            "multi_label"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "assignments_total": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assignments Total"
+        },
+        "records_analyzed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Records Analyzed"
+        }
+      },
+      "required": [
+        "kind",
+        "statement"
+      ],
+      "title": "Invariant",
+      "type": "object"
+    },
+    "Meta": {
+      "additionalProperties": false,
+      "description": "Provenance, coverage, invariants, and decision details for an answer.",
+      "properties": {
+        "analysis": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Analysis"
+        },
+        "query_interpretation": {
+          "$ref": "#/$defs/QueryInterpretation"
+        },
+        "intent": {
+          "title": "Intent",
+          "type": "string"
+        },
+        "group_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group By"
+        },
+        "series_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Series By"
+        },
+        "measure": {
+          "default": "trial_count",
+          "title": "Measure",
+          "type": "string"
+        },
+        "unit": {
+          "default": "trials",
+          "title": "Unit",
+          "type": "string"
+        },
+        "sort": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sort"
+        },
+        "invariant": {
+          "$ref": "#/$defs/Invariant"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "truncation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Truncation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "visualization_needed": {
+          "default": true,
+          "title": "Visualization Needed",
+          "type": "boolean"
+        },
+        "visualization_rationale": {
+          "default": "",
+          "title": "Visualization Rationale",
+          "type": "string"
+        },
+        "answer_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer Text"
+        },
+        "suggestions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Suggestions",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "notes": {
+          "$ref": "#/$defs/Notes"
+        },
+        "citation_policy": {
+          "default": "Citations are extracted mechanically from the ClinicalTrials.gov API response. Field values and excerpts are verbatim; the language model never writes them.",
+          "title": "Citation Policy",
+          "type": "string"
+        },
+        "source": {
+          "default": "clinicaltrials.gov",
+          "title": "Source",
+          "type": "string"
+        },
+        "api_version": {
+          "default": "2.0.5",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "data_timestamp": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Data Timestamp"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "elapsed_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Elapsed Ms"
+        }
+      },
+      "required": [
+        "query_interpretation",
+        "intent",
+        "invariant",
+        "coverage"
+      ],
+      "title": "Meta",
+      "type": "object"
+    },
+    "NetworkData": {
+      "additionalProperties": false,
+      "description": "``data`` for ``network_graph`` \u2014 the one non-flat shape.",
+      "properties": {
+        "nodes": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Edges",
+          "type": "array"
+        },
+        "omitted": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OmittedFromGraph"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "NetworkData",
+      "type": "object"
+    },
+    "Notes": {
+      "additionalProperties": false,
+      "description": "Human-readable caveats that a client should display with the result.",
+      "properties": {
+        "coverage_warning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coverage Warning"
+        },
+        "counting_rule": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Counting Rule"
+        },
+        "overrides": {
+          "items": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "title": "Overrides",
+          "type": "array"
+        },
+        "general": {
+          "items": {
+            "type": "string"
+          },
+          "title": "General",
+          "type": "array"
+        }
+      },
+      "title": "Notes",
+      "type": "object"
+    },
+    "OmittedFromGraph": {
+      "additionalProperties": false,
+      "description": "Trials that could not be placed on the graph, stated rather than dropped.\n\nA collapsed \"Other\" bucket has no second-dimension value, so it has no\nedge to sit on. Silently leaving it out would make the edge weights fail to\naccount for every analyzed trial with nothing in the response to say so.",
+      "properties": {
+        "trials": {
+          "title": "Trials",
+          "type": "integer"
+        },
+        "distinct_values_collapsed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distinct Values Collapsed"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trials",
+        "reason"
+      ],
+      "title": "OmittedFromGraph",
+      "type": "object"
+    },
+    "QueryInterpretation": {
+      "additionalProperties": false,
+      "description": "Effective filters and defensive adjustments to the model plan.",
+      "properties": {
+        "model_interpretation": {
+          "title": "Model Interpretation",
+          "type": "string"
+        },
+        "filters_applied": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Filters Applied",
+          "type": "object"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "plan_adjustments": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Plan Adjustments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "model_interpretation"
+      ],
+      "title": "QueryInterpretation",
+      "type": "object"
+    },
+    "Truncation": {
+      "additionalProperties": false,
+      "description": "Description of high-cardinality values collapsed into ``Other``.",
+      "properties": {
+        "dimension": {
+          "title": "Dimension",
+          "type": "string"
+        },
+        "rule": {
+          "const": "top_n",
+          "default": "top_n",
+          "title": "Rule",
+          "type": "string"
+        },
+        "shown": {
+          "title": "Shown",
+          "type": "integer"
+        },
+        "total_distinct": {
+          "title": "Total Distinct",
+          "type": "integer"
+        },
+        "collapsed_into_other": {
+          "title": "Collapsed Into Other",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dimension",
+        "shown",
+        "total_distinct",
+        "collapsed_into_other"
+      ],
+      "title": "Truncation",
+      "type": "object"
+    },
+    "VisualizationSpec": {
+      "additionalProperties": false,
+      "description": "Strict renderer contract for one selected visualization type.",
+      "properties": {
+        "type": {
+          "enum": [
+            "stat",
+            "bar_chart",
+            "grouped_bar",
+            "stacked_bar",
+            "time_series",
+            "pie_chart",
+            "scatter_plot",
+            "network_graph",
+            "none"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "subtitle": {
+          "title": "Subtitle",
+          "type": "string"
+        },
+        "encoding": {
+          "$ref": "#/$defs/Encoding"
+        },
+        "data": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Datum"
+              },
+              "type": "array"
+            },
+            {
+              "$ref": "#/$defs/NetworkData"
+            }
+          ],
+          "title": "Data"
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "subtitle"
+      ],
+      "title": "VisualizationSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Top-level successful response returned by ``POST /query``.",
+  "properties": {
+    "visualization": {
+      "$ref": "#/$defs/VisualizationSpec"
+    },
+    "meta": {
+      "$ref": "#/$defs/Meta"
+    }
+  },
+  "required": [
+    "visualization",
+    "meta"
+  ],
+  "title": "AnswerResponse",
+  "type": "object"
+}

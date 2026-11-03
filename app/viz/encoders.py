@@ -71,10 +71,10 @@ def _row(bucket: Bucket) -> dict[str, Any]:
         row["distinct_values_collapsed"] = bucket.distinct_values_collapsed
     if bucket.is_missing:
         row["is_missing"] = True
-    if bucket.citation_sample:
-        row["citation_sample"] = True
     if bucket.citation_basis:
         row["citation_basis"] = bucket.citation_basis
+    if bucket.citation_sample:
+        row["citation_sample"] = True
     return row
 
 
@@ -257,6 +257,21 @@ def encode_network(bucket_set: BucketSet) -> tuple[Encoding, dict[str, Any]]:
                     )
                 else:
                     omitted_reason = "No second-dimension value to link to."
+            continue
+        if bucket.is_missing or bucket.series_is_missing:
+            # "Not Reported" is the absence of a value, not an entity. Drawing
+            # it would assert that a sponsor co-occurs with a drug named
+            # "Not Reported". Report the trials as undrawn instead.
+            if bucket.value:
+                omitted_trials += bucket.value
+                absent = (
+                    bucket_set.dimension if bucket.is_missing
+                    else bucket_set.series_dimension
+                )
+                omitted_reason = (
+                    f"No {absent} value recorded, so there is no entity to "
+                    "place at one end of the edge."
+                )
             continue
         source = f"{bucket_set.dimension}:{bucket.label}"
         target = f"{bucket_set.series_dimension}:{bucket.series}"
@@ -514,5 +529,7 @@ def _network_encoding() -> Encoding:
             "level_field": "level",
         },
         edge={"source_field": "source", "target_field": "target", "weight_field": "weight"},
-        layout_hint="hierarchical",
+        # What the renderer actually does. Advertising a layout nobody
+        # draws is a contract that lies about its own output.
+        layout_hint="force",
     )

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import Literal
 from datetime import date
+from app.analysis.models import AnalysisPlan
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -67,10 +68,13 @@ class GraphPlan(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    root_entity: Literal["person", "search_subject"]
-    root_value: str
+    #: ``population`` roots the graph in the search itself rather than a named
+    #: subject: "sponsors and drugs for NSCLC trials" relates two recorded
+    #: entity types to each other across every matching trial, so there is no
+    #: single root node and ``root_value`` is unused.
+    root_entity: Literal["person", "search_subject", "population"]
+    root_value: str = ""
     levels: list[GraphLevel]
-    layout: Literal["hierarchical", "force"] = "hierarchical"
     edge_measure: Literal["trial_count"] = "trial_count"
     node_limit: int = 30
 
@@ -102,13 +106,14 @@ class SearchRequest(BaseModel):
     """Supported upstream search parameters; transport policy remains server-owned."""
 
     model_config = {"extra": "forbid", "populate_by_name": True}
-    intervention: str | None = Field(default=None, alias="query.intr")
-    condition: str | None = Field(default=None, alias="query.cond")
+    intervention: str | None = Field(default=None, alias="query.intr", description="Only an explicitly requested drug/intervention. Never a disease or person name.")
+    condition: str | None = Field(default=None, alias="query.cond", description="Requested disease/condition. Do not also put it in intervention.")
     sponsor: str | None = Field(default=None, alias="query.spons")
     location: str | None = Field(default=None, alias="query.locn")
-    term: str | None = Field(default=None, alias="query.term")
+    term: str | None = Field(default=None, alias="query.term", description="Full-text search for a named person/subject or otherwise unrepresented concept.")
     advanced: str | None = Field(default=None, alias="filter.advanced")
     status: str | None = Field(default=None, alias="filter.overallStatus")
+    date_field: Literal["StartDate", "CompletionDate"] = "StartDate"
     start_date: date | None = None
     end_date: date | None = None
 
@@ -128,6 +133,23 @@ class QueryPlan(BaseModel):
 
     model_config = {"extra": "forbid"}
 
+    # Any entry here refuses the whole request, so the field needs a hard
+    # boundary: a planner that used it for commentary ("...which is supported")
+    # turned an answerable question into a refusal.
+    unsupported_requirements: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Requirements of the question that CANNOT be met from trial-record "
+            "fields and deterministic calculations — medical classification, "
+            "drug class or mechanism, ownership, approval status, efficacy "
+            "judgments. Any entry here refuses the entire request, so leave it "
+            "EMPTY whenever the question is answerable, including when you also "
+            "supply an analysis or search. Never use it for notes, caveats, "
+            "assumptions, restatements, or to say that something IS supported: "
+            "assumptions belong in assumptions."
+        ),
+    )
+    analysis: AnalysisPlan | None = None
     search: SearchRequest | None = None
     category_selection: str | None = None
 
@@ -204,6 +226,8 @@ class ResolvedPlan(BaseModel):
 
     model_config = {"extra": "forbid"}
 
+    unsupported_requirements: list[str] = Field(default_factory=list)
+    analysis: AnalysisPlan | None = None
     search: SearchRequest | None = None
     category_selection: str | None = None
 

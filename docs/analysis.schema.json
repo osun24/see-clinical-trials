@@ -1,0 +1,390 @@
+{
+  "$defs": {
+    "Aggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "aggregate",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "group_by": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Group By",
+          "type": "array"
+        },
+        "measure": {
+          "enum": [
+            "count_distinct_trials",
+            "count_rows"
+          ],
+          "title": "Measure",
+          "type": "string"
+        },
+        "missing": {
+          "default": "exclude",
+          "enum": [
+            "exclude",
+            "bucket"
+          ],
+          "title": "Missing",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "group_by",
+        "measure"
+      ],
+      "title": "Aggregate",
+      "type": "object"
+    },
+    "Derive": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "derive",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        },
+        "transform": {
+          "enum": [
+            "lower",
+            "strip",
+            "year",
+            "months_between"
+          ],
+          "title": "Transform",
+          "type": "string"
+        },
+        "other_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Other Field"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "field",
+        "output",
+        "transform"
+      ],
+      "title": "Derive",
+      "type": "object"
+    },
+    "Expand": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "expand",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "collection": {
+          "enum": [
+            "locations",
+            "interventions",
+            "conditions",
+            "officials"
+          ],
+          "title": "Collection",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "collection"
+      ],
+      "title": "Expand",
+      "type": "object"
+    },
+    "Filter": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "filter",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "predicate": {
+          "enum": [
+            "equals",
+            "not_equals",
+            "contains",
+            "present"
+          ],
+          "title": "Predicate",
+          "type": "string"
+        },
+        "value": {
+          "default": "",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "field",
+        "predicate"
+      ],
+      "title": "Filter",
+      "type": "object"
+    },
+    "Limit": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "limit",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "tail": {
+          "enum": [
+            "drop",
+            "other"
+          ],
+          "title": "Tail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "count",
+        "tail"
+      ],
+      "title": "Limit",
+      "type": "object"
+    },
+    "Memberships": {
+      "additionalProperties": false,
+      "description": "A registered extraction preset compiled into the ordinary executor.",
+      "properties": {
+        "op": {
+          "const": "memberships",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "dimension": {
+          "title": "Dimension",
+          "type": "string"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "dimension",
+        "output"
+      ],
+      "title": "Memberships",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "relationship",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "string"
+        },
+        "y": {
+          "title": "Y",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "x",
+        "y"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "Sort": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "sort",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "field": {
+          "enum": [
+            "label",
+            "value"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "descending": {
+          "default": true,
+          "title": "Descending",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "field"
+      ],
+      "title": "Sort",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "1",
+      "default": "1",
+      "title": "Version",
+      "type": "string"
+    },
+    "steps": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/Memberships"
+          },
+          {
+            "$ref": "#/$defs/Expand"
+          },
+          {
+            "$ref": "#/$defs/Filter"
+          },
+          {
+            "$ref": "#/$defs/Derive"
+          },
+          {
+            "$ref": "#/$defs/Relationship"
+          },
+          {
+            "$ref": "#/$defs/Aggregate"
+          },
+          {
+            "$ref": "#/$defs/Sort"
+          },
+          {
+            "$ref": "#/$defs/Limit"
+          }
+        ]
+      },
+      "title": "Steps",
+      "type": "array"
+    }
+  },
+  "required": [
+    "steps"
+  ],
+  "title": "AnalysisPlan",
+  "type": "object"
+}

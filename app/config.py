@@ -16,18 +16,23 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
     openai_timeout_s: float = 20.0
+    timezone: str = "America/Los_Angeles"
 
     # --- ClinicalTrials.gov fetch policy ------------------------------------
     ctgov_base_url: str = "https://clinicaltrials.gov/api/v2"
     page_size: int = 1000
-    # Sized so that a single drug or specific condition (typically 2-4k trials)
-    # is fetched completely rather than sampled: at ~0.85 s per 1,000 records a
-    # census costs ~3 s, and because the API's default order is relevance rather
-    # than random, a census removes sampling bias outright instead of merely
-    # narrowing it. Broad queries still need a ceiling -- "cancer" is ~124k
-    # trials, ~106 s -- so those sample, with the shortfall disclosed.
-    max_records: int = 5000
-    max_records_hard_cap: int = 10000
+    # Sized so that a single drug or specific condition is fetched completely
+    # rather than sampled: at ~0.85 s per 1,000 records a census costs ~3 s,
+    # and because the API's default order is relevance rather than random, a
+    # census removes sampling bias outright instead of merely narrowing it.
+    # Raised from 5,000 once measurement showed common questions sampling just
+    # over the old ceiling -- "diabetes" is ~24.6k, a Pfizer/Merck comparison
+    # ~11.4k -- where a few extra pages buy a census. Broad queries still need
+    # a ceiling ("cancer" is ~124k trials, ~106 s), so those sample, with the
+    # shortfall disclosed. 20,000 records is ~17 s, inside the fetch budget;
+    # the budget, not the cap, is the real stop.
+    max_records: int = 10000
+    max_records_hard_cap: int = 20000
     fetch_budget_s: float = 25.0
     connect_timeout_s: float = 5.0
     read_timeout_s: float = 15.0
@@ -39,6 +44,19 @@ class Settings(BaseSettings):
     exact_max_buckets: int = 32
     exact_concurrency: int = 6
     exact_page_size: int = 200
+
+    # --- Planning retries ---------------------------------------------------
+    # A defective plan is worth another attempt. Capability refusals are
+    # retried too, because the planner also refuses questions it does in fact
+    # support: it writes commentary into unsupported_requirements, and any
+    # entry there refuses the whole request. Those false refusals are
+    # unstable, so another attempt clears them, while a genuinely unsupported
+    # question is refused consistently on every attempt and still ends in a
+    # refusal. The negative cases in the release gate measure exactly that, so
+    # turning this off is the way to trade answered questions for certainty.
+    plan_retry_budget_s: float = 20.0
+    max_plan_attempts: int = 4
+    retry_capability_refusals: bool = True
 
     # --- Aggregation / presentation -----------------------------------------
     top_n: int = 10

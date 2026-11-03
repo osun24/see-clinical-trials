@@ -8,7 +8,16 @@ from pydantic import BaseModel, Field
 
 from app.models.buckets import Exclusions, Invariant, Truncation
 from app.models.viz import VisualizationSpec
-from app.interpret.categories import CategorySelection
+
+
+class ComparisonArmCoverage(BaseModel):
+    """Coverage for one independently queried comparison arm."""
+
+    model_config = {"extra": "forbid"}
+
+    total_matching: int
+    records_fetched: int
+    is_sample: bool
 
 
 class Coverage(BaseModel):
@@ -34,6 +43,7 @@ class Coverage(BaseModel):
     truncated_reason: Literal["fetch_cap_reached", "time_budget_exceeded"] | None = None
     counts_are_exact: bool = False
     excluded: Exclusions = Field(default_factory=Exclusions)
+    comparison_arms: dict[str, ComparisonArmCoverage] = Field(default_factory=dict)
 
 
 class QueryInterpretation(BaseModel):
@@ -63,7 +73,7 @@ class Meta(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-    category_selection: CategorySelection | None = None
+    analysis: dict | None = None
     query_interpretation: QueryInterpretation
     intent: str
     group_by: str | None = None

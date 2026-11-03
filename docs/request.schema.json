@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "description": "One natural-language question; the planner derives all execution details.",
+  "properties": {
+    "query": {
+      "description": "Natural-language question about clinical trials.",
+      "examples": [
+        "How many pembrolizumab trials are there by phase?"
+      ],
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Query",
+      "type": "string"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "title": "QueryRequest",
+  "type": "object"
+}

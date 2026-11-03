@@ -202,7 +202,7 @@ async def test_missing_api_key_fails_loudly(monkeypatch):
     assert excinfo.value.status_code == 500
 
 
-async def test_openai_timeout_maps_to_retryable_503(monkeypatch):
+async def test_openai_timeout_maps_to_retryable_504(monkeypatch):
     monkeypatch.setattr("app.interpret.planner.settings.openai_api_key", "sk-test")
 
     class _Completions:
@@ -215,12 +215,15 @@ async def test_openai_timeout_maps_to_retryable_503(monkeypatch):
     class _Client:
         chat = _Chat()
 
+        async def close(self):
+            pass
+
     monkeypatch.setattr("app.interpret.planner.AsyncOpenAI", lambda **_: _Client())
 
     with pytest.raises(ServiceError) as excinfo:
         await interpret(QueryRequest(query="q"))
-    assert excinfo.value.code == "llm_unavailable"
-    assert excinfo.value.status_code == 503
+    assert excinfo.value.code == "llm_timeout"
+    assert excinfo.value.status_code == 504
     assert excinfo.value.retryable is True
 
 
@@ -247,6 +250,9 @@ async def test_refusal_is_not_treated_as_a_plan(monkeypatch):
 
     class _Client:
         chat = _Chat()
+
+        async def close(self):
+            pass
 
     monkeypatch.setattr("app.interpret.planner.AsyncOpenAI", lambda **_: _Client())
 

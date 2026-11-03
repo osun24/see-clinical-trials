@@ -33,9 +33,33 @@ share size status study studies trial trials data chart graph plot
 
 _POSSESSIVE = ("our ", "my ", "we ", "us ", "ours ")
 
+#: The entity nouns a question can ask a named subject's associations for. The
+#: trial level is handled separately: it is a level of the same graph rather
+#: than a target of its own, so "drugs and trials" is one request, not two.
+_TARGET_NOUNS = (
+    r"drugs?|medications?|interventions?|sponsors?|organi[sz]ations?|"
+    r"compan(?:y|ies)|institutions?|conditions?|diseases?|countr(?:y|ies)"
+)
+_TRIAL_NOUNS = r"trials?|studies|study"
+
 _ENTITY_ASSOCIATION = re.compile(
-    r"\b(?:what|which)\s+(drugs?|medications?|interventions?|sponsors?|conditions?|countries?)"
-    r"\s+(?:is|are|was|were)\s+(.+?)\s+associated\s+with\b",
+    rf"\b(?:what|which)\s+({_TARGET_NOUNS})"
+    # "... and trials", "... or studies", "..., trials" — an optional request to
+    # keep the trial level visible, which the graph always builds anyway.
+    rf"(?:\s*,?\s*(?:and|or)?\s*(?:{_TRIAL_NOUNS}))?"
+    r"\s+(?:is|are|was|were)\s+(.+?)\s+(?:associated|affiliated|connected|linked)\s+(?:with|to)\b",
+    re.IGNORECASE,
+)
+
+#: A question that reads as an association request, whatever its entity noun.
+#: Used to refuse rather than substitute when no supported graph path exists.
+#: The leading interrogative is required: it is what separates "which drugs is X
+#: associated with" (a graph) from "is enrollment associated with duration"
+#: (a numeric relationship), which must keep its own execution path.
+_ASSOCIATION_INTENT = re.compile(
+    r"\b(?:what|which)\s+[\w-]+(?:\s*,?\s*(?:and|or)\s+[\w-]+)?"
+    r"\s+(?:is|are|was|were)\s+.+?"
+    r"\s+(?:associated|affiliated|connected|linked)\s+(?:with|to)\b",
     re.IGNORECASE,
 )
 
@@ -48,15 +72,76 @@ _ASSOCIATION_TARGETS = {
     "interventions": "intervention_name",
     "sponsor": "lead_sponsor",
     "sponsors": "lead_sponsor",
+    # Recorded lead-sponsor names, not a verified employment or ownership claim.
+    "organization": "lead_sponsor",
+    "organizations": "lead_sponsor",
+    "organisation": "lead_sponsor",
+    "organisations": "lead_sponsor",
+    "company": "lead_sponsor",
+    "companies": "lead_sponsor",
+    "institution": "lead_sponsor",
+    "institutions": "lead_sponsor",
     "condition": "condition_mesh",
     "conditions": "condition_mesh",
+    "disease": "condition_mesh",
+    "diseases": "condition_mesh",
     "country": "country",
     "countries": "country",
 }
 
 
+#: Condition abbreviations expanded to an explicit OR of abbreviation and full
+#: name before the term reaches ``query.cond``.
+#:
+#: This is a retrieval alias, not a medical claim: it changes which records are
+#: searched, never what any record is said to contain, and no value is derived
+#: from it. It exists because the planner spells the same question two ways run
+#: to run — "NSCLC" once, "non-small cell lung cancer" the next — which silently
+#: changes both recall and the constraint the response reports. Both spellings
+#: together retrieve more than either alone (verified live: 8,845 / 8,646 /
+#: 9,097 studies), so the expansion is a strict improvement that is also stable.
+#: Every entry is a name ClinicalTrials.gov itself records; the mapping is
+#: deterministic, auditable here, and disclosed in the response's assumptions.
+_CONDITION_ALIASES: dict[str, str] = {
+    "nsclc": "non-small cell lung cancer OR NSCLC",
+    "sclc": "small cell lung cancer OR SCLC",
+    "gbm": "glioblastoma OR GBM",
+    "tnbc": "triple negative breast cancer OR TNBC",
+    "aml": "acute myeloid leukemia OR AML",
+    # "ALL" (acute lymphoblastic leukemia) is deliberately absent: it is also an
+    # ordinary English word, and expanding a planner's "all" into a leukemia
+    # search would silently narrow a question to the wrong population.
+    "cll": "chronic lymphocytic leukemia OR CLL",
+    "cml": "chronic myeloid leukemia OR CML",
+    "copd": "chronic obstructive pulmonary disease OR COPD",
+    "t2d": "type 2 diabetes OR T2D",
+    "t1d": "type 1 diabetes OR T1D",
+    "ra": "rheumatoid arthritis OR RA",
+    "ms": "multiple sclerosis OR MS",
+    "ad": "alzheimer disease OR AD",
+    "ckd": "chronic kidney disease OR CKD",
+    "hcc": "hepatocellular carcinoma OR HCC",
+    "crc": "colorectal cancer OR CRC",
+    "ibd": "inflammatory bowel disease OR IBD",
+}
+
+
+def expand_condition(value: str | None) -> tuple[str | None, str | None] :
+    """Expand a bare condition abbreviation, returning (term, disclosure)."""
+    if not value:
+        return value, None
+    expanded = _CONDITION_ALIASES.get(value.strip().casefold())
+    if expanded is None:
+        return value, None
+    return expanded, (
+        f"Searched the condition {value.strip()!r} as {expanded!r} so records using "
+        "either spelling are included; this affects retrieval only."
+    )
+
+
 def mentions_first_person(text: str) -> bool:
     """Whether the question says "our"/"my" without naming an organisation."""
+    text = re.sub(r"\bU\.?S\.?(?=\s|$)", "United States", text)
     lowered = f" {text.lower()} "
     return any(f" {p}" in lowered for p in _POSSESSIVE)
 
@@ -80,15 +165,69 @@ def _normalise_graph_plan(
     data: dict, query: str, adjustments: list[str]
 ) -> str | None:
     """Validate graph semantics and return its first entity dimension."""
+    def unsupported(reason: str) -> None:
+        """Refuse an association question instead of answering a different one.
+
+        Dropping the graph used to leave the rest of the plan intact, so
+        "what drugs is <person> associated with" fell through to the default
+        sponsor count — a confident answer to a question nobody asked. A
+        request this service cannot model is reported as a limitation.
+        """
+        from app.models.errors import ServiceError
+
+        raise ServiceError(
+            "unsupported_query",
+            "This association cannot be built from trial-record fields.",
+            detail={
+                "requirements": [reason],
+                "alternative": (
+                    "Ask for the recorded sponsors, interventions, conditions, or "
+                    "countries a named subject co-occurs with in trial records."
+                ),
+            },
+        )
+
     graph = data.get("graph")
     if not isinstance(graph, dict):
         data["graph"] = None
+        if _ASSOCIATION_INTENT.search(query):
+            unsupported(
+                "The question asks which entities a subject is associated with, but "
+                "the requested entity is not a recorded trial-record field."
+            )
         return None
 
     root_value = str(graph.get("root_value") or "").strip()
     levels = graph.get("levels") or []
     entities = [level.get("entity") for level in levels if isinstance(level, dict)]
     allowed_targets = {"intervention_name", "lead_sponsor", "condition_mesh", "country"}
+
+    # A population graph has no root node: it relates two recorded entity types
+    # to each other through the trials that record both. Lower it to the
+    # ordinary two-dimension co-occurrence form so it reuses the shared
+    # bucketing, citations, and network encoder rather than the subject-rooted
+    # adapter, which has a root to hang levels from and this does not.
+    if graph.get("root_entity") == "population":
+        pair = [e for e in entities if e != "trial"]
+        if len(pair) != 2 or len(set(pair)) != 2 or not set(pair) <= allowed_targets:
+            data["graph"] = None
+            unsupported(
+                "A co-occurrence graph relates exactly two distinct recorded entity "
+                "types — sponsors, interventions, conditions, or countries — across "
+                f"the matching trials; received {entities!r}."
+            )
+        data.update(
+            graph=None,
+            intent="relationship",
+            group_by=pair[0],
+            series_by=pair[1],
+            chart_hint="network_graph",
+        )
+        adjustments.append(
+            f"Built a {pair[0]} / {pair[1]} co-occurrence graph across the matching "
+            "trials. Edges mean both values are recorded on the same trial."
+        )
+        return pair
     valid_path = (
         bool(root_value)
         and len(entities) in (1, 2)
@@ -96,22 +235,32 @@ def _normalise_graph_plan(
         and (len(entities) == 1 or entities[1] == "trial")
     )
     if not valid_path:
-        adjustments.append("Dropped an unsupported graph path.")
         data["graph"] = None
+        if _ASSOCIATION_INTENT.search(query):
+            unsupported(
+                "The proposed association path is not supported: a graph relates a named "
+                "subject to recorded sponsors, interventions, conditions, or countries, "
+                "optionally through the trials that record them."
+            )
+        adjustments.append("Dropped an unsupported graph path.")
         return None
 
     # A graph root is a retrieval subject, not generated display copy. Requiring
     # it to occur in the user's question prevents a plausible-looking but
     # fabricated person or organisation from entering the upstream query.
     if root_value.casefold() not in query.casefold():
-        adjustments.append("Dropped a graph whose root was not present in the question.")
         data["graph"] = None
+        if _ASSOCIATION_INTENT.search(query):
+            unsupported(
+                f"The graph subject {root_value!r} does not occur in the question, so it "
+                "cannot be verified as the subject that was asked about."
+            )
+        adjustments.append("Dropped a graph whose root was not present in the question.")
         return None
 
     requested_limit = int(graph.get("node_limit") or 30)
     graph["node_limit"] = max(5, min(requested_limit, 60))
     graph["root_value"] = root_value
-    graph["layout"] = "hierarchical" if len(entities) > 1 else graph.get("layout", "hierarchical")
     data.update(
         intent="relationship",
         group_by=entities[0],
@@ -139,13 +288,23 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
     inconsistencies are corrected and recorded in the returned plan.
     """
     adjustments: list[str] = []
-    if re.search(r"\b(?:which|what)\s+(?:(?:u\.s\.|us|united states|american)\s+)?cities\b|\bby\s+city\b", request.query, re.IGNORECASE):
-        from app.models.errors import ServiceError
-        raise ServiceError("query_not_interpretable", "City-level grouping is not supported yet. This service cannot substitute country counts for requested cities.")
 
     data = plan.model_dump()
     if plan.search is not None:
         search = plan.search
+        # The advanced expression is the one planner output that used to reach
+        # the API unchecked; an invalid enum value is a planning error, not an
+        # upstream failure, so it is caught here before any request is spent.
+        from app.interpret.advanced import validate_advanced, validate_area_names
+
+        renamed, area_fixes = validate_area_names(search.advanced)
+        checked, rewrites = validate_advanced(renamed)
+        rewrites = area_fixes + rewrites
+        if rewrites:
+            search = search.model_copy(update={"advanced": checked})
+            plan = plan.model_copy(update={"search": search})
+            data["search"] = search.model_dump()
+            adjustments.extend(rewrites)
         if search.start_date and search.end_date and search.start_date > search.end_date:
             from app.models.errors import ServiceError
             raise ServiceError("query_not_interpretable", "Search date bounds are reversed.")
@@ -159,6 +318,14 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
 
     data["trial_phase"] = data.get("trial_phase") or []
     data["overall_status"] = data.get("overall_status") or []
+
+    # The planner spells an abbreviated condition inconsistently run to run,
+    # which moves both recall and the reported constraint. Pin it here.
+    condition, disclosure = expand_condition(data.get("condition"))
+    if disclosure:
+        data["condition"] = condition
+        data["assumptions"] = list(data.get("assumptions") or []) + [disclosure]
+        adjustments.append(disclosure)
 
     # A named-subject association is a semantic graph, not a two-axis chart.
     # The regex is a defensive correction when the model mistakes it for a
@@ -178,7 +345,6 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
                     {"entity": association_target, "relationship": "co_occurs_in_trial"},
                     {"entity": "trial", "relationship": "co_occurs_in_trial"},
                 ],
-                "layout": "hierarchical",
                 "edge_measure": "trial_count",
                 "node_limit": 30,
             },
@@ -190,11 +356,19 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
         )
 
     graph_target = _normalise_graph_plan(data, request.query, adjustments)
+    # A subject graph owns one dimension; a lowered co-occurrence graph owns
+    # both of its axes. Either way these are graph-only dimensions, allowed
+    # here although they are not offered for ordinary grouping.
+    graph_targets = (
+        set(graph_target) if isinstance(graph_target, list)
+        else {graph_target} if graph_target else set()
+    )
+    is_cooccurrence_graph = isinstance(graph_target, list)
 
     # --- dimension sanity ---------------------------------------------------
     for field in ("group_by", "series_by"):
         value = data.get(field)
-        graph_only_dimension = field == "group_by" and value == graph_target and value in DIMENSIONS
+        graph_only_dimension = value in graph_targets and value in DIMENSIONS
         if value and value not in ENABLED_DIMENSIONS and not graph_only_dimension:
             adjustments.append(f"Dropped unsupported {field} {value!r}.")
             data[field] = None
@@ -214,6 +388,10 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
         and series_dim is not None
         and group_dim.semantics == "multi_label"
         and series_dim.semantics == "multi_label"
+        # Co-occurrence is the question here, not an accidental cross-product:
+        # an edge between two multi-label values is exactly what was asked for,
+        # and the node budget bounds the result instead.
+        and not is_cooccurrence_graph
     ):
         adjustments.append(
             f"Dropped series_by {series_dim.id!r}: combining it with "
@@ -267,6 +445,23 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
             "is filtered by its own value."
         )
         data["search_terms"] = None
+
+    # Each arm replaces its own slot, but `filter.advanced` is merged with AND.
+    # A base expression naming the compared values therefore intersects every
+    # arm with the union of all arms, shrinking each one by a different amount
+    # and making the same question return a different total run to run.
+    if deduped and isinstance(data.get("search"), dict) and data["search"].get("advanced"):
+        from app.interpret.advanced import strip_compared_area
+
+        stripped, removed = strip_compared_area(
+            data["search"]["advanced"], data.get("compare_by")
+        )
+        if removed:
+            data["search"]["advanced"] = stripped
+            adjustments.append(
+                "Dropped a base filter on the compared field: each arm supplies its "
+                "own value, and keeping it would narrow every arm to the others."
+            )
 
     # A comparison supplies its own series, so a second one would be unreadable.
     if deduped and data.get("series_by"):
@@ -322,7 +517,15 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
     # literally, so a sentence like "Compare our pipeline against Merck's"
     # returns zero trials. Keep only the words that could plausibly be a
     # medical or company term.
-    if not any(
+    # `advanced` and `status` live only on the typed search object: they are
+    # never synced onto the legacy fields above. Ignoring them treated a query
+    # constrained solely by an advanced expression as having no filter at all,
+    # and ANDed a salvaged phrase like "phases involving semaglutide
+    # tirzepatide" onto it, which matches nothing. A question that had real
+    # filters then returned zero trials.
+    search_data = data.get("search") if isinstance(data.get("search"), dict) else {}
+    already_constrained = bool(search_data.get("advanced") or search_data.get("status"))
+    if not already_constrained and not any(
         data.get(f)
         for f in ("drug_name", "condition", "sponsor", "country", "search_terms")
     ) and not data.get("trial_phase") and not data.get("overall_status") and not deduped:
@@ -355,30 +558,31 @@ def resolve(plan: QueryPlan, request: QueryRequest) -> ResolvedPlan:
             "the result below covers all sponsors."
         ]
 
-    if data.get("category_selection") and data.get("group_by") not in {"condition", "condition_mesh"}:
-        # Keep the selected medical entities on the primary axis so filtering,
-        # citations, and top-N all operate on those entities before any split.
-        primary = data.get("group_by")
-        secondary = data.get("series_by")
-        if secondary in {"condition", "condition_mesh"} or (primary and secondary is None):
-            data["group_by"] = secondary or "condition_mesh"
-            data["series_by"] = primary
-            adjustments.append("Made conditions the primary grouping and retained the requested breakdown as the series for category selection.")
-    if data.get("category_selection") and (
-        data.get("group_by") not in {"condition", "condition_mesh"}
-        or data.get("graph") or data.get("compare_values")
-        or data.get("intent") in {"count_total", "lookup"}
-    ):
+    if plan.category_selection or plan.unsupported_requirements:
         from app.models.errors import ServiceError
-        raise ServiceError("query_not_interpretable", "Category selection currently requires a condition distribution without comparisons or graphs.")
+        raise ServiceError("unsupported_query", "This request requires information or classification outside the trial records.",
+                           detail={"requirements": plan.unsupported_requirements or [plan.category_selection],
+                                   "alternative": "Group by recorded condition or intervention names instead."})
     if plan.search is not None:
         # Apply defensive corrections to the executed search as well as its description.
         search = plan.search.model_copy(update={
             "intervention": data.get("drug_name"), "condition": data.get("condition"),
             "sponsor": data.get("sponsor"), "location": data.get("country"),
             "term": data.get("search_terms"),
+            # Rebuilt from the original plan, so corrections already applied to
+            # the advanced expression have to be carried over explicitly.
+            "advanced": (
+                data["search"].get("advanced")
+                if isinstance(data.get("search"), dict)
+                else plan.search.advanced
+            ),
         })
         data["search"] = search
-        adjustments.append("Direct searches use record-based aggregation; exact per-bucket fetching is disabled.")
+    if plan.analysis is not None:
+        from app.analysis.engine import validate
+        from app.models.errors import ServiceError
+        validate(plan.analysis)
+        if plan.graph or plan.compare_by or plan.category_selection:
+            raise ServiceError("query_not_interpretable", "Analysis plans cannot be combined with legacy graph, comparison, or category-selection execution.")
     data["adjustments"] = adjustments
     return ResolvedPlan(**data)

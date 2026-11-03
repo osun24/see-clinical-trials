@@ -144,7 +144,7 @@ Unknown fields are rejected. Validation failures return **422** `invalid_request
 
 ### Two guarantees that make a renderer a pure `switch (type)`
 
-1. **`data` is always a flat array of uniform row objects.** The single documented
+1. **`data` is always a flat array of rows sharing their encoded fields.** The single documented
    exception is `network_graph`, which is `{"nodes": [...], "edges": [...]}`.
 2. **Every `encoding` channel's `field` names a key present on every row.** You never
    have to guess which property holds the value.
@@ -319,11 +319,13 @@ is relevance, which is **not** random, so a 67% sample is not a statistically cl
 sample. (`sort=NCTId` is rejected by the API with a 400, and registration order would
 only trade an unknown bias for a known one toward older trials.)
 
-**Why the cap is 5,000.** Fetching costs about 0.85 s per 1,000 records and pagination
-is strictly sequential, so the cap is a direct latency trade. It is set where it is
-because the queries this tool exists for land just under it — pembrolizumab is 2,253
-trials, melanoma 3,781, glioblastoma 2,281 — and those become **complete censuses** in
-2–4 s rather than relevance-ordered samples. That is a qualitative difference, not a
+**Why the cap is 10,000.** Fetching costs about 0.85 s per 1,000 records and pagination
+is strictly sequential, so the cap is a direct latency trade. The queries this tool
+exists for land under it — pembrolizumab is 2,253 trials, melanoma 3,781, glioblastoma
+2,281 — and those become **complete censuses** in 2–4 s rather than relevance-ordered
+samples. It was raised from 5,000 once measurement showed common questions landing just
+above the old ceiling (diabetes ~24.6k, a Pfizer/Merck comparison ~11.4k), where a few
+extra pages buy a census outright. That is a qualitative difference, not a
 marginal one: a census has no sampling bias at all, whereas a 53 % relevance-ordered
 sample has bias of unknown direction. A ceiling is still necessary, because breadth is
 genuinely unbounded (`cancer` is ~124,000 trials, roughly 106 s), so broad queries
@@ -556,8 +558,12 @@ changes, those claims should fail loudly rather than quietly produce wrong count
   "EMD Serono Research & Development Institute"; "Merck Sharp & Dohme LLC" and
   "Merck KGaA" count as different sponsors. Surfaced in `meta.notes.general`.
 - **A truncated fetch is relevance-ordered, not random.** Proportions are more reliable
-  than absolute counts whenever `counts_are_exact` is `false`. A universe within the
-  5,000-record cap avoids this entirely; a broad one (`cancer`, `diabetes`) does not.
+  than absolute counts whenever `counts_are_exact` is `false` **and** `is_sample` is
+  `true`. Two strategies avoid it: a universe within the 10,000-record cap is a census,
+  and a grouping with a closed value set (phase, status, study type, sponsor type,
+  results posted, start/completion year) is counted exactly per bucket at any size —
+  `cancer` by recruitment status is exact across all ~124,000 trials. An open-ended
+  grouping (sponsor, condition, country) over a universe past the cap still samples.
 - **`condition` is sponsor free text**, so spelling and specificity vary.
   `condition_mesh` groups by normalised vocabulary and is usually the better choice.
 - **`intervention_name` is disabled for ordinary grouping** — names embed arm-specific
@@ -583,24 +589,32 @@ changes, those claims should fail loudly rather than quietly produce wrong count
   month-precision because the API mixes date precisions in the same field.
 - **No persistent cache.** The 15-minute cache is per-process.
 
-### Direct search planning and category selection
+## Finalized capability boundary
 
-The planner can now supply a typed `search` object using supported API parameter
-names (`query.intr`, `query.cond`, `query.spons`, `query.locn`, `query.term`,
-`filter.advanced`, `filter.overallStatus`) plus inclusive `start_date` and
-`end_date` bounds on study start. Transport settings remain server-controlled.
-Legacy filter plans remain supported. Direct searches currently use record-based
-aggregation rather than per-bucket exact counts. `/plan` exposes this choice.
+No enrichment is supported. Analyses use trial-record fields and deterministic
+calculations. Drug classes, medical classifications, ownership, approvals, and
+benefit judgments require unsupported external knowledge and are not inferred.
 
-For condition distributions requesting a subset (for example, cancer types),
-`category_selection` specifies the restriction. After retrieval, a second model
-call classifies every distinct condition key before counting and top-N. It does
-not rename terms, write citations, or compute counts. Unknown, duplicate, missing,
-or uncertain decisions fail explicitly. Classification runs in batches of 100
-terms; decisions apply to fetched records, not the unfetched population.
-Comparisons and semantic graphs do not yet support category selection.
+Registered dimensions compile into the shared composable executor. Comparisons
+reuse it; graphs use a specialized serialization adapter. See
+[finalization decisions](docs/FINALIZATION.md), the authoritative
+[renderer contract](docs/RESPONSE_SCHEMA.md), the
+[evaluation report](docs/EVALUATION.md), and [codebase guide](docs/CODEBASE.md).
 
-Response `meta.category_selection` records the instruction and per-key decisions.
-Coverage exclusions distinguish missing values, trials with no selected category,
-and removed memberships. Classification is model-dependent; numeric aggregation
-and evidence remain deterministic. No additional validator model is used.
+Run offline replay without a model:
+
+```bash
+uv run python -m app.analysis.replay --plan plan.json --records records.json
+```
+
+Run the release evaluation (90 live queries plus negative cases):
+
+```bash
+uv run python -m evaluations.run --output evaluations/results.json
+```
+
+Evaluation artifacts distinguish automated contract/constraint checks from the
+full semantic audit. Passing unit tests alone is not release qualification.
+The gate result, run history, and remaining limitations are reported in
+[docs/EVALUATION.md](docs/EVALUATION.md); `evaluations/gate-run-*.json` keep the
+earlier runs, including the failing ones, as an audit trail.

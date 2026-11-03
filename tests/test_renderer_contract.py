@@ -71,14 +71,27 @@ def test_stacked_bar_actually_stacks(html: str):
     assert "normalize" in block
 
 
-def test_network_graph_renders_labeled_hierarchical_levels(html: str):
+def test_network_graph_reads_the_encoding_rather_than_fixed_keys(html: str):
     start = html.index("  network_graph(el, v, m) {")
     end = html.index("\n  },\n\n  none", start)
     block = html[start:end]
-    assert "level_field" in block
-    assert "byLevel" in block
-    assert "Hierarchical network graph" in block
-    assert "nodeEnc.label_field" in block
+    for field in ("id_field", "label_field", "group_field", "size_field"):
+        assert f"nodeEnc.{field}" in block, field
+    for field in ("source_field", "target_field", "weight_field"):
+        assert f"edgeEnc.{field}" in block, field
+
+
+def test_network_layout_is_deterministic(html: str):
+    """The same answer must draw the same picture.
+
+    A layout reseeded per render moves nodes on every repaint and invites the
+    reader to read meaning into a position that is only noise.
+    """
+    start = html.index("  network_graph(el, v, m) {")
+    end = html.index("\n  },\n\n  none", start)
+    block = html[start:end]
+    assert "Math.random" not in block
+    assert "seed" in block
 
 
 @pytest.mark.parametrize("viz_type", VIZ_TYPES)

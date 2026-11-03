@@ -397,7 +397,18 @@ def test_openapi_documents_the_response_schema(client):
 def test_demo_page_is_served(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "visualization.type" in response.text
+    # The renderer still switches on the response type; assert the behaviour
+    # rather than the prose, which is editorial and was removed.
+    assert "const DRAW" in response.text
+    # Assert structure, not the heading copy, which is editorial.
+    assert "<h1>" in response.text
+
+
+def test_demo_page_is_not_cached(client):
+    """The renderer ships inside the page, so a stale copy draws old charts
+    from current data with nothing on screen to show the mismatch."""
+    response = client.get("/")
+    assert "no-store" in response.headers.get("cache-control", "")
 
 
 @respx.mock

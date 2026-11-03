@@ -1,0 +1,950 @@
+{
+  "$defs": {
+    "Aggregate": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "aggregate",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "group_by": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Group By",
+          "type": "array"
+        },
+        "measure": {
+          "enum": [
+            "count_distinct_trials",
+            "count_rows"
+          ],
+          "title": "Measure",
+          "type": "string"
+        },
+        "missing": {
+          "default": "exclude",
+          "enum": [
+            "exclude",
+            "bucket"
+          ],
+          "title": "Missing",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "group_by",
+        "measure"
+      ],
+      "title": "Aggregate",
+      "type": "object"
+    },
+    "AnalysisPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "1",
+          "default": "1",
+          "title": "Version",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Memberships"
+              },
+              {
+                "$ref": "#/$defs/Expand"
+              },
+              {
+                "$ref": "#/$defs/Filter"
+              },
+              {
+                "$ref": "#/$defs/Derive"
+              },
+              {
+                "$ref": "#/$defs/Relationship"
+              },
+              {
+                "$ref": "#/$defs/Aggregate"
+              },
+              {
+                "$ref": "#/$defs/Sort"
+              },
+              {
+                "$ref": "#/$defs/Limit"
+              }
+            ]
+          },
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "steps"
+      ],
+      "title": "AnalysisPlan",
+      "type": "object"
+    },
+    "Derive": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "derive",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        },
+        "transform": {
+          "enum": [
+            "lower",
+            "strip",
+            "year",
+            "months_between"
+          ],
+          "title": "Transform",
+          "type": "string"
+        },
+        "other_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Other Field"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "field",
+        "output",
+        "transform"
+      ],
+      "title": "Derive",
+      "type": "object"
+    },
+    "Expand": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "expand",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "collection": {
+          "enum": [
+            "locations",
+            "interventions",
+            "conditions",
+            "officials"
+          ],
+          "title": "Collection",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "collection"
+      ],
+      "title": "Expand",
+      "type": "object"
+    },
+    "Filter": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "filter",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "predicate": {
+          "enum": [
+            "equals",
+            "not_equals",
+            "contains",
+            "present"
+          ],
+          "title": "Predicate",
+          "type": "string"
+        },
+        "value": {
+          "default": "",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "field",
+        "predicate"
+      ],
+      "title": "Filter",
+      "type": "object"
+    },
+    "GraphLevel": {
+      "additionalProperties": false,
+      "description": "One evidence-backed entity level below a graph's root.",
+      "properties": {
+        "entity": {
+          "enum": [
+            "intervention_name",
+            "lead_sponsor",
+            "condition_mesh",
+            "country",
+            "trial"
+          ],
+          "title": "Entity",
+          "type": "string"
+        },
+        "relationship": {
+          "const": "co_occurs_in_trial",
+          "default": "co_occurs_in_trial",
+          "title": "Relationship",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity"
+      ],
+      "title": "GraphLevel",
+      "type": "object"
+    },
+    "GraphPlan": {
+      "additionalProperties": false,
+      "description": "A constrained semantic graph proposal; never contains generated data.",
+      "properties": {
+        "root_entity": {
+          "enum": [
+            "person",
+            "search_subject",
+            "population"
+          ],
+          "title": "Root Entity",
+          "type": "string"
+        },
+        "root_value": {
+          "default": "",
+          "title": "Root Value",
+          "type": "string"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/GraphLevel"
+          },
+          "title": "Levels",
+          "type": "array"
+        },
+        "edge_measure": {
+          "const": "trial_count",
+          "default": "trial_count",
+          "title": "Edge Measure",
+          "type": "string"
+        },
+        "node_limit": {
+          "default": 30,
+          "title": "Node Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "root_entity",
+        "levels"
+      ],
+      "title": "GraphPlan",
+      "type": "object"
+    },
+    "Limit": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "limit",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "tail": {
+          "enum": [
+            "drop",
+            "other"
+          ],
+          "title": "Tail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "count",
+        "tail"
+      ],
+      "title": "Limit",
+      "type": "object"
+    },
+    "Memberships": {
+      "additionalProperties": false,
+      "description": "A registered extraction preset compiled into the ordinary executor.",
+      "properties": {
+        "op": {
+          "const": "memberships",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "dimension": {
+          "title": "Dimension",
+          "type": "string"
+        },
+        "output": {
+          "title": "Output",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "dimension",
+        "output"
+      ],
+      "title": "Memberships",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "relationship",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "x": {
+          "title": "X",
+          "type": "string"
+        },
+        "y": {
+          "title": "Y",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "x",
+        "y"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "SearchRequest": {
+      "additionalProperties": false,
+      "description": "Supported upstream search parameters; transport policy remains server-owned.",
+      "properties": {
+        "query.intr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Only an explicitly requested drug/intervention. Never a disease or person name.",
+          "title": "Query.Intr"
+        },
+        "query.cond": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Requested disease/condition. Do not also put it in intervention.",
+          "title": "Query.Cond"
+        },
+        "query.spons": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Query.Spons"
+        },
+        "query.locn": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Query.Locn"
+        },
+        "query.term": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Full-text search for a named person/subject or otherwise unrepresented concept.",
+          "title": "Query.Term"
+        },
+        "filter.advanced": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filter.Advanced"
+        },
+        "filter.overallStatus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filter.Overallstatus"
+        },
+        "date_field": {
+          "default": "StartDate",
+          "enum": [
+            "StartDate",
+            "CompletionDate"
+          ],
+          "title": "Date Field",
+          "type": "string"
+        },
+        "start_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Date"
+        },
+        "end_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Date"
+        }
+      },
+      "title": "SearchRequest",
+      "type": "object"
+    },
+    "Sort": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "sort",
+          "title": "Op",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "input": {
+          "title": "Input",
+          "type": "string"
+        },
+        "field": {
+          "enum": [
+            "label",
+            "value"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "descending": {
+          "default": true,
+          "title": "Descending",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "op",
+        "id",
+        "input",
+        "field"
+      ],
+      "title": "Sort",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The model's interpretation of the question. Structured Outputs schema.",
+  "properties": {
+    "unsupported_requirements": {
+      "description": "Requirements of the question that CANNOT be met from trial-record fields and deterministic calculations \u2014 medical classification, drug class or mechanism, ownership, approval status, efficacy judgments. Any entry here refuses the entire request, so leave it EMPTY whenever the question is answerable, including when you also supply an analysis or search. Never use it for notes, caveats, assumptions, restatements, or to say that something IS supported: assumptions belong in assumptions.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Unsupported Requirements",
+      "type": "array"
+    },
+    "analysis": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AnalysisPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "search": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SearchRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "category_selection": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Category Selection"
+    },
+    "is_clinical_trials_question": {
+      "description": "False if the question is not about clinical trials at all.",
+      "title": "Is Clinical Trials Question",
+      "type": "boolean"
+    },
+    "intent": {
+      "description": "What kind of answer the question asks for.",
+      "enum": [
+        "count_total",
+        "distribution",
+        "trend",
+        "comparison",
+        "ranking",
+        "composition",
+        "relationship",
+        "lookup"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "interpretation": {
+      "description": "One sentence restating the question as you understood it.",
+      "title": "Interpretation",
+      "type": "string"
+    },
+    "group_by": {
+      "anyOf": [
+        {
+          "enum": [
+            "phase",
+            "phase_any",
+            "overall_status",
+            "start_year",
+            "completion_year",
+            "lead_sponsor",
+            "sponsor_type",
+            "study_type",
+            "country",
+            "condition",
+            "condition_mesh",
+            "intervention_type",
+            "enrollment_bucket",
+            "duration_bucket",
+            "sex",
+            "age_group",
+            "results_posted"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Primary grouping dimension. Null for a single total.",
+      "title": "Group By"
+    },
+    "series_by": {
+      "anyOf": [
+        {
+          "enum": [
+            "phase",
+            "phase_any",
+            "overall_status",
+            "start_year",
+            "completion_year",
+            "lead_sponsor",
+            "sponsor_type",
+            "study_type",
+            "country",
+            "condition",
+            "condition_mesh",
+            "intervention_type",
+            "enrollment_bucket",
+            "duration_bucket",
+            "sex",
+            "age_group",
+            "results_posted"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Secondary dimension to split each group by. Usually null.",
+      "title": "Series By"
+    },
+    "chart_hint": {
+      "anyOf": [
+        {
+          "enum": [
+            "stat",
+            "bar_chart",
+            "grouped_bar",
+            "stacked_bar",
+            "time_series",
+            "pie_chart",
+            "scatter_plot",
+            "network_graph"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Suggested chart type. Advisory only; the server overrides it if the data shape cannot support it.",
+      "title": "Chart Hint"
+    },
+    "graph": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GraphPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Constrained entity path for relationship questions. Contains semantics only; the server derives all nodes and edges from trial records."
+    },
+    "limit": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Requested number of categories before collapsing to 'Other'.",
+      "title": "Limit"
+    },
+    "search_terms": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Free-text terms for a general search, when no specific field applies.",
+      "title": "Search Terms"
+    },
+    "drug_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Intervention or drug name.",
+      "title": "Drug Name"
+    },
+    "condition": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Condition or disease.",
+      "title": "Condition"
+    },
+    "sponsor": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Sponsor organisation name.",
+      "title": "Sponsor"
+    },
+    "country": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Country with a trial site.",
+      "title": "Country"
+    },
+    "trial_phase": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Phase filter, e.g. ['PHASE2','PHASE3'].",
+      "title": "Trial Phase"
+    },
+    "overall_status": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Status filter, e.g. ['RECRUITING'].",
+      "title": "Overall Status"
+    },
+    "start_year": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Earliest trial start year.",
+      "title": "Start Year"
+    },
+    "end_year": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Latest trial start year.",
+      "title": "End Year"
+    },
+    "compare_by": {
+      "anyOf": [
+        {
+          "enum": [
+            "sponsor",
+            "condition",
+            "drug_name",
+            "country"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Set when the question compares two or more named things side by side ('our pipeline versus Merck's', 'Keytruda vs Opdivo'). Names which filter the comparison splits on.",
+      "title": "Compare By"
+    },
+    "compare_values": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The two to five values to compare, e.g. ['Pfizer', 'Merck']. Each becomes one series. Requires compare_by.",
+      "title": "Compare Values"
+    },
+    "assumptions": {
+      "description": "Any interpretation you had to guess at, e.g. what 'recent' means.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "is_clinical_trials_question",
+    "intent",
+    "interpretation"
+  ],
+  "title": "QueryPlan",
+  "type": "object"
+}

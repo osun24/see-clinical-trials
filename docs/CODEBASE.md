@@ -311,84 +311,30 @@ look for these values in order:
 This is also a practical debugging checklist. `POST /plan` covers steps 1–3;
 unit tests can exercise every later step without an OpenAI call.
 
-## Common changes
+## Finalized execution model
 
-### Add a grouping dimension
+See [FINALIZATION.md](FINALIZATION.md) for scope and [RESPONSE_SCHEMA.md](RESPONSE_SCHEMA.md)
+for the renderer contract. `aggregate.bucketize.from_sample` is now a compatibility
+adapter: it compiles the registry dimension through `analysis.presets`, then runs
+`analysis.engine.execute_sync`. Custom plans use that same executor. Comparison
+arms reuse the preset adapter. `from_strata` only materializes server-reported
+counts and citations; it is not a second local aggregation algorithm.
 
-1. Add extraction, labeling, binning, or derive helpers if the existing ones do
-   not fit.
-2. Add one `DimensionDef` to `DIMENSIONS` in `dimensions/registry.py`.
-3. Add its ID to `ENABLED_DIMENSIONS` and `PlanDimension` if users and the
-   planner may select it.
-4. Add a title phrase in `viz/titles.py`.
-5. If exact counts are possible, provide both a finite `enum_values` universe
-   (or temporal type) and an `exact_filter`; validate it with a live test.
-6. Add aggregation tests for missing data, duplicate source values, ordering,
-   and the declared invariant.
+The executable operation schema, source catalog, collection catalog, and dimension
+registry generate planner capabilities. `interpret.planner.PlannerOutput` exposes
+one search representation; old internal filter fields remain only for compatibility.
+No classification/enrichment operation exists. Unsupported requirements become
+`unsupported_query` before fetching. One invalid plan can be repaired once.
 
-`test_plan_literal_matches_registry` and field-mask tests intentionally fail if
-these declarations drift.
+`analysis.response` adapts generic aggregate/relationship results into existing
+visualization schemas. Temporal grouping types survive expansion. Registered preset
+presentation retains its natural labels and order. Graph serialization is specialized
+and limited to full-text trial-record associations.
 
-### Add an interpreted filter
+Provider errors are sanitized in `interpret.provider_errors`; the configured SDK
+has one retry, independently of the one semantic plan-repair attempt. Public error
+codes distinguish quota, rate limit, timeout, authentication and schema failures.
 
-1. Add the interpretation field to `QueryPlan` and
-   `ResolvedPlan`.
-2. Teach the planner prompt when to populate it.
-3. Clamp or cross-validate it in `interpret.merge.resolve()`.
-4. Map it in `ctgov.params.build_query()`.
-5. Ensure `_filters_applied()` reports what was actually sent.
-6. Test plan validation, generated parameters, and an API route.
-
-### Change chart selection
-
-Edit `viz/resolver.py`, not the planner prompt or an encoder. Add a resolver
-test for both the accepted case and any structurally unsafe case. If the public
-row shape changes, update `models/viz.py`, the reference renderer, README, and
-renderer contract tests.
-
-### Add an endpoint
-
-Keep the route thin. Put request/response models in `app/models`, reusable work
-in the relevant package, and orchestration in `pipeline.py`. Map expected
-failures to `ServiceError` so every endpoint keeps the same error envelope.
-
-## Tests and local checks
-
-```bash
-uv run pytest
-uv run pytest tests/test_aggregate.py
-uv run pytest tests/test_api.py -k plan
-uv run pytest -m live
-```
-
-The default suite is offline. API tests replace OpenAI planning and mock
-ClinicalTrials.gov; aggregation and citation tests use captured real study
-records. Tests marked `live` check assumptions about upstream filter syntax and
-should be run intentionally because they use the network.
-
-Useful test ownership:
-
-| Concern | Primary tests |
-|---|---|
-| request and response HTTP contract | `test_api.py`, `test_renderer_contract.py` |
-| model-plan correction and comparisons | `test_interpret.py`, `test_compare.py` |
-| upstream parameters and pagination | `test_ctgov.py`, `test_exact_filters_live.py` |
-| dimension declarations and extraction | `test_dimensions.py` |
-| invariants, top-N, and missing values | `test_aggregate.py`, `test_network_graph.py` |
-| citation traceability | `test_citations.py` |
-| chart policy and row encodings | `test_viz_resolver.py` |
-
-## Rules worth preserving
-
-- The model proposes intent; deterministic code produces facts.
-- The public request mirrors the UI: one natural-language question.
-- Every plotted value is derived from fetched data and carries mechanical
-  evidence.
-- A sampled answer is valid only when the sampling basis is visible.
-- Multi-label data must never be presented as mutually exclusive parts of a
-  whole.
-- Missing and top-N-collapsed records are reported, not silently discarded.
-- The public visualization shape is renderer-oriented and strictly validated.
-
-If a change weakens one of these rules, it is an API behavior change even when
-the JSON schema stays the same.
+Extend capabilities by adding a reusable typed operation or source definition and
+its deterministic executor semantics, not question-specific regex corrections.
+Add fixtures and renderer-contract tests, then update the fixed live evaluation.

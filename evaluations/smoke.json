@@ -1,0 +1,456 @@
+{
+  "status": "complete",
+  "model": "gpt-4.1-mini",
+  "prompt_sha256": "eade0b3c691a853351454e280b8497d253c5f48e13639c84f6e27478ca374d29",
+  "runs": 6,
+  "overall_checks_rate": 0.3333333333333333,
+  "family_checks_rates": {
+    "comparisons": 0.0,
+    "counts": 0.0,
+    "graphs": 0.0,
+    "nested": 0.0,
+    "numeric": 1.0,
+    "trends": 1.0
+  },
+  "negative_cases": [
+    {
+      "question": "What cancer drug classes have been evaluated in phase 4 NSCLC trials in the last five years?",
+      "passed": true,
+      "error": "unsupported_query"
+    },
+    {
+      "question": "Which Pfizer subsidiaries own the sponsors of melanoma trials?",
+      "passed": true,
+      "error": "unsupported_query"
+    },
+    {
+      "question": "Which melanoma drugs are FDA approved today?",
+      "passed": true,
+      "error": "unsupported_query"
+    },
+    {
+      "question": "Which treatments proved effective in NSCLC trials?",
+      "passed": true,
+      "error": "unsupported_query"
+    },
+    {
+      "question": "Which trials study checkpoint inhibitors based on the mechanisms of their drugs?",
+      "passed": true,
+      "error": "unsupported_query"
+    }
+  ],
+  "automated_gate_passed": false,
+  "limitation": "Constraint assertions and contract checks are automated; medical truth and complete semantic correctness still require audit. Cost is not measured by this runner.",
+  "results": [
+    {
+      "case": 0,
+      "run": 0,
+      "family": "counts",
+      "question": "Which lead sponsors run the most Alzheimer's trials?",
+      "contract_failures": [
+        "nonuniform rows"
+      ],
+      "semantic_failures": [],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on all 4,092 matching trials.",
+      "interpretation": {
+        "model_interpretation": "Identify the lead sponsors with the highest number of clinical trials for Alzheimer's disease.",
+        "filters_applied": {
+          "query.cond": "Alzheimer"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": "lead_sponsor",
+      "series_by": null,
+      "measure": "trial_count",
+      "coverage": {
+        "total_matching_studies": 4092,
+        "records_fetched": 4092,
+        "records_analyzed": 4092,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 5,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "lead_sponsor",
+            "output": "primary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "primary_rows",
+            "group_by": [
+              "primary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 5.05,
+      "passed_checks": false
+    },
+    {
+      "case": 5,
+      "run": 0,
+      "family": "comparisons",
+      "question": "Compare the phase distribution of Pfizer trials against Merck trials.",
+      "error": "query_not_interpretable",
+      "message": "Step pfizer_trials: column 'lead_sponsor' is unavailable before aggregation. Available columns: completion_date, completion_date_type, condition, enrollment, enrollment_type, phase, start_date, start_date_type, title, trial_id.",
+      "detail": null,
+      "elapsed_s": 4.66,
+      "passed_checks": false
+    },
+    {
+      "case": 10,
+      "run": 0,
+      "family": "nested",
+      "question": "Which U.S. cities does Pfizer have clinical trial sites for phase 4 cancer trials?",
+      "contract_failures": [
+        "nonuniform rows"
+      ],
+      "semantic_failures": [
+        "requested nested grouping missing",
+        "individual US location filter missing",
+        "phase4 search filter missing"
+      ],
+      "visualization_type": "bar_chart",
+      "subtitle": "Based on all 1,466 matching trials.",
+      "interpretation": {
+        "model_interpretation": "Identify U.S. cities where Pfizer has clinical trial sites for phase 4 cancer trials.",
+        "filters_applied": {
+          "query.cond": "cancer",
+          "query.spons": "Pfizer"
+        },
+        "assumptions": [
+          "Phase 4 trials are identified by Phase = PHASE4.",
+          "Locations are filtered to those in the United States.",
+          "Distribution by city and state is requested, but group_by is set to country for initial filtering."
+        ],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": "country",
+      "series_by": null,
+      "measure": "trial_count",
+      "coverage": {
+        "total_matching_studies": 1466,
+        "records_fetched": 1466,
+        "records_analyzed": 1466,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 2,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "country",
+            "output": "primary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "primary_rows",
+            "group_by": [
+              "primary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 4.27,
+      "passed_checks": false
+    },
+    {
+      "case": 15,
+      "run": 0,
+      "family": "trends",
+      "question": "How have melanoma trial starts changed over the last ten years?",
+      "contract_failures": [],
+      "semantic_failures": [],
+      "visualization_type": "time_series",
+      "subtitle": "Based on all 1,825 matching trials. Counts represent distinct trials per category. 164 rows filtered; 0 rows excluded for missing grouping values. Grouped by study start year; zeros indicate no observed memberships in fetched records.",
+      "interpretation": {
+        "model_interpretation": "Analyze the number of melanoma clinical trial starts per year over the last ten years.",
+        "filters_applied": {
+          "query.cond": "melanoma",
+          "filter.advanced": "AREA[StartDate]RANGE[2016-11-02,2026-11-02]"
+        },
+        "assumptions": [
+          "The last ten years is interpreted as the period from 2016-11-02 to 2026-11-02."
+        ],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": "start_year",
+      "series_by": null,
+      "measure": "count_distinct_trials",
+      "coverage": {
+        "total_matching_studies": 1825,
+        "records_fetched": 1825,
+        "records_analyzed": 1825,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 2,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "filter",
+            "id": "melanoma_filter",
+            "input": "trials",
+            "field": "condition",
+            "predicate": "contains",
+            "value": "melanoma"
+          },
+          {
+            "op": "derive",
+            "id": "derive_start_year",
+            "input": "melanoma_filter",
+            "field": "start_date",
+            "output": "start_year",
+            "transform": "year",
+            "other_field": null
+          },
+          {
+            "op": "aggregate",
+            "id": "aggregate_by_year",
+            "input": "derive_start_year",
+            "group_by": [
+              "start_year"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "exclude"
+          },
+          {
+            "op": "sort",
+            "id": "sort_by_year",
+            "input": "aggregate_by_year",
+            "field": "label",
+            "descending": false
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 3.97,
+      "passed_checks": true
+    },
+    {
+      "case": 20,
+      "run": 0,
+      "family": "numeric",
+      "question": "Is planned enrollment size associated with trial duration for melanoma trials?",
+      "contract_failures": [],
+      "semantic_failures": [],
+      "visualization_type": "scatter_plot",
+      "subtitle": "Based on all 3,781 matching trials. 2734 rows excluded by analysis filters. 992 complete trial pairs; 55 excluded for missing, imprecise, or invalid numeric/date values. Duration is start-to-completion calendar months; days are ignored and year-only dates are excluded. Completion dates may be estimated. Pearson r = 0.530. Descriptive association, not causation or a significance test.",
+      "interpretation": {
+        "model_interpretation": "Assess if planned enrollment size is associated with trial duration for melanoma trials.",
+        "filters_applied": {
+          "query.cond": "melanoma"
+        },
+        "assumptions": [
+          "Trial duration is calculated as months between start date and completion date.",
+          "Planned enrollment size is taken from trials with estimated enrollment.",
+          "Only trials mentioning melanoma in their conditions are included."
+        ],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": null,
+      "series_by": null,
+      "measure": "relationship",
+      "coverage": {
+        "total_matching_studies": 3781,
+        "records_fetched": 3781,
+        "records_analyzed": 992,
+        "is_sample": false,
+        "coverage_ratio": 1.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 4,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 55
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "filter",
+            "id": "planned",
+            "input": "trials",
+            "field": "enrollment_type",
+            "predicate": "equals",
+            "value": "ESTIMATED"
+          },
+          {
+            "op": "filter",
+            "id": "melanoma",
+            "input": "planned",
+            "field": "condition",
+            "predicate": "contains",
+            "value": "melanoma"
+          },
+          {
+            "op": "derive",
+            "id": "dated",
+            "input": "melanoma",
+            "field": "start_date",
+            "output": "start_year",
+            "transform": "year",
+            "other_field": null
+          },
+          {
+            "op": "derive",
+            "id": "duration",
+            "input": "dated",
+            "field": "start_date",
+            "output": "duration_months",
+            "transform": "months_between",
+            "other_field": "completion_date"
+          },
+          {
+            "op": "relationship",
+            "id": "pairs",
+            "input": "duration",
+            "x": "enrollment",
+            "y": "duration_months"
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 5.73,
+      "passed_checks": true
+    },
+    {
+      "case": 25,
+      "run": 0,
+      "family": "graphs",
+      "question": "Which organizations and trials is Sharon Sha associated with?",
+      "contract_failures": [],
+      "semantic_failures": [
+        "person/trial graph missing"
+      ],
+      "visualization_type": "none",
+      "subtitle": "No trials matched these filters.",
+      "interpretation": {
+        "model_interpretation": "Find organizations and trials associated with the person named Sharon Sha.",
+        "filters_applied": {
+          "query.intr": "Sharon Sha",
+          "query.term": "Sharon Sha"
+        },
+        "assumptions": [],
+        "plan_adjustments": [
+          "Direct searches use record-based aggregation; exact per-bucket fetching is disabled."
+        ]
+      },
+      "group_by": "lead_sponsor",
+      "series_by": null,
+      "measure": "trial_count",
+      "coverage": {
+        "total_matching_studies": 0,
+        "records_fetched": 0,
+        "records_analyzed": 0,
+        "is_sample": false,
+        "coverage_ratio": 0.0,
+        "sampling_method": "census",
+        "sampling_bias_risk": "none",
+        "fetch_cap": 5000,
+        "pages_fetched": 1,
+        "counts_are_exact": false,
+        "excluded": {
+          "missing_dimension_value": 0,
+          "imprecise_for_granularity": 0,
+          "no_selected_category": 0,
+          "memberships_removed": 0,
+          "invalid_numeric_pair": 0
+        }
+      },
+      "plan": {
+        "version": "1",
+        "steps": [
+          {
+            "op": "memberships",
+            "id": "primary_rows",
+            "input": "trials",
+            "dimension": "lead_sponsor",
+            "output": "primary"
+          },
+          {
+            "op": "aggregate",
+            "id": "counts",
+            "input": "primary_rows",
+            "group_by": [
+              "primary"
+            ],
+            "measure": "count_distinct_trials",
+            "missing": "bucket"
+          }
+        ]
+      },
+      "repair": false,
+      "elapsed_s": 1.82,
+      "passed_checks": false
+    }
+  ]
+}

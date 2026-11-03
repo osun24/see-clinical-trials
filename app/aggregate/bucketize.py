@@ -43,116 +43,13 @@ def _invariant(
     )
 
 
-def _collect(
-    studies: list[NormalizedStudy],
-    dimension: DimensionDef,
-    series_dimension: DimensionDef | None,
-    approved_keys: set[str] | None = None,
-) -> tuple[dict[tuple[str, str | None], list[tuple[NormalizedStudy, Any]]], Exclusions]:
-    grouped: dict[tuple[str, str | None], list[tuple[NormalizedStudy, Any]]] = {}
-    exclusions = Exclusions()
-
-    for study in studies:
-        pairs = bucket_keys(study.raw, dimension)
-
-        if dimension.missing_policy == "exclude" and any(
-            key == MISSING_KEY for key, _ in pairs
-        ):
-            exclusions.missing_dimension_value += 1
-            continue
-
-        if approved_keys is not None:
-            selected = [(key, raw) for key, raw in pairs if key in approved_keys]
-            exclusions.memberships_removed += sum(key != MISSING_KEY and key not in approved_keys for key, _ in pairs)
-            if not selected:
-                if any(key == MISSING_KEY for key, _ in pairs):
-                    exclusions.missing_dimension_value += 1
-                else:
-                    exclusions.no_selected_category += 1
-                continue
-            pairs = selected
-
-        series_pairs: list[tuple[str | None, Any]] = [(None, None)]
-        if series_dimension is not None:
-            series_keys = bucket_keys(study.raw, series_dimension)
-            if series_dimension.missing_policy == "exclude" and any(
-                key == MISSING_KEY for key, _ in series_keys
-            ):
-                exclusions.missing_dimension_value += 1
-                continue
-            series_pairs = [(k, v) for k, v in series_keys]
-
-        for key, raw in pairs:
-            for series_key, _ in series_pairs:
-                grouped.setdefault((key, series_key), []).append((study, raw))
-
-    return grouped, exclusions
-
-
-def _bucket_from_members(
-    key: str,
-    series_key: str | None,
-    members: list[tuple[NormalizedStudy, Any]],
-    dimension: DimensionDef,
-    series_dimension: DimensionDef | None,
-    citation_limit: int,
-) -> Bucket:
-    citations = [
-        build_citation(study, dimension, raw) for study, raw in members[:citation_limit]
-    ]
-    return Bucket(
-        key=key,
-        label=display_label(key, dimension),
-        series=(
-            display_label(series_key, series_dimension)
-            if series_key is not None and series_dimension is not None
-            else None
-        ),
-        value=len(members),
-        is_missing=key == MISSING_KEY,
-        citations=citations,
-        citation_total=len(members),
-        citations_truncated=len(members) > len(citations),
-    )
-
-
 def from_sample(
-    studies: list[NormalizedStudy],
-    dimension: DimensionDef,
-    *,
-    series_dimension: DimensionDef | None = None,
-    limit: int = 10,
-    citation_limit: int = 5,
-    approved_keys: set[str] | None = None,
+    studies: list[NormalizedStudy], dimension: DimensionDef, *,
+    series_dimension: DimensionDef | None = None, limit: int = 10, citation_limit: int = 5,
 ) -> BucketSet:
-    """Count fetched studies locally and return ordered, cited buckets.
-
-    Missing-value policy, per-trial de-duplication, multi-label semantics, and
-    top-N collapsing all come from the primary ``DimensionDef``. When
-    ``series_dimension`` is supplied, each bucket is a primary/series cell.
-    """
-    grouped, exclusions = _collect(studies, dimension, series_dimension, approved_keys)
-    records_analyzed = len(studies) - exclusions.missing_dimension_value - exclusions.no_selected_category
-
-    buckets = [
-        _bucket_from_members(
-            key, series_key, members, dimension, series_dimension, citation_limit
-        )
-        for (key, series_key), members in grouped.items()
-    ]
-    buckets, truncation = topn.apply_top_n(buckets, dimension, limit, citation_limit)
-    buckets = topn.sort_buckets(buckets, dimension)
-
-    return BucketSet(
-        dimension=dimension.id,
-        series_dimension=series_dimension.id if series_dimension else None,
-        buckets=buckets,
-        invariant=_invariant(dimension, series_dimension, buckets, records_analyzed),
-        exclusions=exclusions,
-        truncation=truncation,
-        records_analyzed=records_analyzed,
-        counts_are_exact=False,
-    )
+    """Compatibility entry point: compile a preset and use the shared executor."""
+    from app.analysis.presets import run_preset
+    return run_preset(studies, dimension, series_dimension, limit, citation_limit)
 
 
 def from_strata(
@@ -204,7 +101,7 @@ def from_strata(
     return BucketSet(
         dimension=dimension.id,
         buckets=buckets,
-        invariant=_invariant(dimension, None, buckets, records_analyzed),
+        invariant=Invariant(kind=dimension.semantics, statement=("sum(data[].value) equals the sum of server-reported bucket counts; records_analyzed counts citation records." if dimension.semantics == "partition" else "Server-reported bucket counts overlap; values must not be summed to infer unique trials.")),
         truncation=truncation,
         records_analyzed=records_analyzed,
         counts_are_exact=True,

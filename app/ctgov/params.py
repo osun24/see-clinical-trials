@@ -38,6 +38,14 @@ def _date_range_expression(start_year: int | None, end_year: int | None) -> str 
 
 
 def build_query(plan: ResolvedPlan) -> CtgovQuerySpec:
+    spec = _build_query(plan)
+    if plan.analysis is not None:
+        from app.analysis.engine import validate
+        spec = spec.model_copy(update={"fields_mask": tuple(validate(plan.analysis)["fields_mask"])})
+    return spec
+
+
+def _build_query(plan: ResolvedPlan) -> CtgovQuerySpec:
     """Map plan filters onto the API's search areas and filters.
 
     Each filter lands in its own parameter, so a drug plus a condition narrow
@@ -46,7 +54,7 @@ def build_query(plan: ResolvedPlan) -> CtgovQuerySpec:
     """
     if plan.search is not None:
         search = plan.search
-        params = search.model_dump(by_alias=True, exclude_none=True, exclude={"start_date", "end_date"})
+        params = search.model_dump(by_alias=True, exclude_none=True, exclude={"start_date", "end_date", "date_field"})
         spec = CtgovQuerySpec(params=params)
         if plan.trial_phase:
             phases = " OR ".join(f"AREA[Phase]({p})" for p in plan.trial_phase)
@@ -55,9 +63,9 @@ def build_query(plan: ResolvedPlan) -> CtgovQuerySpec:
             statuses = " OR ".join(f"AREA[OverallStatus]({status})" for status in plan.overall_status)
             spec = spec.with_overrides({"filter.advanced": f"({statuses})"})
         if search.start_date or search.end_date:
-            expression = f"AREA[StartDate]RANGE[{search.start_date or 'MIN'},{search.end_date or 'MAX'}]"
+            expression = f"AREA[{search.date_field}]RANGE[{search.start_date or 'MIN'},{search.end_date or 'MAX'}]"
             spec = spec.with_overrides({"filter.advanced": expression})
-        if not spec.params:
+        if not spec.params and not plan.compare_values:
             from app.models.errors import ServiceError
             raise ServiceError("query_not_interpretable", "The generated search has no constraints.")
         return spec
@@ -99,10 +107,22 @@ def build_query(plan: ResolvedPlan) -> CtgovQuerySpec:
 
 
 def year_universe(plan: ResolvedPlan, fallback_span: int = 15) -> list[str]:
-    """Bucket keys for a temporal dimension's exact-count fetch."""
+    """Bucket keys for a temporal dimension's exact-count fetch.
+
+    ``resolve`` moves a search-path plan's period into ``search.start_date`` /
+    ``end_date`` and nulls the plan's own years, so reading only the latter
+    would silently substitute a default 15-year window for the period the
+    question actually asked for.
+    """
     this_year = datetime.now(timezone.utc).year
-    start = plan.start_year or (this_year - fallback_span)
-    end = min(plan.end_year or this_year, this_year)
+    start_year, end_year = plan.start_year, plan.end_year
+    if plan.search is not None:
+        if start_year is None and plan.search.start_date is not None:
+            start_year = plan.search.start_date.year
+        if end_year is None and plan.search.end_date is not None:
+            end_year = plan.search.end_date.year
+    start = start_year or (this_year - fallback_span)
+    end = min(end_year or this_year, this_year)
     if start > end:
         start, end = end, start
     return [str(y) for y in range(start, end + 1)]

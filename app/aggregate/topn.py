@@ -88,3 +88,28 @@ def apply_top_n(
         total_distinct=len(totals),
         collapsed_into_other=collapsed,
     )
+
+
+def limit_series(buckets: list[Bucket], limit: int) -> tuple[list[Bucket], int]:
+    """Keep the ``limit`` largest series values, dropping the rest.
+
+    ``apply_top_n`` bounds only the primary axis. On a co-occurrence graph the
+    second axis is a node count too, so an unbounded series turns "sponsors and
+    drugs" into thousands of nodes and the resolver quietly downgrades the
+    whole thing to a bar chart. Ranking by summed value keeps the edges that
+    carry the relationship and reports how many values were left out.
+
+    Dropped cells are removed rather than folded into an "Other" node: an edge
+    to a synthetic node would assert a co-occurrence that no trial records.
+    """
+    totals: dict[str, int] = defaultdict(int)
+    for bucket in buckets:
+        if bucket.series is not None:
+            totals[bucket.series] += bucket.value
+    if len(totals) <= limit:
+        return buckets, 0
+    kept = set(sorted(totals, key=lambda s: (-totals[s], s))[:limit])
+    return (
+        [b for b in buckets if b.series is None or b.series in kept],
+        len(totals) - len(kept),
+    )

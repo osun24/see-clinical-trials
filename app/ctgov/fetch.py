@@ -27,11 +27,21 @@ class FetchResult(BaseModel):
     sampling_method: Literal[
         "census", "first_n_by_api_relevance_order", "stratified_by_bucket"
     ] = "first_n_by_api_relevance_order"
+    #: Arm matches already counted under another arm. A comparison's
+    #: ``total_matching`` is a sum of per-arm totals, so a trial matching two
+    #: arms is counted twice there but held once in ``studies``.
+    duplicate_arm_matches: int = 0
 
     @property
     def is_sample(self) -> bool:
-        """Whether fewer records were returned than the upstream total."""
-        return len(self.studies) < self.total_matching
+        """Whether records are missing, as opposed to counted twice.
+
+        A complete two-arm fetch where 39 trials match both arms holds 837
+        records against a summed total of 876. Comparing those two numbers
+        directly reported a full census as a 95% sample and warned that exact
+        counts were approximate.
+        """
+        return len(self.studies) + self.duplicate_arm_matches < self.total_matching
 
 
 def _request_params(spec: CtgovQuerySpec, page_size: int) -> dict[str, Any]:

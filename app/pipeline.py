@@ -10,19 +10,24 @@ import time
 import uuid
 from typing import Any
 
-from app.aggregate import bucketize
+from app.analysis.engine import validate as validate_analysis
+from app.aggregate import bucketize, topn
 from app.aggregate.keys import bucket_keys, display_label, MISSING_KEY
-from app.interpret.categories import select_categories, validate_decisions
 from app.config import settings
 from app.ctgov.client import CtgovClient
 from app.ctgov.compare import fetch_comparison, should_compare
 from app.ctgov.fetch import FetchResult, fetch_flat
 from app.ctgov.params import build_query
-from app.ctgov.stratified import fetch_stratified, should_stratify, to_fetch_result
+from app.ctgov.stratified import (
+    bucket_universe,
+    fetch_stratified,
+    should_stratify,
+    to_fetch_result,
+)
 from app.dimensions.registry import DIMENSIONS
 from app.interpret.merge import resolve
 from app.interpret.planner import interpret
-from app.models.buckets import BucketSet, Exclusions, Invariant
+from app.models.buckets import Bucket, BucketSet, Exclusions, Invariant
 from app.models.errors import ServiceError
 from app.models.plan import ResolvedPlan
 from app.models.request import QueryRequest
@@ -40,17 +45,76 @@ from app.viz.resolver import resolve as resolve_viz
 BROAD_QUERY_THRESHOLD = 50_000
 
 
+#: Failures worth re-planning: the plan was defective, not the question
+#: unsupported. A capability refusal is deliberately absent — see
+#: ``settings.retry_capability_refusals``.
+_RETRYABLE_PLAN_ERRORS = frozenset({
+    "query_not_interpretable",
+    "upstream_rejected_query",
+})
+
+_EMPTY_RESULT_FEEDBACK = (
+    "That plan matched no trials at all. The filters were probably too narrow or "
+    "placed in the wrong field — a drug name in the sponsor slot, several drug "
+    "names in one field, or a constraint repeated locally that the search already "
+    "applies. Re-read the question and produce simpler, correctly assigned filters."
+)
+
+
+def _should_retry_error(exc: ServiceError) -> bool:
+    if exc.code in _RETRYABLE_PLAN_ERRORS:
+        return True
+    return exc.code == "unsupported_query" and settings.retry_capability_refusals
+
+
+async def _interpret_resolved(
+    request: QueryRequest,
+    *,
+    prior: Any = None,
+    feedback: str | None = None,
+) -> tuple[ResolvedPlan, Any]:
+    """Plan and validate, with one in-attempt repair. Returns the raw plan too.
+
+    The raw plan is handed back so an outer retry can show the planner what it
+    produced last time; without it a resample at temperature 0 just repeats
+    itself.
+    """
+    # A first attempt has nothing to show the planner, so it is an ordinary
+    # call; only a retry carries the previous plan and why it failed.
+    raw = (
+        await interpret(request, previous=prior, feedback=feedback)
+        if feedback
+        else await interpret(request)
+    )
+    try:
+        resolved = resolve(raw, request)
+    except ServiceError as exc:
+        if exc.code != "query_not_interpretable":
+            raise
+        repaired = await interpret(request, previous=raw, feedback=exc.message)
+        resolved = resolve(repaired, request)
+        resolved.adjustments.append("The planning model revised its plan once after deterministic validation failed: " + exc.message)
+        return resolved, repaired
+    return resolved, raw
+
+
+def _preset_for_plan(plan):
+    from app.analysis.presets import compile_preset
+    return compile_preset(DIMENSIONS[plan.group_by], DIMENSIONS.get(plan.series_by))
+
+
 async def plan_only(request: QueryRequest) -> dict[str, Any]:
     """Interpretation without a fetch — the /plan dry run."""
-    raw_plan = await interpret(request)
-    resolved = resolve(raw_plan, request)
+    resolved, _ = await _interpret_resolved(request)
     spec = build_query(resolved)
     return {
         "plan": resolved.model_dump(),
         "ctgov_params": spec.params,
         "fields_mask": list(spec.fields_mask),
+        "analysis_schema": (validate_analysis(resolved.analysis) if resolved.analysis else None),
+        "compiled_preset": (_preset_for_plan(resolved).model_dump() if resolved.group_by and not resolved.analysis and not resolved.graph else None),
         "would_use_exact_counts": bool(
-            resolved.group_by
+            not resolved.analysis and resolved.group_by
             and should_stratify(DIMENSIONS[resolved.group_by], resolved)
         ),
     }
@@ -64,18 +128,39 @@ async def _gather_data(
     dimension = DIMENSIONS.get(resolved.group_by) if resolved.group_by else None
     series_dimension = DIMENSIONS.get(resolved.series_by) if resolved.series_by else None
 
-    # "Compare A against B" cannot be one query; each arm is its own.
-    if dimension is not None and should_compare(resolved):
-        comparison = await fetch_comparison(client, resolved, dimension, cap=cap)
+    # "Compare A against B" cannot be one query; each arm is its own. This is
+    # not gated on having a grouping dimension: "compare the number of trials
+    # across A, B and C" compares the arm totals themselves. Requiring a
+    # dimension dropped the arms and left the base query unconstrained, so the
+    # answer became a count of the entire registry.
+    if should_compare(resolved):
+        comparison = await fetch_comparison(
+            client,
+            resolved,
+            dimension,
+            cap=cap,
+            prefer_exact=True,
+            adaptive_caps=True,
+        )
         return comparison.fetch, comparison.bucket_set, comparison
 
     if dimension is not None and should_stratify(dimension, resolved):
         # Establish the universe size first, then count each bucket exactly.
         probe = await fetch_flat(client, spec, cap=1)
-        stratified = await fetch_stratified(
-            client, spec, dimension, resolved, total_matching=probe.total_matching
-        )
-        if stratified.strata:
+        # A census is exact too, and returns whole records rather than a
+        # per-bucket slice, so it is the better buy whenever the population
+        # fits and costs no more requests. Stratify when the census cannot be
+        # exact at all, or when one request per bucket is the cheaper route:
+        # bucket requests run concurrently, page requests are token-chained.
+        pages_needed = -(-min(probe.total_matching, cap) // settings.page_size)
+        buckets_needed = len(bucket_universe(dimension, resolved))
+        if probe.total_matching > cap or buckets_needed < pages_needed:
+            stratified = await fetch_stratified(
+                client, spec, dimension, resolved, total_matching=probe.total_matching
+            )
+        else:
+            stratified = None
+        if stratified is not None and stratified.strata:
             fetch_result = to_fetch_result(stratified)
             bucket_set = bucketize.from_strata(
                 stratified.strata,
@@ -90,6 +175,12 @@ async def _gather_data(
     if dimension is None:
         return fetch_result, None, None
 
+    bucket_set = _bucket_sample(fetch_result, resolved, dimension, series_dimension)
+    return fetch_result, bucket_set, None
+
+
+def _bucket_sample(fetch_result, resolved, dimension, series_dimension):
+    """Bucket fetched records, bounding both axes when a graph is intended."""
     bucket_set = bucketize.from_sample(
         fetch_result.studies,
         dimension,
@@ -97,11 +188,26 @@ async def _gather_data(
         limit=resolved.limit,
         citation_limit=settings.citation_limit,
     )
-    return fetch_result, bucket_set, None
+    if series_dimension is None or resolved.intent != "relationship":
+        return bucket_set
+
+    # Both axes of a co-occurrence graph are nodes, so the series needs its own
+    # budget; without one the node count blows past the readable limit and the
+    # resolver downgrades the requested network to a bar chart.
+    trimmed, dropped = topn.limit_series(bucket_set.buckets, resolved.limit)
+    if not dropped:
+        return bucket_set
+    return bucket_set.model_copy(update={
+        "buckets": trimmed,
+        "series_truncated": dropped,
+    })
 
 
 def _coverage(
-    fetch_result: FetchResult, bucket_set: BucketSet | None, fetch_cap: int
+    fetch_result: FetchResult,
+    bucket_set: BucketSet | None,
+    fetch_cap: int,
+    comparison: Any = None,
 ) -> Coverage:
     analyzed = bucket_set.records_analyzed if bucket_set else len(fetch_result.studies)
     total = max(fetch_result.total_matching, 1)
@@ -125,6 +231,20 @@ def _coverage(
         truncated_reason=fetch_result.truncated_reason,
         counts_are_exact=exact,
         excluded=bucket_set.exclusions if bucket_set else Exclusions(),
+        comparison_arms=(
+            {
+                name: {
+                    "total_matching": total,
+                    "records_fetched": comparison.arm_fetched.get(name, 0),
+                    "is_sample": (
+                        not exact
+                        and comparison.arm_fetched.get(name, 0) < total
+                    ),
+                }
+                for name, total in comparison.arm_totals.items()
+            }
+            if comparison is not None else {}
+        ),
     )
 
 
@@ -142,6 +262,14 @@ def _build_visualization(
         return VisualizationSpec(type="none", title=title, subtitle=subtitle, data=[])
 
     if decision_type == "stat":
+        if bucket_set is None and fetch_result.studies:
+            from app.models.buckets import Citation
+            citations = [Citation(nct_id=s.nct_id, brief_title=s.brief_title,
+                field_path="protocolSection.identificationModule.nctId", field_value=s.nct_id, source_url=s.url)
+                for s in fetch_result.studies[:settings.citation_limit]]
+            bucket_set = BucketSet(dimension="total", buckets=[Bucket(key="total", label="Matching trials",
+                value=fetch_result.total_matching, citations=citations, citation_total=fetch_result.total_matching)],
+                invariant=Invariant(kind="partition", statement="Single API-reported total."), records_analyzed=len(fetch_result.studies))
         encoding, data = encoders.encode_stat(
             bucket_set,
             total=fetch_result.total_matching,
@@ -193,9 +321,61 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
     """Execute the full question-to-cited-visualization pipeline."""
     started = time.monotonic()
     request_id = uuid.uuid4().hex[:12]
+    from app.interpret import usage as usage_meter
 
-    raw_plan = await interpret(request)
-    resolved = resolve(raw_plan, request)
+    usage_meter.start()
+
+    deadline = started + settings.plan_retry_budget_s
+    prior: Any = None
+    feedback: str | None = None
+    attempts = 0
+
+    while True:
+        attempts += 1
+        budget_left = (
+            time.monotonic() < deadline and attempts < settings.max_plan_attempts
+        )
+        try:
+            response, prior = await _attempt(
+                request, client, request_id, started, prior, feedback, attempts
+            )
+        except ServiceError as exc:
+            if budget_left and _should_retry_error(exc):
+                feedback = exc.message
+                continue
+            raise
+        # An empty result can mean "no trials match that" or a mis-built plan;
+        # the response cannot tell them apart, so try once more and keep the
+        # empty answer if the next plan agrees.
+        if (
+            budget_left
+            and response.visualization.type == "none"
+            and response.meta.coverage.total_matching_studies == 0
+            and response.meta.intent != "lookup"
+        ):
+            feedback = _EMPTY_RESULT_FEEDBACK
+            continue
+        return response
+
+
+async def _attempt(
+    request: QueryRequest,
+    client: CtgovClient,
+    request_id: str,
+    started: float,
+    prior: Any,
+    feedback: str | None,
+    attempts: int,
+) -> tuple[AnswerResponse, Any]:
+    """One full planning-and-execution pass."""
+    resolved, raw_plan = await _interpret_resolved(
+        request, prior=prior, feedback=feedback
+    )
+    if attempts > 1:
+        resolved.adjustments.append(
+            f"Attempt {attempts}: the previous plan was retried after "
+            f"{'an empty result' if feedback == _EMPTY_RESULT_FEEDBACK else 'a validation failure'}."
+        )
 
     if not resolved.is_clinical_trials_question:
         raise ServiceError(
@@ -205,41 +385,26 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         )
 
     cap = settings.record_cap
+    if resolved.analysis is not None:
+        from app.analysis.response import answer_analysis
+        return (
+            await answer_analysis(request, resolved, client, cap, request_id, started),
+            raw_plan,
+        )
     fetch_result, bucket_set, comparison = await _gather_data(client, resolved, cap)
 
-    category_selection = None
-    approved_keys = None
-    if resolved.category_selection:
-        dimension = DIMENSIONS[resolved.group_by]
-        terms = {key: display_label(key, dimension)
-                 for study in fetch_result.studies
-                 for key, _ in bucket_keys(study.raw, dimension) if key != MISSING_KEY}
-        category_selection = await select_categories(request.query, resolved.category_selection, terms)
-        approved_keys = validate_decisions(set(terms), category_selection.decisions)
-        bucket_set = bucketize.from_sample(
-            fetch_result.studies, dimension,
-            series_dimension=DIMENSIONS.get(resolved.series_by),
-            limit=resolved.limit, citation_limit=settings.citation_limit,
-            approved_keys=approved_keys,
-        )
-
     decision = resolve_viz(
-        resolved, bucket_set, records_fetched=(bucket_set.records_analyzed if category_selection and bucket_set else len(fetch_result.studies))
+        resolved, bucket_set, records_fetched=len(fetch_result.studies)
     )
-    if category_selection and bucket_set and not bucket_set.buckets:
-        decision.type = "none"
-        decision.needed = False
-        decision.rationale = "No fetched condition terms satisfy the requested category restriction."
     if decision.drop_series and bucket_set is not None:
         bucket_set = bucketize.from_sample(
             fetch_result.studies,
             DIMENSIONS[bucket_set.dimension],
-            approved_keys=approved_keys,
             limit=resolved.limit,
             citation_limit=settings.citation_limit,
         )
 
-    coverage = _coverage(fetch_result, bucket_set, cap)
+    coverage = _coverage(fetch_result, bucket_set, cap, comparison)
     subtitle = titles.build_subtitle(
         total_matching=coverage.total_matching_studies,
         records_analyzed=coverage.records_analyzed,
@@ -247,17 +412,12 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         counts_are_exact=coverage.counts_are_exact,
         sampling_method=coverage.sampling_method,
         excluded_missing=coverage.excluded.missing_dimension_value,
+        comparison_arms=len(coverage.comparison_arms),
     )
 
     visualization = _build_visualization(
         resolved, bucket_set, fetch_result, decision.type, decision.orientation, subtitle
     )
-
-    if category_selection and bucket_set:
-        visualization.subtitle += (
-            f" Category selection retained {bucket_set.records_analyzed:,} fetched trials; "
-            f"{bucket_set.exclusions.no_selected_category:,} had no qualifying term."
-        )
 
     graph_provenance_note: str | None = None
     if resolved.graph is not None and decision.type == "network_graph":
@@ -337,7 +497,7 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
                 "Group the trials by phase, status, sponsor, or country.",
             ]
         else:
-            answer_text = ("No qualifying condition categories were found in the fetched records." if category_selection else "No trials match those filters.")
+            answer_text = "No trials match those filters."
             suggestions = _relaxation_suggestions(resolved)
     elif decision.type == "stat":
         interpretation = resolved.interpretation.rstrip(".")
@@ -347,7 +507,7 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         )
 
     meta = Meta(
-        category_selection=category_selection,
+        analysis=bucket_set.extra.get("analysis") if bucket_set else None,
         query_interpretation=QueryInterpretation(
             model_interpretation=resolved.interpretation,
             filters_applied=_filters_applied(resolved, comparison),
@@ -358,7 +518,16 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         group_by=bucket_set.dimension if bucket_set else None,
         series_by=bucket_set.series_dimension if bucket_set else None,
         sort=(
-            {"by": DIMENSIONS[bucket_set.dimension].sort_mode, "direction": "desc"}
+            {
+                # A totals comparison has no registry dimension: the arms keep
+                # the order the question named them in.
+                "by": (
+                    DIMENSIONS[bucket_set.dimension].sort_mode
+                    if bucket_set.dimension in DIMENSIONS
+                    else "natural"
+                ),
+                "direction": "desc",
+            }
             if bucket_set
             else None
         ),
@@ -376,7 +545,7 @@ async def answer(request: QueryRequest, client: CtgovClient) -> AnswerResponse:
         elapsed_ms=int((time.monotonic() - started) * 1000),
     )
 
-    return AnswerResponse(visualization=visualization, meta=meta)
+    return AnswerResponse(visualization=visualization, meta=meta), raw_plan
 
 
 def _filters_applied(resolved: ResolvedPlan, comparison: Any) -> dict[str, str]:
@@ -510,7 +679,16 @@ def _general_notes(
     if bucket_set is None:
         return notes
 
-    dimension = DIMENSIONS[bucket_set.dimension]
+    # A totals comparison groups by the arms themselves, which are a synthetic
+    # axis with no registry entry.
+    dimension = DIMENSIONS.get(bucket_set.dimension)
+    if dimension is None:
+        notes.append(
+            "Each bar is one arm's own total from a separate query. The arms are "
+            "not deduplicated against each other, so a trial matching two of them "
+            "is counted in both and the bars must not be added together."
+        )
+        return notes
     notes.extend(dimension.notes)
 
     if resolved.country and dimension.id == "country":

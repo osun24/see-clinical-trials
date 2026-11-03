@@ -7,6 +7,11 @@ from typing import Any, Literal
 from pydantic import BaseModel
 
 ErrorCode = Literal[
+    "unsupported_query",
+    "llm_quota_exceeded",
+    "llm_rate_limited",
+    "llm_timeout",
+    "llm_invalid_request",
     "invalid_request",
     "query_not_interpretable",
     "out_of_scope",
@@ -19,6 +24,11 @@ ErrorCode = Literal[
 
 #: code -> (HTTP status, retryable)
 ERROR_STATUS: dict[str, tuple[int, bool]] = {
+    "unsupported_query": (422, False),
+    "llm_quota_exceeded": (503, False),
+    "llm_rate_limited": (429, True),
+    "llm_timeout": (504, True),
+    "llm_invalid_request": (500, False),
     "invalid_request": (422, False),
     "query_not_interpretable": (400, False),
     "out_of_scope": (400, False),

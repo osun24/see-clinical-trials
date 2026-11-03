@@ -94,10 +94,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Clinical Trials Visualization API</h1>
-  <p class="lede">Ask a question. The renderer below is driven entirely by the returned
-  specification &mdash; it switches on <code>visualization.type</code> and reads
-  <code>encoding</code> to find its fields.</p>
+  <h1>Clinical Trials Visualization Agent - Owen Sun</h1>
 
   <form id="f">
     <input type="text" id="q" placeholder="How many pembrolizumab trials are there by phase?" autocomplete="off">
@@ -110,14 +107,9 @@
 
 <script>
 const EXAMPLES = [
-  "How many pembrolizumab trials are there by phase?",
-  "What is the recruitment status of pembrolizumab trials?",
-  "How has the number of melanoma trials changed over time?",
-  "Which countries run the most CAR-T trials?",
-  "Who are the top sponsors of Alzheimer's trials?",
-  "How many trials are recruiting for lung cancer?",
-  "Show me recruiting glioblastoma trials",
-  "Industry versus academic sponsorship of diabetes trials",
+  "Show me a network of sponsors to drugs for eczema trials",
+  "Compare sponsor categories across neuroblastoma, major depressive disorder, and sickle cell anemia.",
+  "Is planned enrollment size associated with trial duration for NSCLC trials?",
 ];
 
 const PALETTE = ["#2b5f8e","#c77c3c","#4f8a6b","#8d5b9c","#b4544a","#4a7fa8","#7a8b3c","#9c6b4f"];
@@ -176,24 +168,19 @@ function render(root, body) {
   const panel = document.createElement("div");
   panel.className = "panel";
 
-  // The subtitle is part of the contract: always present, always displayed.
-  panel.innerHTML =
-    `<p class="chart-title">${esc(v.title)}</p>` +
-    `<p class="chart-subtitle">${esc(v.subtitle)}</p>`;
+  // The subtitle stays in the API response; the demo shows the coverage
+  // banner below instead of repeating it as prose.
+  panel.innerHTML = `<p class="chart-title">${esc(v.title)}</p>`;
 
   if (m.coverage?.is_sample) {
+    const arms = Object.entries(m.coverage.comparison_arms || {});
+    const detail = arms.length
+      ? arms.map(([name, c]) => `${esc(name)}: ${num(c.records_fetched)} of ${num(c.total_matching)}`).join("; ")
+      : `${num(m.coverage.records_analyzed)} of ${num(m.coverage.total_matching_studies)} matching trials`;
     panel.insertAdjacentHTML("beforeend",
-      `<div class="banner"><strong>Sampled.</strong> ${num(m.coverage.records_analyzed)} of
-       ${num(m.coverage.total_matching_studies)} matching trials were analyzed,
+      `<div class="banner"><strong>Sampled.</strong> ${detail} were analyzed,
        ${esc(samplingLabel(m.coverage.sampling_method))}. Proportions are more
        reliable than absolute counts.</div>`);
-  }
-  if (m.coverage?.counts_are_exact) {
-    panel.insertAdjacentHTML("beforeend",
-      `<div class="banner" style="background:#e9f3ec;border-color:#a9cdb5;color:#2f6d44">
-       <strong>Exact counts.</strong> Every value is a server-side count across all
-       ${num(m.coverage.total_matching_studies)} matching trials. Citations come from a
-       sample of each category.</div>`);
   }
   if (m.warnings?.length) {
     panel.insertAdjacentHTML("beforeend",
@@ -214,7 +201,6 @@ function render(root, body) {
   panel.appendChild(drill);
 
   root.appendChild(panel);
-  root.appendChild(metaPanel(m));
   root.appendChild(rawPanel(body));
 }
 
@@ -430,95 +416,137 @@ ${esc(v.encoding.y.axis_title)}: ${num(r[yf])}</title></circle>`).join("");
     const {node: nodeEnc, edge: edgeEnc} = v.encoding;
     const nodes = v.data.nodes || [];
     const edges = v.data.edges || [];
-    const omitted = v.data.omitted;
 
     if (!nodes.length || !edges.length) {
       el.innerHTML = `<p class="note">No connections to draw.</p>`;
       return;
     }
 
+    const W = 760, H = 520, PAD = 70;
     const groups = [...new Set(nodes.map(n => n[nodeEnc.group_field]))];
-    const levelField = nodeEnc.level_field;
-    const levels = [...new Set(nodes.map(n =>
-      levelField ? n[levelField] : groups.indexOf(n[nodeEnc.group_field])))].sort((a, b) => a - b);
-    const byLevel = levels.map(level =>
-      nodes.filter(n => (levelField ? n[levelField] : groups.indexOf(n[nodeEnc.group_field])) === level)
-           .sort((a, b) => b[nodeEnc.size_field] - a[nodeEnc.size_field]));
-
-    // One column per level: subject root, branch categories, then leaf nodes.
-    const rowH = 34, padY = 24;
-    const LABEL_CHARS = 30, CHAR_W = 6.2;
-    const gutter = LABEL_CHARS * CHAR_W + 20;
-    const linkW = 260;
-    const height = Math.max(...byLevel.map(c => c.length)) * rowH + padY * 2;
-    const width = gutter * 2 + linkW * Math.max(levels.length - 1, 1);
     const maxW = Math.max(...edges.map(e => e[edgeEnc.weight_field]), 1);
+    const maxSize = Math.max(...nodes.map(n => n[nodeEnc.size_field] || 1), 1);
+    const idOf = n => n[nodeEnc.id_field];
+    const index = new Map(nodes.map((n, i) => [idOf(n), i]));
+    const links = edges
+      .map((e, i) => ({i, a: index.get(e[edgeEnc.source_field]), b: index.get(e[edgeEnc.target_field]),
+                       w: e[edgeEnc.weight_field]}))
+      .filter(l => l.a !== undefined && l.b !== undefined);
 
-    // Pre-compute a position for every node id.
-    const pos = {};
-    byLevel.forEach((col, ci) => {
-      const x = levels.length > 1 ? gutter + ci * linkW : width / 2;
-      const offset = (height - col.length * rowH) / 2;
-      col.forEach((n, ri) => {
-        pos[n[nodeEnc.id_field]] = {
-          x,
-          y: offset + ri * rowH + rowH / 2,
-          node: n,
-          level: ci,
-          group: groups.indexOf(n[nodeEnc.group_field]),
-        };
+    // Seeded, so the same answer always draws the same picture. An unseeded
+    // layout would move every time the page re-rendered and invite the reader
+    // to see meaning in a position that is only noise.
+    let seed = nodes.length * 7919 + links.length * 104729;
+    const rand = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+
+    const radius = n => 7 + Math.sqrt((n[nodeEnc.size_field] || 1) / maxSize) * 11;
+    let pts = [];
+
+    function layout(iterations) {
+      // Start on a ring: a circle spreads the first positions evenly, so the
+      // simulation untangles rather than exploding out of a single point.
+      pts = nodes.map((n, i) => {
+        const angle = (i / nodes.length) * Math.PI * 2 + rand() * 0.4;
+        return {x: W / 2 + Math.cos(angle) * 170, y: H / 2 + Math.sin(angle) * 150,
+                vx: 0, vy: 0, node: n, r: radius(n),
+                group: groups.indexOf(n[nodeEnc.group_field])};
       });
-    });
+      const ideal = 150;
+      for (let step = 0; step < iterations; step++) {
+        const cool = 1 - step / iterations;
+        for (let i = 0; i < pts.length; i++) {
+          for (let j = i + 1; j < pts.length; j++) {
+            const dx = pts[j].x - pts[i].x, dy = pts[j].y - pts[i].y;
+            const d2 = dx * dx + dy * dy || 0.01, d = Math.sqrt(d2);
+            const push = Math.min(9000 / d2, 18);
+            const ux = dx / d, uy = dy / d;
+            pts[i].vx -= ux * push; pts[i].vy -= uy * push;
+            pts[j].vx += ux * push; pts[j].vy += uy * push;
+          }
+        }
+        for (const l of links) {
+          const a = pts[l.a], b = pts[l.b];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          const pull = (d - ideal) * 0.012;
+          const ux = dx / d, uy = dy / d;
+          a.vx += ux * pull; a.vy += uy * pull;
+          b.vx -= ux * pull; b.vy -= uy * pull;
+        }
+        for (const p of pts) {
+          p.vx += (W / 2 - p.x) * 0.004;
+          p.vy += (H / 2 - p.y) * 0.004;
+          p.x += p.vx * cool; p.y += p.vy * cool;
+          p.vx *= 0.82; p.vy *= 0.82;
+          p.x = Math.max(PAD, Math.min(W - PAD, p.x));
+          p.y = Math.max(PAD / 2, Math.min(H - PAD / 2, p.y));
+        }
+      }
+    }
 
-    const edgePaths = edges.map((e, i) => {
-      const a = pos[e[edgeEnc.source_field]], b = pos[e[edgeEnc.target_field]];
-      if (!a || !b) return "";
-      const w = 1 + (e[edgeEnc.weight_field] / maxW) * 13;
-      const mx = (a.x + b.x) / 2;
-      return `<path d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"
-        fill="none" stroke="${PALETTE[0]}" stroke-opacity="0.3" stroke-width="${w.toFixed(1)}"
-        data-edge="${i}" style="cursor:pointer"><title>${esc(a.node[nodeEnc.label_field])} to ${
-        esc(b.node[nodeEnc.label_field])}: ${num(e[edgeEnc.weight_field])}</title></path>`;
-    }).join("");
+    function draw() {
+      const edgeMarks = links.map(l => {
+        const a = pts[l.a], b = pts[l.b];
+        const width = 1.5 + (l.w / maxW) * 11;
+        return `<g><line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}"
+            x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#9fb6cc"
+            stroke-opacity="0.75" stroke-width="${width.toFixed(1)}" stroke-linecap="round"
+            data-edge="${l.i}" style="cursor:pointer"><title>${
+            esc(a.node[nodeEnc.label_field])} to ${esc(b.node[nodeEnc.label_field])}: ${
+            num(l.w)}</title></line>
+          <text x="${((a.x + b.x) / 2).toFixed(1)}" y="${((a.y + b.y) / 2 - 5).toFixed(1)}"
+            text-anchor="middle" font-size="11" fill="var(--muted)"
+            style="pointer-events:none">${num(l.w)}</text></g>`;
+      }).join("");
 
-    const nodeMarks = Object.values(pos).map(p => {
-      const first = p.level === 0;
-      const last = p.level === levels.length - 1;
-      const radius = first ? 9 : (last ? 5 : 7);
-      const tx = first ? p.x - 13 : (last ? p.x + 11 : p.x);
-      const ty = first || last ? p.y + 4 : p.y - 11;
-      const anchor = first ? "end" : (last ? "start" : "middle");
-      return `<g data-node="${esc(p.node[nodeEnc.id_field])}">
-        <circle cx="${p.x}" cy="${p.y}" r="${radius}" fill="${PALETTE[p.group % PALETTE.length]}"/>
-        <text x="${tx}" y="${ty}" text-anchor="${anchor}" font-size="12"
-          font-weight="${first ? "650" : "500"}" fill="currentColor"
-        >${esc(truncate(p.node[nodeEnc.label_field], LABEL_CHARS))}</text>
-        <title>${esc(p.node[nodeEnc.label_field])}: ${num(p.node[nodeEnc.size_field])}</title>
-      </g>`;
-    }).join("");
+      const nodeMarks = pts.map((p, i) => `<g data-drag="${i}" style="cursor:grab">
+          <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.r.toFixed(1)}"
+            fill="${PALETTE[p.group % PALETTE.length]}"/>
+          <text x="${p.x.toFixed(1)}" y="${(p.y + p.r + 15).toFixed(1)}" text-anchor="middle"
+            font-size="12" font-weight="500" fill="currentColor" style="pointer-events:none"
+          >${esc(truncate(p.node[nodeEnc.label_field], 26))}</text>
+          <title>${esc(p.node[nodeEnc.label_field])}: ${num(p.node[nodeEnc.size_field])}</title>
+        </g>`).join("");
 
-    el.innerHTML = `
-      <div style="overflow-x:auto">
-        <svg viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px"
-             role="img" aria-label="Hierarchical network graph">${edgePaths}${nodeMarks}</svg>
-      </div>
-      <p class="note">${nodes.length} nodes, ${edges.length} connections &mdash;
-        arranged from root to branches to leaves. Line thickness is the trial count;
-        click a connection for the trials behind it.</p>
-      ${omitted ? `<div class="banner"><strong>${num(omitted.trials)} trials are not on this
-        graph.</strong> ${esc(omitted.reason)}</div>` : ""}`;
+      el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img"
+          aria-label="Network graph">${edgeMarks}${nodeMarks}</svg>`;
 
-    el.querySelectorAll("[data-edge]").forEach(pathEl => {
-      pathEl.addEventListener("click", () => {
-        const e = edges[+pathEl.dataset.edge];
-        const a = pos[e[edgeEnc.source_field]], b = pos[e[edgeEnc.target_field]];
-        showCitations({
-          ...e,
-          label: `${a?.node[nodeEnc.label_field]} to ${b?.node[nodeEnc.label_field]}`,
-          value: e[edgeEnc.weight_field],
-        }, m);
+      el.querySelectorAll("[data-edge]").forEach(line => {
+        line.addEventListener("click", () => {
+          const e = edges[+line.dataset.edge];
+          const a = pts[index.get(e[edgeEnc.source_field])];
+          const b = pts[index.get(e[edgeEnc.target_field])];
+          showCitations({
+            ...e,
+            label: `${a?.node[nodeEnc.label_field]} to ${b?.node[nodeEnc.label_field]}`,
+            value: e[edgeEnc.weight_field],
+          }, m);
+        });
       });
-    });
+
+      const svg = el.querySelector("svg");
+      el.querySelectorAll("[data-drag]").forEach(g => {
+        g.addEventListener("pointerdown", down => {
+          down.preventDefault();
+          const p = pts[+g.dataset.drag];
+          const box = svg.getBoundingClientRect();
+          const move = ev => {
+            p.x = ((ev.clientX - box.left) / box.width) * W;
+            p.y = ((ev.clientY - box.top) / box.height) * H;
+            draw();
+          };
+          const up = () => {
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", up);
+          };
+          window.addEventListener("pointermove", move);
+          window.addEventListener("pointerup", up);
+        });
+      });
+    }
+
+    layout(320);
+    draw();
   },
 
   none(el, v, m) {
@@ -644,42 +672,14 @@ function bars(el, v, m, nested) {
     n.onclick = () => showCitations(rows[+n.dataset.i], m));
 }
 
-function metaPanel(m) {
-  const d = document.createElement("div");
-  d.className = "panel meta";
-  const c = m.coverage;
-  const pill = c.counts_are_exact
-    ? '<span class="pill exact">exact counts</span>'
-    : '<span class="pill approx">sampled counts</span>';
-  d.innerHTML = `<h3>How this was built</h3>
-    <dl>
-      <dt>Interpreted as</dt><dd>${esc(m.query_interpretation.model_interpretation)}</dd>
-      <dt>Filters sent</dt><dd><code>${esc(JSON.stringify(m.query_interpretation.filters_applied))}</code></dd>
-      <dt>Grouped by</dt><dd>${esc(m.group_by || "nothing")} ${pill}
-        <span class="pill">${esc(m.invariant.kind)}</span></dd>
-      <dt>Counting rule</dt><dd>${esc(m.notes.counting_rule || "")}</dd>
-      <dt>Why this chart</dt><dd>${esc(m.visualization_rationale)}</dd>
-      <dt>Coverage</dt><dd>${num(c.records_analyzed)} analyzed of ${num(c.total_matching_studies)}
-        matching &middot; ${c.pages_fetched} request(s) &middot; ${m.elapsed_ms} ms</dd>
-    </dl>
-    ${m.notes.overrides?.length ? `<h3 style="margin-top:16px">Chart overrides</h3>` +
-      m.notes.overrides.map(o => `<p class="note"><strong>${esc(o.requested)} &rarr; ${
-        esc(o.applied)}</strong>: ${esc(o.reason)}</p>`).join("") : ""}
-    ${m.query_interpretation.assumptions?.length ? `<h3 style="margin-top:16px">Assumptions</h3>` +
-      m.query_interpretation.assumptions.map(a => `<p class="note">${esc(a)}</p>`).join("") : ""}
-    ${m.query_interpretation.plan_adjustments?.length ? `<h3 style="margin-top:16px">Plan adjustments</h3>` +
-      m.query_interpretation.plan_adjustments.map(a => `<p class="note">${esc(a)}</p>`).join("") : ""}
-    ${m.notes.general?.length ? `<h3 style="margin-top:16px">Notes</h3>` +
-      m.notes.general.map(n => `<p class="note">${esc(n)}</p>`).join("") : ""}
-    <p class="note" style="margin-top:16px">${esc(m.citation_policy)}</p>`;
-  return d;
-}
-
 function rawPanel(body) {
   const d = document.createElement("div");
   d.className = "panel";
+  // Shown without the subtitle, which the panel above no longer displays.
+  const shown = {...body, visualization: {...body.visualization}};
+  delete shown.visualization.subtitle;
   d.innerHTML = `<details><summary>Raw response JSON</summary>
-    <pre>${esc(JSON.stringify(body, null, 2))}</pre></details>`;
+    <pre>${esc(JSON.stringify(shown, null, 2))}</pre></details>`;
   return d;
 }
 </script>

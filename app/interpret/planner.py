@@ -17,11 +17,23 @@ from openai import (
     RateLimitError,
 )
 
+from app.interpret import usage as usage_meter
+from app.interpret.provider_errors import provider_error
+from pydantic import create_model
+from copy import deepcopy
 from app.config import settings
 from app.interpret.prompt import build_messages
 from app.models.errors import ServiceError
 from app.models.plan import QueryPlan
 from app.models.request import QueryRequest
+
+
+# Compatibility filter fields remain accepted internally, but the model has one
+# authoritative search object instead of two competing ways to express filters.
+_OUTPUT_FIELDS = {"unsupported_requirements", "analysis", "search", "is_clinical_trials_question", "intent", "interpretation",
+                  "group_by", "series_by", "chart_hint", "graph", "limit", "compare_by", "compare_values", "assumptions"}
+PlannerOutput = create_model("PlannerOutput", __config__={"extra": "forbid"},
+    **{name: (field.annotation, deepcopy(field)) for name, field in QueryPlan.model_fields.items() if name in _OUTPUT_FIELDS})
 
 
 def _client() -> AsyncOpenAI:
@@ -32,36 +44,37 @@ def _client() -> AsyncOpenAI:
             detail={"fix": "Copy .env.example to .env and set OPENAI_API_KEY."},
         )
     return AsyncOpenAI(
-        api_key=settings.openai_api_key, timeout=settings.openai_timeout_s
+        api_key=settings.openai_api_key, timeout=settings.openai_timeout_s, max_retries=1
     )
 
 
-async def interpret(request: QueryRequest) -> QueryPlan:
+async def interpret(request: QueryRequest, *, previous: QueryPlan | None = None, feedback: str | None = None) -> QueryPlan:
     """Ask the model for a strict intent plan and map provider failures to API errors."""
     client = _client()
+    messages = build_messages(request)
+    if previous is not None and feedback:
+        messages.extend([
+            {"role": "assistant", "content": previous.model_dump_json()},
+            {"role": "user", "content": "The deterministic validator rejected this plan: " + feedback +
+             ". Correct the plan while preserving every requirement of the original question. "
+             "Every input must reference the immediately preceding step ID, starting with trials. "
+             "Move supported search constraints into search instead of inventing columns. Do not substitute a different answer."},
+        ])
 
     try:
         completion = await client.chat.completions.parse(
             model=settings.openai_model,
-            messages=build_messages(request),  # type: ignore[arg-type]
-            response_format=QueryPlan,
+            messages=messages,  # type: ignore[arg-type]
+            response_format=PlannerOutput,
             temperature=0,
         )
-    except (APITimeoutError, APIConnectionError, RateLimitError) as exc:
-        raise ServiceError(
-            "llm_unavailable",
-            f"The interpretation service is unavailable: {type(exc).__name__}.",
-        ) from exc
-    except APIStatusError as exc:
-        if exc.status_code in (401, 403):
-            raise ServiceError(
-                "llm_misconfigured",
-                "OPENAI_API_KEY was rejected by OpenAI.",
-            ) from exc
-        raise ServiceError(
-            "llm_unavailable",
-            f"The interpretation service returned HTTP {exc.status_code}.",
-        ) from exc
+    except (APITimeoutError, APIConnectionError, APIStatusError) as exc:
+        raise provider_error(exc) from exc
+    finally:
+        await client.close()
+
+    # Telemetry only: read after the fact, it cannot affect the request.
+    usage_meter.record(getattr(completion, "usage", None))
 
     message = completion.choices[0].message
 
@@ -80,4 +93,4 @@ async def interpret(request: QueryRequest) -> QueryPlan:
             "query_not_interpretable",
             "The interpretation service returned no usable plan for this question.",
         )
-    return plan
+    return plan if isinstance(plan, QueryPlan) else QueryPlan.model_validate(plan.model_dump())

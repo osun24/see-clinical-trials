@@ -1,0 +1,86 @@
+{
+  "visualization": {
+    "type": "time_series",
+    "title": "Illustrative renderer fixture",
+    "subtitle": "Synthetic example; not clinical findings.",
+    "encoding": {
+      "x": {
+        "field": "bucket",
+        "type": "temporal",
+        "axis_title": "Start Year",
+        "granularity": "year"
+      },
+      "y": {
+        "field": "value",
+        "type": "quantitative",
+        "axis_title": "Number of Trials",
+        "unit": "trials"
+      },
+      "point_markers": true
+    },
+    "data": [
+      {
+        "label": "2025",
+        "value": 1,
+        "citations": [
+          {
+            "nct_id": "NCT00000001",
+            "brief_title": "Illustrative trial",
+            "field_path": "protocolSection.identificationModule.nctId",
+            "field_value": "NCT00000001",
+            "evidence_kind": "field_value",
+            "source_url": "https://clinicaltrials.gov/study/NCT00000001"
+          }
+        ],
+        "citation_total": 1,
+        "citations_truncated": false,
+        "bucket": "2025"
+      }
+    ]
+  },
+  "meta": {
+    "query_interpretation": {
+      "model_interpretation": "Illustrate the response schema.",
+      "filters_applied": {},
+      "assumptions": [],
+      "plan_adjustments": []
+    },
+    "intent": "distribution",
+    "measure": "trial_count",
+    "unit": "trials",
+    "invariant": {
+      "kind": "multi_label",
+      "statement": "Example only; values may overlap."
+    },
+    "coverage": {
+      "total_matching_studies": 1,
+      "records_fetched": 1,
+      "records_analyzed": 1,
+      "is_sample": false,
+      "coverage_ratio": 1.0,
+      "sampling_method": "census",
+      "sampling_bias_risk": "none",
+      "fetch_cap": 5000,
+      "pages_fetched": 1,
+      "counts_are_exact": false,
+      "excluded": {
+        "missing_dimension_value": 0,
+        "imprecise_for_granularity": 0,
+        "no_selected_category": 0,
+        "memberships_removed": 0,
+        "invalid_numeric_pair": 0
+      }
+    },
+    "visualization_needed": true,
+    "visualization_rationale": "",
+    "suggestions": [],
+    "warnings": [],
+    "notes": {
+      "overrides": [],
+      "general": []
+    },
+    "citation_policy": "Citations are extracted mechanically from the ClinicalTrials.gov API response. Field values and excerpts are verbatim; the language model never writes them.",
+    "source": "clinicaltrials.gov",
+    "api_version": "2.0.5"
+  }
+}

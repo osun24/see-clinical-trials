@@ -111,11 +111,24 @@ def build_subtitle(
     counts_are_exact: bool,
     sampling_method: str,
     excluded_missing: int = 0,
+    comparison_arms: int = 0,
 ) -> str:
     """One sentence a viewer cannot miss, stating the basis of the numbers."""
     if total_matching == 0:
         return "No trials matched these filters."
-    if counts_are_exact:
+    if comparison_arms and counts_are_exact:
+        head = (
+            f"Exact server-side counts for each of {comparison_arms} comparison arms; "
+            "citations drawn from a sample."
+        )
+    elif comparison_arms and not is_sample:
+        head = f"Based on complete results for each of {comparison_arms} comparison arms."
+    elif comparison_arms:
+        head = (
+            f"Based on relevance-ordered samples of {comparison_arms} comparison arms; "
+            "counts are approximate. See per-arm coverage metadata."
+        )
+    elif counts_are_exact:
         head = (
             f"Exact counts across all {total_matching:,} matching trials; "
             f"citations drawn from a sample."
